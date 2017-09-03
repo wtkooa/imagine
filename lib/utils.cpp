@@ -54,6 +54,22 @@ bool GLSL_Compiler::compileVertexShader(std::string filename)
 	codeParamAdapter[0] = vertexShaderCode.c_str();
 	glShaderSource(vertexShaderID, 1, codeParamAdapter, 0);
 	glCompileShader(vertexShaderID);
+		GLint compileStatus;
+	glGetShaderiv(vertexShaderID, GL_COMPILE_STATUS, &compileStatus);
+	if (compileStatus != GL_TRUE)
+	{
+		GLint infoLogLength;
+		glGetShaderiv(vertexShaderID, GL_INFO_LOG_LENGTH, &infoLogLength);
+		try	
+		{
+			GLchar* buffer = new GLchar[infoLogLength];
+			GLsizei bufferSize; //Not used: required as func param
+			glGetShaderInfoLog(vertexShaderID, infoLogLength, &bufferSize, buffer);
+			std::cout << "Vertex Shader Compile Error: " << buffer << std::endl;
+			delete [] buffer;
+		}
+		catch (std::exception& exc) {std::cout << exc.what() << std::endl;}
+	}
 }
 
 bool GLSL_Compiler::compileFragmentShader(std::string filename)
@@ -66,6 +82,22 @@ bool GLSL_Compiler::compileFragmentShader(std::string filename)
 	codeParamAdapter[0] = fragmentShaderCode.c_str();
 	glShaderSource(fragmentShaderID, 1, codeParamAdapter, 0);
 	glCompileShader(fragmentShaderID);
+	GLint compileStatus;
+	glGetShaderiv(fragmentShaderID, GL_COMPILE_STATUS, &compileStatus);
+	if (compileStatus != GL_TRUE)
+	{
+		GLint infoLogLength;
+		glGetShaderiv(fragmentShaderID, GL_INFO_LOG_LENGTH, &infoLogLength);
+		try	
+		{
+			GLchar* buffer = new GLchar[infoLogLength];
+			GLsizei bufferSize; //Not used: required as func param
+			glGetShaderInfoLog(fragmentShaderID, infoLogLength, &bufferSize, buffer);
+			std::cout << "Fragment Shader Compile Error: " << buffer << std::endl;
+			delete [] buffer;
+		}
+		catch (std::exception& exc) {std::cout << exc.what() << std::endl;}
+	}
 }
 
 bool GLSL_Compiler::linkShaderProgram(void)
@@ -74,6 +106,22 @@ bool GLSL_Compiler::linkShaderProgram(void)
 	glAttachShader(programID, vertexShaderID);
 	glAttachShader(programID, fragmentShaderID);
 	glLinkProgram(programID);
+	GLint linkStatus;
+	glGetProgramiv(programID, GL_LINK_STATUS, &linkStatus);
+	if (linkStatus != GL_TRUE)
+	{
+		GLint infoLogLength;
+		glGetProgramiv(programID, GL_INFO_LOG_LENGTH, &infoLogLength);
+		try
+		{
+			GLchar* buffer = new GLchar[infoLogLength];
+			GLsizei bufferSize; //Not used: required as func param
+			glGetProgramInfoLog(programID, infoLogLength, &bufferSize, buffer);
+			std::cout << "Shader Program Link Error: " << buffer << std::endl;
+			delete [] buffer;
+		}
+		catch (std::exception& exc) {std::cout << exc.what() << std::endl;}
+	}
 }
 
 GLuint GLSL_Compiler::getProgramID(void) {return programID;}
