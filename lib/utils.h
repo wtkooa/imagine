@@ -64,7 +64,7 @@ class Model
 {
 	public:
 	Model();
-	~Model();
+	bool releaseMem(void);
 	GLuint positionDim;
 	GLuint colorDim;
 	GLuint vectorArrayStride;

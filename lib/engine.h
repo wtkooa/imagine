@@ -10,16 +10,16 @@ class Engine
 {
 	public:
 	Engine();
-	~Engine();
 	private:
 	bool init(void);
 	bool uploadData(void);
 	bool run(void);
-	bool draw(void);
-	bool handle_events(void);
-	bool handle_resize(int,int);
-	bool handle_time(void);
-	bool handle_rotation(void);
+	bool cleanup(void);
+	void draw(void);
+	void handle_events(void);
+	void handle_resize(int,int);
+	void handle_time(void);
+	void handle_rotation(void);
 	bool init_shaders(void);
 	std::string vertexShaderFile;
 	std::string fragmentShaderFile;

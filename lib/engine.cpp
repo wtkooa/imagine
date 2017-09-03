@@ -28,13 +28,17 @@ Engine::Engine(void)
 	DEFAULT_TRANSLATION = glm::vec3(0.0, 0.0, -3.0);
 	DEFAULT_CLEAR_COLOR = glm::vec4(0.0, 0.0, 0.0, 1.0);
 	init();
+	run();
+	cleanup();
 }
 
-Engine::~Engine(void)
+bool Engine::cleanup(void)
 {
+	currentModel.releaseMem();
 	glDeleteBuffers(1, &indexBufferID);
 	glDeleteBuffers(1, &vertexBufferID);
 	SDL_Quit();
+	return true;
 }
 
 bool Engine::init(void)
@@ -61,7 +65,6 @@ bool Engine::init(void)
 	init_shaders();
 	uploadData();
 	frame_start_time = SDL_GetPerformanceCounter();
-	run();
 	return true;
 }
 
@@ -74,6 +77,7 @@ bool Engine::init_shaders(void)
 	programID = compiler.getProgramID();
 	glUseProgram(programID);
 	transformationMatShaderUniLoc = glGetUniformLocation(programID, "transformationMatrix");
+	return true;
 }
 
 bool Engine::uploadData(void)
@@ -112,11 +116,11 @@ bool Engine::run(void)
 		handle_time();
 		handle_events();
 		draw();
-	}
+	}	
 	return true;
 }
 
-bool Engine::draw(void)
+void Engine::draw(void)
 {
 	transformationMatrix = glm::mat4();
 	handle_rotation();
@@ -132,26 +136,24 @@ bool Engine::draw(void)
 	measureTime.start();
 	SDL_GL_SwapWindow(p_window);
 	measureTime.end();
-	return true;
 }
 
-bool Engine::handle_time(void)
+void Engine::handle_time(void)
 {
 	frame_end_time = SDL_GetPerformanceCounter();
 	frame_delta = ((frame_end_time - frame_start_time) * 1000.0 ) / SDL_GetPerformanceFrequency();
 	frame_start_time = SDL_GetPerformanceCounter();
 	fps = 1000.0 / frame_delta;
-	measureTime.gauge();
-	return true;
+	//measureTime.gauge();
 }
 
-bool Engine::handle_rotation(void)
+void Engine::handle_rotation(void)
 {
 	glm::mat4 rotation = glm::rotate(glm::mat4(), radians(0.5f), glm::vec3(1.0, 1.0, 0.0));
 	rotationMatrix = rotationMatrix * rotation;
 }
 
-bool Engine::handle_events(void)
+void Engine::handle_events(void)
 {
 	SDL_Event evnt;
 	while (SDL_PollEvent(&evnt)) {
@@ -174,14 +176,12 @@ bool Engine::handle_events(void)
 				}
 		}
 	}
-	return true;
 }
 
-bool Engine::handle_resize(int width, int height)
+void Engine::handle_resize(int width, int height)
 {
 	float aspect_ratio = float(width) / float(height);
 	SDL_SetWindowSize(p_window, width, height);
 	glViewport(0, 0, width, height);
-	projectionMatrix = glm::perspective(FIELD_OF_VIEW, aspect_ratio, Z_NEAR, Z_FAR);
-	return true;
+	projectionMatrix = glm::perspective(FIELD_OF_VIEW, aspect_ratio, Z_NEAR, Z_FAR);	
 }

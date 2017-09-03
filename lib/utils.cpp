@@ -3,6 +3,7 @@
 #include <fstream>
 #include <string>
 #include <cmath>
+#include <exception>
 #include <sstream>
 #include <GL/gl.h>
 #include <GL/glu.h>
@@ -173,13 +174,17 @@ Model::Model(void)
 	verticesBytes = 576;
 	indicesNum = 36;
 	indicesBytes = 72;
+	try
+	{
 	p_verticesHeap = new Vertex[vertexNum];
 	memcpy(p_verticesHeap, verticesStack, verticesBytes);
 	p_indicesHeap = new GLushort[indicesNum];
 	memcpy(p_indicesHeap, indicesStack, indicesBytes);
+	}
+	catch (std::exception& exc) {std::cout << exc.what() << std::endl;}
 }
 
-Model::~Model(void)
+bool Model::releaseMem(void)
 {
 	delete [] p_verticesHeap;
 	delete [] p_indicesHeap;
