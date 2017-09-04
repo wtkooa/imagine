@@ -27,6 +27,9 @@ Engine::Engine(void)
 	fragmentShaderFile = "lib/glsl/basicfragmentShader.glsl";
 	DEFAULT_TRANSLATION = glm::vec3(0.0, 0.0, -3.0);
 	DEFAULT_CLEAR_COLOR = glm::vec4(0.0, 0.0, 0.0, 1.0);
+	MOVESPEED = 1.0; //Meters per Second
+	LOOKSPEED = radians(0.05); //Degrees per rel movment
+	METERS_PER_MSEC = MOVESPEED / 1000.0;
 	init();
 	run();
 	cleanup();
@@ -62,6 +65,13 @@ bool Engine::init(void)
 	glClear(ACTIVEBUFFERS);
 	translationMatrix = glm::translate(glm::mat4(), DEFAULT_TRANSLATION);
 	projectionMatrix = glm::perspective(FIELD_OF_VIEW, ASPECT_RATIO, Z_NEAR, Z_FAR);
+	SDL_SetWindowGrab(p_window, SDL_TRUE);
+	SDL_SetRelativeMouseMode(SDL_TRUE);
+	transEventVec = glm::vec3(0.0f, 0.0f, 0.0f);
+	rotateEventVec = glm::vec2(0.0f, 0.0f);
+	eye.upVector = glm::vec3(0.0f, 1.0f, 0.0f);
+	eye.lookVector = glm::vec3(0.0f, 0.0f, -1.0);
+	eye.posVector = glm::vec3(0.0f, 0.0f, 0.0f);
 	init_shaders();
 	uploadData();
 	frame_start_time = SDL_GetPerformanceCounter();
@@ -123,8 +133,14 @@ bool Engine::run(void)
 void Engine::draw(void)
 {
 	transformationMatrix = glm::mat4();
-	handle_rotation();
-	transformationMatrix = projectionMatrix * translationMatrix * rotationMatrix;
+	//handle_model_rotation();
+	if (SDL_GetWindowGrab(p_window) == SDL_TRUE)
+	{
+		handle_view_rotation();
+		handle_view_translation();
+	}
+	viewMatrix = eye.getViewMatrix();
+	transformationMatrix = projectionMatrix * viewMatrix * translationMatrix * rotationMatrix;
 	glUniformMatrix4fv(transformationMatShaderUniLoc, 1, GL_FALSE,
 					   &transformationMatrix[0][0]);
 	glClear(ACTIVEBUFFERS);
@@ -138,6 +154,26 @@ void Engine::draw(void)
 	measureTime.end();
 }
 
+void Engine::handle_view_translation(void)
+{
+	eye.posVector += transEventVec.z * frame_delta * METERS_PER_MSEC * eye.lookVector;
+	eye.posVector += transEventVec.x * frame_delta * METERS_PER_MSEC *
+					  glm::cross(eye.lookVector, eye.upVector);
+	eye.posVector += transEventVec.y * frame_delta * METERS_PER_MSEC * eye.upVector; 
+}
+
+void Engine::handle_view_rotation(void)
+{
+	eye.lookVector = glm::mat3(glm::rotate(glm::mat4(),
+							   -float(rotateEventVec.x * LOOKSPEED),
+								eye.upVector)) * eye.lookVector;
+	glm::vec3 newXAxisVector = glm::cross(eye.lookVector, eye.upVector);
+	eye.lookVector = glm::mat3(glm::rotate(glm::mat4(),
+							   -float(rotateEventVec.y * LOOKSPEED),
+							   newXAxisVector)) * eye.lookVector; 
+	rotateEventVec = glm::vec2(0.0f, 0.0f);	
+}
+
 void Engine::handle_time(void)
 {
 	frame_end_time = SDL_GetPerformanceCounter();
@@ -147,36 +183,122 @@ void Engine::handle_time(void)
 	//measureTime.gauge();
 }
 
-void Engine::handle_rotation(void)
+void Engine::handle_model_rotation(void)
 {
 	glm::mat4 rotation = glm::rotate(glm::mat4(), radians(0.5f), glm::vec3(1.0, 1.0, 0.0));
-	rotationMatrix = rotationMatrix * rotation;
+	rotationMatrix = rotation*rotationMatrix;
 }
 
 void Engine::handle_events(void)
 {
 	SDL_Event evnt;
-	while (SDL_PollEvent(&evnt)) {
-		switch (evnt.type) {
+	while (SDL_PollEvent(&evnt))
+	{
+		switch (evnt.type)
+		{
 			case SDL_QUIT:
 				engine_on = false;
-			break;
+				break;
 			case SDL_WINDOWEVENT:
-				switch (evnt.window.event) {
+				switch (evnt.window.event)
+				{
 				case SDL_WINDOWEVENT_RESIZED:
 					handle_resize(evnt.window.data1, evnt.window.data2);
-				break;
-				}
-			break;
-			case SDL_KEYDOWN:
-				switch (evnt.key.keysym.sym) {
-					case SDLK_ESCAPE:
-					engine_on = false;
 					break;
 				}
+				break;
+			case SDL_MOUSEMOTION:
+				if (SDL_GetRelativeMouseMode() == SDL_TRUE)
+				{
+					rotateEventVec.x += evnt.motion.xrel;	
+					rotateEventVec.y += evnt.motion.yrel;	
+				}
+				break;
+			case SDL_KEYDOWN:
+				switch (evnt.key.keysym.sym)
+				{
+					case SDLK_ESCAPE:
+						engine_on = false;
+						break;
+					case SDLK_e:
+						if (SDL_GetWindowGrab(p_window) == SDL_FALSE) 
+						{
+							std::cout << "GrabMode On" << std::endl;
+							SDL_SetWindowGrab(p_window, SDL_TRUE);
+							SDL_SetRelativeMouseMode(SDL_TRUE);
+						}
+						else
+						{
+							std::cout << "GrabMode Off" << std::endl;
+							SDL_SetWindowGrab(p_window, SDL_FALSE);
+							SDL_SetRelativeMouseMode(SDL_FALSE);
+						}	
+						break;
+					case SDLK_w:
+						if (!evnt.key.repeat)
+						{	
+							transEventVec.z += 1.0;
+						}
+						break;
+					case SDLK_s:
+						if (!evnt.key.repeat)
+						{
+							transEventVec.z -= 1.0;
+						}
+						break;
+					case SDLK_d:
+						if (!evnt.key.repeat)
+						{
+							transEventVec.x += 1.0;
+						}
+						break;
+					case SDLK_a:
+						if (!evnt.key.repeat)
+						{
+							transEventVec.x -= 1.0;
+						}
+						break;
+					case SDLK_SPACE:
+						if (!evnt.key.repeat)
+						{
+							transEventVec.y += 1.0;
+						}
+						break;
+					case SDLK_LSHIFT:
+						if (!evnt.key.repeat)
+						{
+							transEventVec.y -= 1.0;
+						}
+						break;
+				}
+				break;				
+			case SDL_KEYUP:
+				switch(evnt.key.keysym.sym)
+				{
+					case SDLK_w:
+							transEventVec.z -= 1.0;
+						break;
+					case SDLK_s:
+							transEventVec.z += 1.0;
+						break;
+					case SDLK_d:
+							transEventVec.x -= 1.0;
+						break;
+					case SDLK_a:
+							transEventVec.x += 1.0;
+						break;
+					case SDLK_SPACE:
+							transEventVec.y -= 1.0;
+						break;
+					case SDLK_LSHIFT:
+							transEventVec.y += 1.0;
+						break;
+				}
+				break;
+			}
 		}
 	}
-}
+
 
 void Engine::handle_resize(int width, int height)
 {

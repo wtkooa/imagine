@@ -8,12 +8,20 @@
 #include <GL/gl.h>
 #include <GL/glu.h>
 #include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
 #include <SDL2/SDL.h>
 #include "utils.h"
 
 
 //Degrees to Radian Convertion
-float radians(float degrees) {return degrees * ( M_PI / 180.0);}
+float radians(float degrees) {return degrees * (M_PI / 180.0);}
+
+
+//Defines the Camera
+glm::mat4 Camera::getViewMatrix(void)
+{
+	return glm::lookAt(posVector, (lookVector+posVector), upVector);
+}
 
 
 //GLSL_Reader reads glsl code from file.

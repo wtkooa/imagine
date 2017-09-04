@@ -78,3 +78,12 @@ class Model
 	GLuint indicesNum;
 	GLuint indicesBytes;
 };
+
+class Camera
+{
+	public:
+	glm::vec3 upVector;
+	glm::vec3 posVector;
+	glm::vec3 lookVector;
+	glm::mat4 getViewMatrix(void);
+};

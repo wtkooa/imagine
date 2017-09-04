@@ -19,7 +19,9 @@ class Engine
 	void handle_events(void);
 	void handle_resize(int,int);
 	void handle_time(void);
-	void handle_rotation(void);
+	void handle_view_translation(void);
+	void handle_view_rotation(void);
+	void handle_model_rotation(void);
 	bool init_shaders(void);
 	std::string vertexShaderFile;
 	std::string fragmentShaderFile;
@@ -45,7 +47,7 @@ class Engine
 	glm::mat4 translationMatrix;
 	glm::vec3 DEFAULT_TRANSLATION;
 	glm::mat4 rotationMatrix;
-	glm::mat4 viewingMatrix;
+	glm::mat4 viewMatrix;
 	glm::mat4 projectionMatrix;
 	glm::mat4 transformationMatrix;
 	GLint transformationMatShaderUniLoc;
@@ -54,5 +56,11 @@ class Engine
 	float frame_delta;
 	float fps;
 	Model currentModel;
-	Time_Gauge measureTime;	
+	Camera eye;
+	glm::vec3 transEventVec;
+	glm::vec2 rotateEventVec;
+	float MOVESPEED;
+	float LOOKSPEED;
+	float METERS_PER_MSEC;
+	Time_Gauge measureTime;
 };

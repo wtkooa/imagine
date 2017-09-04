@@ -3,6 +3,7 @@
 out vec4 fragmentColor;
 in vec3 colorPipeline;
 
-void main() {
+void main()
+{
     fragmentColor = vec4(colorPipeline, 1.0);
 }

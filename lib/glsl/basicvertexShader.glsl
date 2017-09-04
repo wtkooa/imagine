@@ -7,7 +7,8 @@ uniform mat4 transformationMatrix;
 
 out vec3 colorPipeline;
 
-void main() {
+void main()
+{
     gl_Position = transformationMatrix * vec4(position, 1.0);
     colorPipeline = vertexColor;
 }
