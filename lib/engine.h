@@ -52,12 +52,15 @@ class Engine
 	glm::mat4 projectionMatrix;
 	glm::mat4 transformationMatrix;
 	GLint transformationMatShaderUniLoc;
+	GLint ambientLightShaderUniLoc;
 	unsigned long frame_start_time;
 	unsigned long frame_end_time;
 	float frame_delta;
 	float fps;
 	Model currentModel;
 	GLSL_Compiler compiler;
+	Light light0;
+	glm::vec3 ambientLightVector;
 	Camera eye;
 	glm::vec3 transEventVec;
 	glm::vec2 rotateEventVec;

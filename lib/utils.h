@@ -88,3 +88,9 @@ class Camera
 	glm::vec3 lookVector;
 	glm::mat4 getViewMatrix(void);
 };
+
+class Light
+{
+	public:
+	glm::vec3 posVector;
+};

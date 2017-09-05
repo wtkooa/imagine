@@ -75,7 +75,9 @@ bool Engine::init(void)
 	eye.upVector = glm::vec3(0.0f, 1.0f, 0.0f);
 	eye.lookVector = glm::vec3(0.0f, 0.0f, -1.0);
 	eye.posVector = glm::vec3(0.0f, 0.0f, 0.0f);
+	ambientLightVector = glm::vec3(0.1f, 0.1f, 0.1f);
 	init_shaders();
+	glUniform3fv(ambientLightShaderUniLoc, 1, &ambientLightVector[0]);	
 	uploadData();
 	frame_start_time = SDL_GetPerformanceCounter();
 	return true;
@@ -89,6 +91,7 @@ bool Engine::init_shaders(void)
 	programID = compiler.getProgramID();
 	glUseProgram(programID);
 	transformationMatShaderUniLoc = glGetUniformLocation(programID, "transformationMatrix");
+	ambientLightShaderUniLoc = glGetUniformLocation(programID, "ambientLight");
 	return true;
 }
 
