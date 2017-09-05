@@ -40,6 +40,7 @@ class Engine
 	unsigned int ACTIVEBUFFERS;
 	bool WIREFRAME;
 	bool DEPTHTEST;
+	bool CULLFACE;
 	glm::vec4 DEFAULT_CLEAR_COLOR;
 	GLuint vertexBufferID;
 	GLuint indexBufferID;
@@ -56,6 +57,7 @@ class Engine
 	float frame_delta;
 	float fps;
 	Model currentModel;
+	GLSL_Compiler compiler;
 	Camera eye;
 	glm::vec3 transEventVec;
 	glm::vec2 rotateEventVec;

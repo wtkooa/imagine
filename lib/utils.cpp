@@ -51,7 +51,7 @@ bool GLSL_Reader::read(void)
 std::string GLSL_Reader::getCode(void) {return code;}
 
 
-//GLSL_Reader compiles glsl code.
+//GLSL_Compiler compiles glsl code.
 bool GLSL_Compiler::compileVertexShader(std::string filename)
 {
 	GLSL_Reader vertexShaderReader(filename);
@@ -130,9 +130,20 @@ bool GLSL_Compiler::linkShaderProgram(void)
 		}
 		catch (std::exception& exc) {std::cout << exc.what() << std::endl;}
 	}
+
 }
 
 GLuint GLSL_Compiler::getProgramID(void) {return programID;}
+
+bool GLSL_Compiler::cleanUpShaders(void)
+{
+	glDetachShader(programID, vertexShaderID);
+	glDetachShader(programID, fragmentShaderID);
+	glDeleteShader(vertexShaderID);
+	glDeleteShader(fragmentShaderID);
+	glUseProgram(0);
+	glDeleteProgram(programID);
+}
 
 
 //Time_Gauge measures code performance.
@@ -214,8 +225,8 @@ Model::Model(void)
 	GLushort indicesStack[] =
 	{
 	0,1,2, 0,2,3, //Top
-	4,5,6, 4,6,7, //Bottom
-	9,10,11, 8,9,11, //Back
+	4,6,5, 4,7,6, //Bottom
+	9,11,10, 8,11,9, //Back
 	13,14,15, 12,13,15, //Front
 	16,18,17, 16,19,18, //Left
 	20,21,22, 20,22,23 //Right

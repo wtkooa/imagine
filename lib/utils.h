@@ -31,6 +31,7 @@ class GLSL_Compiler
 	bool compileFragmentShader(std::string);
 	bool linkShaderProgram(void);
 	GLuint getProgramID(void);
+	bool cleanUpShaders(void);
 	private:
 	GLuint vertexShaderID;
 	GLuint fragmentShaderID;

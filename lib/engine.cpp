@@ -23,6 +23,7 @@ Engine::Engine(void)
 	ACTIVEBUFFERS = GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT;
 	WIREFRAME = false;
 	DEPTHTEST = true;
+	CULLFACE = true;
 	vertexShaderFile = "lib/glsl/basicvertexShader.glsl";
 	fragmentShaderFile = "lib/glsl/basicfragmentShader.glsl";
 	DEFAULT_TRANSLATION = glm::vec3(0.0, 0.0, -3.0);
@@ -38,6 +39,7 @@ Engine::Engine(void)
 bool Engine::cleanup(void)
 {
 	currentModel.releaseMem();
+	compiler.cleanUpShaders();
 	glDeleteBuffers(1, &indexBufferID);
 	glDeleteBuffers(1, &vertexBufferID);
 	SDL_Quit();
@@ -58,6 +60,7 @@ bool Engine::init(void)
 	glViewport(0, 0, WINDOW_WIDTH, WINDOW_HEIGHT);
 	if (WIREFRAME) {glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);}
 	if (DEPTHTEST) {glEnable(GL_DEPTH_TEST);}
+	if (CULLFACE) {glEnable(GL_CULL_FACE);}
 	glClearColor(DEFAULT_CLEAR_COLOR.r,
 				 DEFAULT_CLEAR_COLOR.g,
 				 DEFAULT_CLEAR_COLOR.b,
@@ -80,7 +83,6 @@ bool Engine::init(void)
 
 bool Engine::init_shaders(void)
 {
-	GLSL_Compiler compiler;
 	compiler.compileVertexShader(vertexShaderFile);
 	compiler.compileFragmentShader(fragmentShaderFile);
 	compiler.linkShaderProgram();
