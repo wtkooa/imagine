@@ -49,9 +49,13 @@ class Engine
 	glm::vec3 DEFAULT_TRANSLATION;
 	glm::mat4 rotationMatrix;
 	glm::mat4 viewMatrix;
+	glm::mat4 modeltoworldMatrix;
+	glm::mat4 modelviewMatrix;
 	glm::mat4 projectionMatrix;
 	glm::mat4 transformationMatrix;
 	GLint transformationMatShaderUniLoc;
+	GLint modeltoworldMatShaderUniLoc;
+	GLint light0posShaderUniLoc;
 	GLint ambientLightShaderUniLoc;
 	unsigned long frame_start_time;
 	unsigned long frame_end_time;
@@ -59,8 +63,8 @@ class Engine
 	float fps;
 	Model currentModel;
 	GLSL_Compiler compiler;
-	Light light0;
-	glm::vec3 ambientLightVector;
+	glm::vec3 LIGHT0POS;
+	glm::vec3 AMBIENTLIGHT;
 	Camera eye;
 	glm::vec3 transEventVec;
 	glm::vec2 rotateEventVec;

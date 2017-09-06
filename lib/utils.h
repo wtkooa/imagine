@@ -58,6 +58,7 @@ class Vertex
 	public:
 	glm::vec3 position;
 	glm::vec3 color;
+	glm::vec3 normal;
 };
 
 
@@ -68,9 +69,11 @@ class Model
 	bool releaseMem(void);
 	GLuint positionDim;
 	GLuint colorDim;
+	GLuint normalDim;
 	GLuint vectorArrayStride;
 	void* positionStart;
 	void* colorStart;
+	void* normalStart;
 	void* indexStart;
 	Vertex* p_verticesHeap;
 	GLuint vertexNum;
@@ -87,10 +90,4 @@ class Camera
 	glm::vec3 posVector;
 	glm::vec3 lookVector;
 	glm::mat4 getViewMatrix(void);
-};
-
-class Light
-{
-	public:
-	glm::vec3 posVector;
 };

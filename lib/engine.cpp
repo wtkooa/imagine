@@ -28,6 +28,8 @@ Engine::Engine(void)
 	fragmentShaderFile = "lib/glsl/basicfragmentShader.glsl";
 	DEFAULT_TRANSLATION = glm::vec3(0.0, 0.0, -3.0);
 	DEFAULT_CLEAR_COLOR = glm::vec4(0.0, 0.0, 0.0, 1.0);
+	LIGHT0POS = glm::vec3(0.0f, 3.0f, 0.0f);
+	AMBIENTLIGHT = glm::vec3(0.1f, 0.1f, 0.1f);
 	MOVESPEED = 1.0; //Meters per Second
 	LOOKSPEED = radians(0.05); //Degrees per rel movment
 	METERS_PER_MSEC = MOVESPEED / 1000.0;
@@ -75,9 +77,9 @@ bool Engine::init(void)
 	eye.upVector = glm::vec3(0.0f, 1.0f, 0.0f);
 	eye.lookVector = glm::vec3(0.0f, 0.0f, -1.0);
 	eye.posVector = glm::vec3(0.0f, 0.0f, 0.0f);
-	ambientLightVector = glm::vec3(0.1f, 0.1f, 0.1f);
 	init_shaders();
-	glUniform3fv(ambientLightShaderUniLoc, 1, &ambientLightVector[0]);	
+	glUniform3fv(ambientLightShaderUniLoc, 1, &AMBIENTLIGHT[0]);	
+	glUniform3fv(light0posShaderUniLoc, 1, &LIGHT0POS[0]);
 	uploadData();
 	frame_start_time = SDL_GetPerformanceCounter();
 	return true;
@@ -91,6 +93,8 @@ bool Engine::init_shaders(void)
 	programID = compiler.getProgramID();
 	glUseProgram(programID);
 	transformationMatShaderUniLoc = glGetUniformLocation(programID, "transformationMatrix");
+	modeltoworldMatShaderUniLoc = glGetUniformLocation(programID, "modeltoworldMatrix");
+	light0posShaderUniLoc = glGetUniformLocation(programID, "light0pos");
 	ambientLightShaderUniLoc = glGetUniformLocation(programID, "ambientLight");
 	return true;
 }
@@ -111,6 +115,7 @@ bool Engine::uploadData(void)
 				 GL_STATIC_DRAW);
 	glEnableVertexAttribArray(0);
 	glEnableVertexAttribArray(1);
+	glEnableVertexAttribArray(2);
 	glVertexAttribPointer(0, currentModel.positionDim,
 						  GL_FLOAT, GL_FALSE,
 						  currentModel.vectorArrayStride,
@@ -119,6 +124,10 @@ bool Engine::uploadData(void)
 						  GL_FLOAT, GL_FALSE,
 						  currentModel.vectorArrayStride,
 						  currentModel.colorStart);
+	glVertexAttribPointer(2, currentModel.normalDim,
+						  GL_FLOAT, GL_FALSE,
+						  currentModel.vectorArrayStride,
+						  currentModel.normalStart);
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 	return true;
@@ -138,14 +147,18 @@ bool Engine::run(void)
 void Engine::draw(void)
 {
 	transformationMatrix = glm::mat4();
-	//handle_model_rotation();
+	handle_model_rotation();
 	if (SDL_GetWindowGrab(p_window) == SDL_TRUE)
 	{
 		handle_view_rotation();
 		handle_view_translation();
 	}
 	viewMatrix = eye.getViewMatrix();
-	transformationMatrix = projectionMatrix * viewMatrix * translationMatrix * rotationMatrix;
+	modeltoworldMatrix = translationMatrix * rotationMatrix;
+	modelviewMatrix = viewMatrix * modeltoworldMatrix;
+	transformationMatrix = projectionMatrix * modelviewMatrix;
+	glUniformMatrix4fv(modeltoworldMatShaderUniLoc, 1, GL_FALSE,
+					   &modeltoworldMatrix[0][0]);
 	glUniformMatrix4fv(transformationMatShaderUniLoc, 1, GL_FALSE,
 					   &transformationMatrix[0][0]);
 	glClear(ACTIVEBUFFERS);

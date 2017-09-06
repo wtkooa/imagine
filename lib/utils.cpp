@@ -169,57 +169,81 @@ Model::Model(void)
 	{
 	glm::vec3(+0.5, +0.5, +0.5), //0 Top
 	glm::vec3(+1.0, +0.0, +0.0), 
+	glm::vec3(+0.0, +1.0, +0.0),
 	glm::vec3(+0.5, +0.5, -0.5), //1
 	glm::vec3(+0.0, +1.0, +0.0), 
+	glm::vec3(+0.0, +1.0, +0.0),
 	glm::vec3(-0.5, +0.5, -0.5), //2
 	glm::vec3(+0.0, +0.0, +1.0),
+	glm::vec3(+0.0, +1.0, +0.0),
 	glm::vec3(-0.5, +0.5, +0.5), //3
 	glm::vec3(+1.0, +1.0, +1.0),
+	glm::vec3(+0.0, +1.0, +0.0),	
 
 	glm::vec3(+0.5, -0.5, +0.5), //4 Bottom
 	glm::vec3(+1.0, +1.0, +1.0),
+	glm::vec3(+0.0, -1.0, +0.0),
 	glm::vec3(+0.5, -0.5, -0.5), //5
 	glm::vec3(+0.0, +0.0, +1.0),
+	glm::vec3(+0.0, -1.0, +0.0),
 	glm::vec3(-0.5, -0.5, -0.5), //6
 	glm::vec3(+0.0, +1.0, +0.0),
+	glm::vec3(+0.0, -1.0, +0.0),
 	glm::vec3(-0.5, -0.5, +0.5), //7
 	glm::vec3(+1.0, +0.0, +0.0),
+	glm::vec3(+0.0, -1.0, +0.0),
 
 	glm::vec3(+0.5, -0.5, -0.5), //8 Back
 	glm::vec3(+1.0, +0.0, +1.0),
+	glm::vec3(+0.0, +0.0, -1.0),
 	glm::vec3(+0.5, +0.5, -0.5), //9
 	glm::vec3(+1.0, +1.0, +0.0),
+	glm::vec3(+0.0, +0.0, -1.0),
 	glm::vec3(-0.5, +0.5, -0.5), //10
 	glm::vec3(+0.0, +1.0, +1.0),
+	glm::vec3(+0.0, +0.0, -1.0),
 	glm::vec3(-0.5, -0.5, -0.5), //11
 	glm::vec3(+0.5, +0.0, +0.0),
+	glm::vec3(+0.0, +0.0, -1.0),
 
 	glm::vec3(+0.5, -0.5, +0.5), //12 Front
 	glm::vec3(+0.0, +0.0, +0.5),
+	glm::vec3(+0.0, +0.0, +1.0),
 	glm::vec3(+0.5, +0.5, +0.5), //13
 	glm::vec3(+0.0, +1.0, +1.0),
+	glm::vec3(+0.0, +0.0, +1.0),
 	glm::vec3(-0.5, +0.5, +0.5), //14
 	glm::vec3(+1.0, +1.0, +0.0),
+	glm::vec3(+0.0, +0.0, +1.0),
 	glm::vec3(-0.5, -0.5, +0.5), //15
 	glm::vec3(+1.0, +0.0, +1.0),
+	glm::vec3(+0.0, +0.0, +1.0),
 
 	glm::vec3(-0.5, -0.5, +0.5), //16 Left
 	glm::vec3(+0.5, +0.0, +0.5),
+	glm::vec3(-1.0, +0.0, +0.0),
 	glm::vec3(-0.5, -0.5, -0.5), //17
 	glm::vec3(+0.5, +0.5, +0.0),
+	glm::vec3(-1.0, +0.0, +0.0),
 	glm::vec3(-0.5, +0.5, -0.5), //18
 	glm::vec3(+0.0, +0.5, +0.5),
+	glm::vec3(-1.0, +0.0, +0.0),
 	glm::vec3(-0.5, +0.5, +0.5), //19
 	glm::vec3(+0.0, +0.5, +0.5),
+	glm::vec3(-1.0, +0.0, +0.0),
 
 	glm::vec3(+0.5, -0.5, +0.5), //20 Right
 	glm::vec3(+0.0, +0.5, +0.0),
+	glm::vec3(+1.0, +0.0, +0.0),
 	glm::vec3(+0.5, -0.5, -0.5), //21
 	glm::vec3(+0.0, +0.5, +0.5),
+	glm::vec3(+1.0, +0.0, +0.0),
 	glm::vec3(+0.5, +0.5, -0.5), //22
 	glm::vec3(+0.5, +0.5, +0.0),
+	glm::vec3(+1.0, +0.0, +0.0),
 	glm::vec3(+0.5, +0.5, +0.5), //23
-	glm::vec3(+0.5, +0.0, +0.5)
+	glm::vec3(+0.5, +0.0, +0.5),
+	glm::vec3(+1.0, +0.0, +0.0)
 	};
 
 	GLushort indicesStack[] =
@@ -233,12 +257,14 @@ Model::Model(void)
 	};
 	positionDim = 3;
 	colorDim = 3;
-	vectorArrayStride = sizeof(GLfloat) * 6;
+	normalDim = 3;
+	vectorArrayStride = sizeof(GLfloat) * 9;
 	positionStart = (void*)(0);
 	colorStart = (void*)(sizeof(GLfloat) * 3);
+	normalStart = (void*)(sizeof(GLfloat) * 6);
 	indexStart = (void*)(0);
 	vertexNum = 24;
-	verticesBytes = 576;
+	verticesBytes = 864;
 	indicesNum = 36;
 	indicesBytes = 72;
 	try
