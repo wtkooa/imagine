@@ -50,6 +50,8 @@ bool Engine::cleanup(void)
 
 bool Engine::init(void)
 {
+	OBJReader cubeOBJ("data/cube.obj"); //This is here for testing	
+	cubeOBJ.releaseMem(); //Cleans up after the test
 	SDL_Init(REQUIRED_SDL_MODULES);
 	SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
 	p_window = SDL_CreateWindow(WINDOW_TITLE.c_str(),

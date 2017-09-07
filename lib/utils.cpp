@@ -13,18 +13,148 @@
 #include "utils.h"
 
 
-//Degrees to Radian Convertion
+//Math
 float radians(float degrees) {return degrees * (M_PI / 180.0);}
 
+//String Funcs
+std::string split(std::string str, char delim, size_t tokenNum)
+{
+	std::string substr;	
+	size_t foundtoken = -1;
+	size_t findlen = 0;
+	size_t findstart = 0;	
+	do
+	{
+		findlen = str.find(delim, findstart) - findstart;
+		substr = str.substr(findstart, findlen);
+		findstart = str.find(delim, findstart) + 1;	
+		foundtoken++;
+	}
+	while (foundtoken < tokenNum);
+	return substr;
+}
 
-//Defines the Camera
+//Camera
 glm::mat4 Camera::getViewMatrix(void)
 {
 	return glm::lookAt(posVector, (lookVector+posVector), upVector);
 }
 
+//OBJReader
+OBJReader::OBJReader(std::string name)
+{
+	filename = name;	
+	vertexAmount = 0;
+	normalAmount = 0;
+	indexAmount = 0;
+	preprocOBJ();
+	allocMem();
+	parseOBJ();
+}
 
-//GLSL_Reader reads glsl code from file.
+bool OBJReader::preprocOBJ(void)
+{
+	std::ifstream OBJFile;
+	OBJFile.open(filename.c_str());
+	if(OBJFile.is_open())
+	{
+		std::cout << "PreProc " << filename << std::endl;	
+		std::string line;
+		while (getline(OBJFile, line))
+		{
+			std::string command = split(line, ' ', 0);
+			if (command == "v") {vertexAmount++;}
+			else if (command == "vn") {normalAmount++;}
+			else if (command == "f") {indexAmount += 3;}
+		}
+	}
+	else
+	{
+		std::cout << "File " << filename << " failed to open for preproc..." << std::endl;
+		return false;
+	}
+	OBJFile.close();
+	return true;
+}
+
+bool OBJReader::allocMem(void)
+{
+	try
+	{
+		vertexData = new glm::vec3[vertexAmount];
+		normalData = new glm::vec3[normalAmount];
+		indexData = new glm::ivec3[indexAmount];	
+	}
+	catch (std::exception& exc)
+	{
+		std::cout << exc.what() << std::endl;
+		return false;
+	}
+	return true;
+}
+
+bool OBJReader::releaseMem(void)
+{
+	delete [] vertexData;
+	delete [] normalData;
+	delete [] indexData;
+	return true;
+}
+
+bool OBJReader::parseOBJ(void)
+{
+	std::ifstream OBJFile;
+	OBJFile.open(filename.c_str());
+	if (OBJFile.is_open())
+	{
+		std::cout << "Parsing " << filename << std::endl;
+		size_t vOffset = 0;
+		size_t nOffset = 0;
+		size_t iOffset = 0;
+		std::string line;
+		while (getline(OBJFile, line))
+		{
+			std::string command = split(line, ' ', 0);
+			if (command == "v")
+			{
+				float x = stof(split(line, ' ', 1));
+				float y = stof(split(line, ' ', 2));
+				float z = stof(split(line, ' ', 3));	
+				*(vertexData + vOffset) = glm::vec3(x,y,z);
+				vOffset++;
+			}
+			else if (command == "vn")
+			{
+				float x = stof(split(line, ' ', 1));
+				float y = stof(split(line, ' ', 2));
+				float z = stof(split(line, ' ', 3));
+				*(normalData + nOffset) = glm::vec3(x,y,z);
+				nOffset++;	
+			}
+			else if (command == "f")
+			{
+				for (int i = 1; i < 3; i++)
+				{
+					std::string subline = split(line, ' ', i);
+					int v = stoi(split(subline, '/', 0));
+					std::string str_t = split(subline, '/', 1);
+					if (str_t == "") {str_t = "0";}
+					int t = stoi(str_t);	
+					int n = stoi(split(subline, '/', 2));
+					*(indexData + iOffset) = glm::ivec3(v,t,n);
+					iOffset++;
+				}	
+			}
+		}
+	}
+	else
+	{
+		std::cout << "File " << filename << " failed to open for parsing..." << std::endl;
+	}	
+	OBJFile.close();
+}
+
+//Shader Stuff
 GLSL_Reader::GLSL_Reader() {}
 GLSL_Reader::GLSL_Reader(std::string name) {filename = name;}
 
@@ -50,8 +180,6 @@ bool GLSL_Reader::read(void)
 
 std::string GLSL_Reader::getCode(void) {return code;}
 
-
-//GLSL_Compiler compiles glsl code.
 bool GLSL_Compiler::compileVertexShader(std::string filename)
 {
 	GLSL_Reader vertexShaderReader(filename);
@@ -146,7 +274,7 @@ bool GLSL_Compiler::cleanUpShaders(void)
 }
 
 
-//Time_Gauge measures code performance.
+//Time
 void Time_Gauge::start(void) {start_time = SDL_GetPerformanceCounter();}
 
 void Time_Gauge::end(void)
@@ -162,7 +290,7 @@ void Time_Gauge::gauge(void)
 }
 
 
-//Geometry Library
+//Geometry
 Model::Model(void)
 {
 	Vertex verticesStack[] =

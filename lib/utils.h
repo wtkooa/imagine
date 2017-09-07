@@ -8,6 +8,7 @@
 //Degrees to Radians
 float radians(float);
 
+std::string split(std::string, char, size_t);
 
 class GLSL_Reader
 {
@@ -36,6 +37,24 @@ class GLSL_Compiler
 	GLuint vertexShaderID;
 	GLuint fragmentShaderID;
 	GLuint programID;
+};
+
+class OBJReader
+{
+	public:
+	OBJReader(std::string);
+	bool releaseMem(void);
+	private:
+	bool preprocOBJ(void);
+	bool allocMem(void);
+	bool parseOBJ(void);
+	std::string filename;
+	glm::vec3* vertexData;
+	glm::vec3* normalData;
+	glm::ivec3* indexData;
+	int vertexAmount;
+	int normalAmount;
+	int indexAmount;
 };
 
 
