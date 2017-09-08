@@ -229,7 +229,7 @@ bool ResourceManager::pullResource(modelResource res)
 	resourceCount++;
 	modelResource* oldArray = resArray;
 	resArray = new modelResource[resourceCount];
-	std::memcpy(resArray, oldArray, (resourceCount) * sizeof(resourceCount));
+	std::memcpy(resArray, oldArray, (resourceCount - 1) * sizeof(modelResource));
 	delete [] oldArray;
 	resArray[res.id] = res;
 }
