@@ -1,8 +1,10 @@
 #define GL_GLEXT_PROTOTYPES
 #include <iostream>
 #include <fstream>
+#include <map>
 #include <string>
 #include <cmath>
+#include <cstring>
 #include <exception>
 #include <sstream>
 #include <GL/gl.h>
@@ -50,6 +52,9 @@ OBJReader::OBJReader(std::string name)
 	preprocOBJ();
 	allocMem();
 	parseOBJ();
+	allocConvMem();
+	vboConvert();
+	genResource();
 }
 
 bool OBJReader::preprocOBJ(void)
@@ -115,7 +120,11 @@ bool OBJReader::parseOBJ(void)
 		while (getline(OBJFile, line))
 		{
 			std::string command = split(line, ' ', 0);
-			if (command == "v")
+			if (command == "o")
+			{
+				name = split(line, ' ', 1);
+			}
+			else if (command == "v")
 			{
 				float x = stof(split(line, ' ', 1));
 				float y = stof(split(line, ' ', 2));
@@ -133,7 +142,7 @@ bool OBJReader::parseOBJ(void)
 			}
 			else if (command == "f")
 			{
-				for (int i = 1; i < 3; i++)
+				for (int i = 1; i < 4; i++)
 				{
 					std::string subline = split(line, ' ', i);
 					int v = stoi(split(subline, '/', 0));
@@ -150,8 +159,87 @@ bool OBJReader::parseOBJ(void)
 	else
 	{
 		std::cout << "File " << filename << " failed to open for parsing..." << std::endl;
+		return false;
 	}	
 	OBJFile.close();
+	return true;
+}
+
+bool OBJReader::allocConvMem(void)
+{
+	try
+	{
+		vboData = new glm::vec3[indexAmount * 2];
+	}
+	catch (std::exception& exc)
+	{
+		std::cout << exc.what() << std::endl;
+		return false;
+	}
+	return true;
+}
+
+bool OBJReader::vboConvert(void)
+{
+	size_t vboOffset = 0;	
+	size_t vOffset = 0;
+	size_t nOffset = 0;
+	for (int offset = 0; offset < indexAmount; offset++)
+	{
+		glm::ivec3 index = indexData[offset];
+		vOffset = index[0] - 1;
+		nOffset = index[2] - 1;
+		vboData[vboOffset] = vertexData[vOffset];
+		vboOffset++;
+		vboData[vboOffset] = normalData[nOffset];	
+		vboOffset++;
+	}
+	return true;
+}
+
+bool OBJReader::genResource(void)
+{
+	obj.name = name;
+	obj.filename = filename;
+	obj.vertexData = vboData;
+	obj.vertexAmount = indexAmount;
+	obj.vertexSizeBytes = indexAmount * 2 * sizeof(glm::vec3);
+	obj.tobeVBOLoaded = true;
+	obj.vboloaded = false;
+	obj.hidden = false;
+	obj.translationMatrix = glm::mat4();
+	obj.rotationMatrix = glm::mat4(); 
+	releaseMem();
+	return true;
+}
+
+modelResource OBJReader::pushResource(void) {return obj;}
+
+//Resource Manager
+ResourceManager::ResourceManager(void)
+{
+	resourceCount = 0;
+	resArray = new modelResource[resourceCount];
+}
+
+bool ResourceManager::pullResource(modelResource res)
+{
+	res.id = resourceCount;
+	resMap[res.name] = res.id;
+	resourceCount++;
+	modelResource* oldArray = resArray;
+	resArray = new modelResource[resourceCount];
+	std::memcpy(resArray, oldArray, (resourceCount) * sizeof(resourceCount));
+	resArray[res.id] = res;
+}
+
+bool ResourceManager::releaseMem(void)
+{
+	for (int i = 0; i < resourceCount; i++)
+	{
+		delete [] resArray[i].vertexData;
+	}
+	delete [] resArray;
 }
 
 //Shader Stuff

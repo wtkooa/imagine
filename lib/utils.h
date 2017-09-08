@@ -1,5 +1,6 @@
 #pragma once
 #define GL_GLEXT_PROTOTYPES
+#include <map>
 #include <string>
 #include <GL/gl.h>
 #include <GL/glu.h>
@@ -39,24 +40,59 @@ class GLSL_Compiler
 	GLuint programID;
 };
 
+class modelResource
+{
+	public:
+	int id;
+	std::string name;
+	std::string filename;
+	glm::vec3* vertexData;
+	int vertexAmount;
+	int vertexSizeBytes;
+	bool tobeVBOLoaded;
+	bool vboloaded;
+	int vboAddress;
+	bool hidden;
+	glm::mat4 translationMatrix;
+	glm::mat4 rotationMatrix;
+};
+
 class OBJReader
 {
 	public:
 	OBJReader(std::string);
-	bool releaseMem(void);
+	modelResource pushResource(void);
 	private:
 	bool preprocOBJ(void);
 	bool allocMem(void);
+	bool allocConvMem(void);
 	bool parseOBJ(void);
+	bool vboConvert(void);
+	bool genResource(void);
+	bool releaseMem(void);
+	std::string name;
 	std::string filename;
 	glm::vec3* vertexData;
 	glm::vec3* normalData;
 	glm::ivec3* indexData;
+	glm::vec3* vboData;
 	int vertexAmount;
 	int normalAmount;
 	int indexAmount;
+	modelResource obj;
 };
 
+class ResourceManager 
+{
+	public:
+	ResourceManager();
+	bool pullResource(modelResource);
+	bool releaseMem(void);
+	private:
+	int resourceCount;
+	modelResource* resArray;
+	std::map<std::string, int> resMap;
+};
 
 class Time_Gauge
 {

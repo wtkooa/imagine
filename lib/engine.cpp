@@ -40,6 +40,7 @@ Engine::Engine(void)
 
 bool Engine::cleanup(void)
 {
+	rm.releaseMem(); //Currently in testing
 	currentModel.releaseMem();
 	compiler.cleanUpShaders();
 	glDeleteBuffers(1, &indexBufferID);
@@ -51,7 +52,7 @@ bool Engine::cleanup(void)
 bool Engine::init(void)
 {
 	OBJReader cubeOBJ("data/cube.obj"); //This is here for testing	
-	cubeOBJ.releaseMem(); //Cleans up after the test
+	rm.pullResource(cubeOBJ.pushResource()); //This is also for testing
 	SDL_Init(REQUIRED_SDL_MODULES);
 	SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
 	p_window = SDL_CreateWindow(WINDOW_TITLE.c_str(),

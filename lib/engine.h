@@ -72,4 +72,5 @@ class Engine
 	float LOOKSPEED;
 	float METERS_PER_MSEC;
 	Time_Gauge measureTime;
+	ResourceManager rm;
 };
