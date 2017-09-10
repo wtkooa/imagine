@@ -1,10 +1,9 @@
-#define GL_GLEXT_PROTOTYPES
+#define GL_GLEXT_PROTOTYPES //Needs to be defined for some GL funcs to work.
 #include <iostream>
 #include <fstream>
 #include <map>
 #include <string>
 #include <cmath>
-#include <cstring>
 #include <exception>
 #include <sstream>
 #include <GL/gl.h>
@@ -14,9 +13,9 @@
 #include <SDL2/SDL.h>
 #include "utils.h"
 
-
 //Math
 float radians(float degrees) {return degrees * (M_PI / 180.0);}
+
 
 //String Funcs
 std::string split(std::string str, char delim, size_t tokenNum)
@@ -36,11 +35,39 @@ std::string split(std::string str, char delim, size_t tokenNum)
 	return substr;
 }
 
+
 //Camera
+Camera::Camera(void)
+{
+	movespeed = 1.0; //Meters per Second
+	lookspeed = radians(0.05); //Degrees per rel movment
+	upVector = glm::vec3(0.0f, 1.0f, 0.0f);
+	lookVector = glm::vec3(0.0f, 0.0f, -1.0f);
+	posVector = glm::vec3(0.0f, 0.0f, 0.0f);
+	TEventVec = glm::vec3(0.0f, 0.0f, 0.0f);
+	REventVec = glm::vec2(0.0f, 0.0f);
+	projectionMatrix = glm::perspective(radians(60.0), float(1.0), float(0.1), float(100.0));
+}
+
+void Camera::update(float frame_delta)
+{
+	float delta = frame_delta * float(movespeed / 1000.0); 
+	posVector += TEventVec.z * delta * lookVector;
+	posVector += TEventVec.x * delta * glm::cross(lookVector, upVector);
+	posVector += TEventVec.y * delta * upVector;
+	lookVector = glm::mat3(glm::rotate(glm::mat4(), -float(REventVec.x * lookspeed),
+									   upVector)) * lookVector;
+	glm::vec3 newXAxisVector = glm::cross(lookVector, upVector);
+	lookVector = glm::mat3(glm::rotate(glm::mat4(), -float(REventVec.y * lookspeed),
+									  newXAxisVector)) * lookVector; 
+	REventVec = glm::vec2(0.0f, 0.0f);
+}
+
 glm::mat4 Camera::getViewMatrix(void)
 {
 	return glm::lookAt(posVector, (lookVector+posVector), upVector);
 }
+
 
 //OBJReader
 OBJReader::OBJReader(std::string name)
@@ -63,7 +90,6 @@ bool OBJReader::preprocOBJ(void)
 	OBJFile.open(filename.c_str());
 	if(OBJFile.is_open())
 	{
-		std::cout << "PreProc " << filename << std::endl;	
 		std::string line;
 		while (getline(OBJFile, line))
 		{
@@ -112,7 +138,6 @@ bool OBJReader::parseOBJ(void)
 	OBJFile.open(filename.c_str());
 	if (OBJFile.is_open())
 	{
-		std::cout << "Parsing " << filename << std::endl;
 		size_t vOffset = 0;
 		size_t nOffset = 0;
 		size_t iOffset = 0;
@@ -204,8 +229,7 @@ bool OBJReader::genResource(void)
 	obj.vertexData = vboData;
 	obj.vertexAmount = indexAmount;
 	obj.vertexSizeBytes = indexAmount * 2 * sizeof(glm::vec3);
-	obj.tobeVBOLoaded = true;
-	obj.vboloaded = false;
+	obj.vboload = true;
 	obj.hidden = false;
 	obj.translationMatrix = glm::mat4();
 	obj.rotationMatrix = glm::mat4(); 
@@ -215,35 +239,101 @@ bool OBJReader::genResource(void)
 
 modelResource OBJReader::pushResource(void) {return obj;}
 
+
 //Resource Manager
 ResourceManager::ResourceManager(void)
 {
-	resourceCount = 0;
-	resArray = new modelResource[resourceCount];
+	resourceAmount = 0;
+	resArray = new modelResource[resourceAmount];
 }
 
 bool ResourceManager::pullResource(modelResource res)
 {
-	res.id = resourceCount;
+	res.id = resourceAmount;
 	resMap[res.name] = res.id;
-	resourceCount++;
-	modelResource* oldArray = resArray;
-	resArray = new modelResource[resourceCount];
-	std::memcpy(resArray, oldArray, (resourceCount - 1) * sizeof(modelResource));
-	delete [] oldArray;
+	resourceAmount++;
+	modelResource* newArray = new modelResource[resourceAmount - 1];
+	for (int n = 0; n < resourceAmount - 1; n++) {newArray[n] = resArray[n];}
+	delete [] resArray;
+	resArray = new modelResource[resourceAmount];
+	for (int n = 0; n < resourceAmount - 1; n++) {resArray[n] = newArray[n];}
+	delete [] newArray;
 	resArray[res.id] = res;
 }
 
 bool ResourceManager::releaseMem(void)
 {
-	for (int i = 0; i < resourceCount; i++)
+	for (int i = 0; i < resourceAmount; i++)
 	{
 		delete [] resArray[i].vertexData;
 	}
 	delete [] resArray;
 }
 
-//Shader Stuff
+
+//Video Memory Manger
+VRAMManager::VRAMManager(void)
+{
+	vboSizeBytes = 0;
+	positionStart = (void*)(0);
+	positionDim = 3;
+	normalStart = (void*)(sizeof(float) * 3);
+	normalDim = 3;
+	vboStride = sizeof(float) * 6;
+	glGenBuffers(1, &vboID);
+	glBindBuffer(GL_ARRAY_BUFFER, vboID);	
+}
+
+bool VRAMManager::genVBO(modelResource* resource, int resourceAmount)
+{
+	int newVBOSizeBytes = 0;
+	for (int i = 0; i < resourceAmount; i++)
+	{
+		if (resource[i].vboload == true)
+		{
+			newVBOSizeBytes += resource[i].vertexSizeBytes;
+		}
+	}
+	glDeleteBuffers(1, &vboID);
+	glGenBuffers(1, &vboID);
+	glBindBuffer(GL_ARRAY_BUFFER, vboID);
+	glBufferData(GL_ARRAY_BUFFER, newVBOSizeBytes, NULL, GL_STATIC_DRAW);
+	vboSizeBytes = newVBOSizeBytes;
+	size_t vOffset = 0;
+	size_t iOffset = 0;
+	for (int i = 0; i < resourceAmount; i++)
+	{
+		if (resource[i].vboload == true)
+		{
+			resource[i].vboOffsetBytes = vOffset;
+			resource[i].vboOffsetIndex = iOffset;
+			glBufferSubData(GL_ARRAY_BUFFER,
+							vOffset,
+							resource[i].vertexSizeBytes,
+							resource[i].vertexData);
+			vOffset += (resource[i].vertexSizeBytes);
+			iOffset += (resource[i].vertexAmount);
+		}	
+	}	
+	glEnableVertexAttribArray(0);
+	glEnableVertexAttribArray(1);
+	glVertexAttribPointer(0, positionDim,
+						  GL_FLOAT, GL_FALSE,
+						  vboStride, positionStart);
+	glVertexAttribPointer(1, normalDim,
+						  GL_FLOAT, GL_FALSE,
+						  vboStride, normalStart);
+	glBindBuffer(GL_ARRAY_BUFFER, 0);
+	
+}
+
+bool VRAMManager::releaseMem(void)
+{ 
+	glDeleteBuffers(1, &vboID);
+}
+
+
+//Shader
 GLSL_Reader::GLSL_Reader() {}
 GLSL_Reader::GLSL_Reader(std::string name) {filename = name;}
 
@@ -376,128 +466,4 @@ void Time_Gauge::end(void)
 void Time_Gauge::gauge(void)
 {
 	std::cout << time_delta << " msec | " << per_second << " exec per sec" << std::endl;
-}
-
-
-//Geometry
-Model::Model(void)
-{
-	Vertex verticesStack[] =
-	{
-	glm::vec3(+0.5, +0.5, +0.5), //0 Top
-	glm::vec3(+1.0, +0.0, +0.0), 
-	glm::vec3(+0.0, +1.0, +0.0),
-	glm::vec3(+0.5, +0.5, -0.5), //1
-	glm::vec3(+0.0, +1.0, +0.0), 
-	glm::vec3(+0.0, +1.0, +0.0),
-	glm::vec3(-0.5, +0.5, -0.5), //2
-	glm::vec3(+0.0, +0.0, +1.0),
-	glm::vec3(+0.0, +1.0, +0.0),
-	glm::vec3(-0.5, +0.5, +0.5), //3
-	glm::vec3(+1.0, +1.0, +1.0),
-	glm::vec3(+0.0, +1.0, +0.0),	
-
-	glm::vec3(+0.5, -0.5, +0.5), //4 Bottom
-	glm::vec3(+1.0, +1.0, +1.0),
-	glm::vec3(+0.0, -1.0, +0.0),
-	glm::vec3(+0.5, -0.5, -0.5), //5
-	glm::vec3(+0.0, +0.0, +1.0),
-	glm::vec3(+0.0, -1.0, +0.0),
-	glm::vec3(-0.5, -0.5, -0.5), //6
-	glm::vec3(+0.0, +1.0, +0.0),
-	glm::vec3(+0.0, -1.0, +0.0),
-	glm::vec3(-0.5, -0.5, +0.5), //7
-	glm::vec3(+1.0, +0.0, +0.0),
-	glm::vec3(+0.0, -1.0, +0.0),
-
-	glm::vec3(+0.5, -0.5, -0.5), //8 Back
-	glm::vec3(+1.0, +0.0, +1.0),
-	glm::vec3(+0.0, +0.0, -1.0),
-	glm::vec3(+0.5, +0.5, -0.5), //9
-	glm::vec3(+1.0, +1.0, +0.0),
-	glm::vec3(+0.0, +0.0, -1.0),
-	glm::vec3(-0.5, +0.5, -0.5), //10
-	glm::vec3(+0.0, +1.0, +1.0),
-	glm::vec3(+0.0, +0.0, -1.0),
-	glm::vec3(-0.5, -0.5, -0.5), //11
-	glm::vec3(+0.5, +0.0, +0.0),
-	glm::vec3(+0.0, +0.0, -1.0),
-
-	glm::vec3(+0.5, -0.5, +0.5), //12 Front
-	glm::vec3(+0.0, +0.0, +0.5),
-	glm::vec3(+0.0, +0.0, +1.0),
-	glm::vec3(+0.5, +0.5, +0.5), //13
-	glm::vec3(+0.0, +1.0, +1.0),
-	glm::vec3(+0.0, +0.0, +1.0),
-	glm::vec3(-0.5, +0.5, +0.5), //14
-	glm::vec3(+1.0, +1.0, +0.0),
-	glm::vec3(+0.0, +0.0, +1.0),
-	glm::vec3(-0.5, -0.5, +0.5), //15
-	glm::vec3(+1.0, +0.0, +1.0),
-	glm::vec3(+0.0, +0.0, +1.0),
-
-	glm::vec3(-0.5, -0.5, +0.5), //16 Left
-	glm::vec3(+0.5, +0.0, +0.5),
-	glm::vec3(-1.0, +0.0, +0.0),
-	glm::vec3(-0.5, -0.5, -0.5), //17
-	glm::vec3(+0.5, +0.5, +0.0),
-	glm::vec3(-1.0, +0.0, +0.0),
-	glm::vec3(-0.5, +0.5, -0.5), //18
-	glm::vec3(+0.0, +0.5, +0.5),
-	glm::vec3(-1.0, +0.0, +0.0),
-	glm::vec3(-0.5, +0.5, +0.5), //19
-	glm::vec3(+0.0, +0.5, +0.5),
-	glm::vec3(-1.0, +0.0, +0.0),
-
-	glm::vec3(+0.5, -0.5, +0.5), //20 Right
-	glm::vec3(+0.0, +0.5, +0.0),
-	glm::vec3(+1.0, +0.0, +0.0),
-	glm::vec3(+0.5, -0.5, -0.5), //21
-	glm::vec3(+0.0, +0.5, +0.5),
-	glm::vec3(+1.0, +0.0, +0.0),
-	glm::vec3(+0.5, +0.5, -0.5), //22
-	glm::vec3(+0.5, +0.5, +0.0),
-	glm::vec3(+1.0, +0.0, +0.0),
-	glm::vec3(+0.5, +0.5, +0.5), //23
-	glm::vec3(+0.5, +0.0, +0.5),
-	glm::vec3(+1.0, +0.0, +0.0)
-	};
-
-	GLushort indicesStack[] =
-	{
-	0,1,2, 0,2,3, //Top
-	4,6,5, 4,7,6, //Bottom
-	9,11,10, 8,11,9, //Back
-	13,14,15, 12,13,15, //Front
-	16,18,17, 16,19,18, //Left
-	20,21,22, 20,22,23 //Right
-	};
-	positionDim = 3;
-	colorDim = 3;
-	normalDim = 3;
-	vectorArrayStride = sizeof(GLfloat) * 9;
-	positionStart = (void*)(0);
-	colorStart = (void*)(sizeof(GLfloat) * 3);
-	normalStart = (void*)(sizeof(GLfloat) * 6);
-	indexStart = (void*)(0);
-	vertexNum = 24;
-	verticesBytes = 864;
-	indicesNum = 36;
-	indicesBytes = 72;
-	try
-	{
-	p_verticesHeap = new Vertex[vertexNum];
-	memcpy(p_verticesHeap, verticesStack, verticesBytes);
-	p_indicesHeap = new GLushort[indicesNum];
-	memcpy(p_indicesHeap, indicesStack, indicesBytes);
-	}
-	catch (std::exception& exc) {std::cout << exc.what() << std::endl;}
-}
-
-bool Model::releaseMem(void)
-{
-	delete [] p_verticesHeap;
-	delete [] p_indicesHeap;
-	p_verticesHeap = 0;
-	p_indicesHeap = 0;
 }

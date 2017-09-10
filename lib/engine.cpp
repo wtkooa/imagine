@@ -1,5 +1,6 @@
 #define GL_GLEXT_PROTOTYPES //Needs to be defined for some GL funcs to work.
 #include <iostream>
+#include <map>
 #include <string>
 #include <GL/gl.h>
 #include <GL/glu.h>
@@ -17,22 +18,20 @@ Engine::Engine(void)
 	ASPECT_RATIO = float(WINDOW_WIDTH) / float(WINDOW_HEIGHT);
 	FIELD_OF_VIEW = radians(60.0);
 	Z_NEAR = 0.1;
-	Z_FAR = 10;
+	Z_FAR = 30.0;
 	REQUIRED_SDL_MODULES = SDL_INIT_EVERYTHING;
 	SDL_MODE = SDL_WINDOW_SHOWN|SDL_WINDOW_RESIZABLE|SDL_WINDOW_OPENGL;
 	ACTIVEBUFFERS = GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT;
 	WIREFRAME = false;
 	DEPTHTEST = true;
 	CULLFACE = true;
-	vertexShaderFile = "lib/glsl/basicvertexShader.glsl";
-	fragmentShaderFile = "lib/glsl/basicfragmentShader.glsl";
-	DEFAULT_TRANSLATION = glm::vec3(0.0, 0.0, -3.0);
+	vertexShaderFile = "lib/glsl/vshader.glsl";
+	fragmentShaderFile = "lib/glsl/fshader.glsl";
 	DEFAULT_CLEAR_COLOR = glm::vec4(0.0, 0.0, 0.0, 1.0);
 	LIGHT0POS = glm::vec3(0.0f, 3.0f, 0.0f);
 	AMBIENTLIGHT = glm::vec3(0.1f, 0.1f, 0.1f);
-	MOVESPEED = 1.0; //Meters per Second
-	LOOKSPEED = radians(0.05); //Degrees per rel movment
-	METERS_PER_MSEC = MOVESPEED / 1000.0;
+	eye.movespeed = 1.0; //Meters per Second
+	eye.lookspeed = radians(0.05); //Degrees per rel movment
 	init();
 	run();
 	cleanup();
@@ -40,19 +39,15 @@ Engine::Engine(void)
 
 bool Engine::cleanup(void)
 {
-	rm.releaseMem(); //Currently in testing
-	currentModel.releaseMem();
+	rm.releaseMem();
+	vram.releaseMem();
 	compiler.cleanUpShaders();
-	glDeleteBuffers(1, &indexBufferID);
-	glDeleteBuffers(1, &vertexBufferID);
 	SDL_Quit();
 	return true;
 }
 
 bool Engine::init(void)
 {
-	OBJReader cubeOBJ("data/cube.obj"); //This is here for testing	
-	rm.pullResource(cubeOBJ.pushResource()); //This is also for testing
 	SDL_Init(REQUIRED_SDL_MODULES);
 	SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
 	p_window = SDL_CreateWindow(WINDOW_TITLE.c_str(),
@@ -71,19 +66,13 @@ bool Engine::init(void)
 				 DEFAULT_CLEAR_COLOR.b,
 				 DEFAULT_CLEAR_COLOR.a);
 	glClear(ACTIVEBUFFERS);
-	translationMatrix = glm::translate(glm::mat4(), DEFAULT_TRANSLATION);
-	projectionMatrix = glm::perspective(FIELD_OF_VIEW, ASPECT_RATIO, Z_NEAR, Z_FAR);
+	eye.projectionMatrix = glm::perspective(FIELD_OF_VIEW, ASPECT_RATIO, Z_NEAR, Z_FAR);
 	SDL_SetWindowGrab(p_window, SDL_TRUE);
 	SDL_SetRelativeMouseMode(SDL_TRUE);
-	transEventVec = glm::vec3(0.0f, 0.0f, 0.0f);
-	rotateEventVec = glm::vec2(0.0f, 0.0f);
-	eye.upVector = glm::vec3(0.0f, 1.0f, 0.0f);
-	eye.lookVector = glm::vec3(0.0f, 0.0f, -1.0);
-	eye.posVector = glm::vec3(0.0f, 0.0f, 0.0f);
 	init_shaders();
 	glUniform3fv(ambientLightShaderUniLoc, 1, &AMBIENTLIGHT[0]);	
 	glUniform3fv(light0posShaderUniLoc, 1, &LIGHT0POS[0]);
-	uploadData();
+	loadResources();
 	frame_start_time = SDL_GetPerformanceCounter();
 	return true;
 }
@@ -96,43 +85,20 @@ bool Engine::init_shaders(void)
 	programID = compiler.getProgramID();
 	glUseProgram(programID);
 	transformationMatShaderUniLoc = glGetUniformLocation(programID, "transformationMatrix");
-	modeltoworldMatShaderUniLoc = glGetUniformLocation(programID, "modeltoworldMatrix");
+	mtwMatShaderUniLoc = glGetUniformLocation(programID, "mtwMatrix");
 	light0posShaderUniLoc = glGetUniformLocation(programID, "light0pos");
 	ambientLightShaderUniLoc = glGetUniformLocation(programID, "ambientLight");
 	return true;
 }
 
-bool Engine::uploadData(void)
+bool Engine::loadResources(void)
 {
-	glGenBuffers(1, &vertexBufferID);
-	glGenBuffers(1, &indexBufferID);
-	glBindBuffer(GL_ARRAY_BUFFER, vertexBufferID);
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indexBufferID);
-	glBufferData(GL_ARRAY_BUFFER,
-				 currentModel.verticesBytes,
-				 currentModel.p_verticesHeap,
-				 GL_STATIC_DRAW);
-	glBufferData(GL_ELEMENT_ARRAY_BUFFER,
-				 currentModel.indicesBytes,
-				 currentModel.p_indicesHeap,
-				 GL_STATIC_DRAW);
-	glEnableVertexAttribArray(0);
-	glEnableVertexAttribArray(1);
-	glEnableVertexAttribArray(2);
-	glVertexAttribPointer(0, currentModel.positionDim,
-						  GL_FLOAT, GL_FALSE,
-						  currentModel.vectorArrayStride,
-						  currentModel.positionStart);
-	glVertexAttribPointer(1, currentModel.colorDim,
-						  GL_FLOAT, GL_FALSE,
-						  currentModel.vectorArrayStride,
-						  currentModel.colorStart);
-	glVertexAttribPointer(2, currentModel.normalDim,
-						  GL_FLOAT, GL_FALSE,
-						  currentModel.vectorArrayStride,
-						  currentModel.normalStart);
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
-	glBindBuffer(GL_ARRAY_BUFFER, 0);
+	loadOBJ("data/Suzanne.obj");	
+	loadOBJ("data/Cube.obj");
+	loadOBJ("data/Windmillpole.obj");
+	loadOBJ("data/Windmillblades.obj");
+	loadOBJ("data/Ant.obj");
+	vram.genVBO(rm.resArray, rm.resourceAmount);
 	return true;
 }
 
@@ -142,57 +108,56 @@ bool Engine::run(void)
 	while (engine_on) {
 		handle_time();
 		handle_events();
-		draw();
+		handle_logic();
+		render();
 	}	
 	return true;
 }
 
-void Engine::draw(void)
+void Engine::handle_logic(void)
 {
-	transformationMatrix = glm::mat4();
-	handle_model_rotation();
-	if (SDL_GetWindowGrab(p_window) == SDL_TRUE)
-	{
-		handle_view_rotation();
-		handle_view_translation();
-	}
-	viewMatrix = eye.getViewMatrix();
-	modeltoworldMatrix = translationMatrix * rotationMatrix;
-	modelviewMatrix = viewMatrix * modeltoworldMatrix;
-	transformationMatrix = projectionMatrix * modelviewMatrix;
-	glUniformMatrix4fv(modeltoworldMatShaderUniLoc, 1, GL_FALSE,
-					   &modeltoworldMatrix[0][0]);
-	glUniformMatrix4fv(transformationMatShaderUniLoc, 1, GL_FALSE,
-					   &transformationMatrix[0][0]);
+	modelResource* res = rm.resArray;
+	std::map<std::string, int> resMap = rm.resMap;
+	int Suzanne = resMap["Suzanne"];
+	int Cube = resMap["Cube"];
+	int Windmillpole = resMap["Windmillpole"];
+	int Windmillblades = resMap["Windmillblades"];
+	int Ant = resMap["Ant"];
+	res[Ant].translationMatrix = glm::translate(glm::mat4(), glm::vec3(8.0f, 0.0f, -3.0f));
+	res[Ant].rotationMatrix *= glm::rotate(glm::mat4(), radians(0.5), glm::vec3(0.0f, 1.0f, 0.0f));
+	res[Windmillpole].rotationMatrix = glm::rotate(glm::mat4(), radians(90), glm::vec3(0.0f, 1.0f, 0.0f));
+	res[Windmillpole].translationMatrix = glm::translate(glm::mat4(), glm::vec3(-4.0f, 0.0f, -3.0));
+	res[Windmillblades].translationMatrix = glm::translate(glm::mat4(), glm::vec3(-4.0f, 3.6f, -1.8f));
+	res[Windmillblades].rotationMatrix *= glm::rotate(glm::mat4(), radians(3), glm::vec3(0.0f, 0.0f, 1.0f));
+	res[Cube].translationMatrix = glm::translate(glm::mat4(), glm::vec3(4.0f, 0.0f, -3.0f));
+	res[Cube].rotationMatrix *= glm::rotate(glm::mat4(), radians(0.5), glm::vec3(-1.0f, -1.0f, 0.0f));
+	res[Suzanne].translationMatrix = glm::translate(glm::mat4(), glm::vec3(0.0f, 0.0f, -3.0f));
+	res[Suzanne].rotationMatrix *= glm::rotate(glm::mat4(), radians(0.5), glm::vec3(1.0f, 1.0f, 0.0f));
+}
+
+void Engine::render(void)
+{
+	modelResource* resource = rm.resArray;
+	int resourceAmount = rm.resourceAmount;
+	if (SDL_GetWindowGrab(p_window) == SDL_TRUE) {eye.update(frame_delta);}
 	glClear(ACTIVEBUFFERS);
-	glBindBuffer(GL_ARRAY_BUFFER, vertexBufferID);
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indexBufferID);
-	glDrawElements(GL_TRIANGLES, currentModel.indicesNum, GL_UNSIGNED_SHORT, currentModel.indexStart);
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+	glBindBuffer(GL_ARRAY_BUFFER, vram.vboID);
+	for (int n = 0; n < resourceAmount; n++)
+	{
+		if (resource[n].vboload == true)
+		{
+			glm::mat4 mtwMatrix = resource[n].translationMatrix *
+								  resource[n].rotationMatrix;
+			glm::mat4 transformationMatrix = eye.projectionMatrix *
+											 eye.getViewMatrix() *
+											 mtwMatrix;
+			glUniformMatrix4fv(mtwMatShaderUniLoc, 1, GL_FALSE, &mtwMatrix[0][0]);
+			glUniformMatrix4fv(transformationMatShaderUniLoc, 1, GL_FALSE, &transformationMatrix[0][0]); 
+			glDrawArrays(GL_TRIANGLES, resource[n].vboOffsetIndex, resource[n].vertexAmount);
+		}
+	}
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
-	measureTime.start();
 	SDL_GL_SwapWindow(p_window);
-	measureTime.end();
-}
-
-void Engine::handle_view_translation(void)
-{
-	eye.posVector += transEventVec.z * frame_delta * METERS_PER_MSEC * eye.lookVector;
-	eye.posVector += transEventVec.x * frame_delta * METERS_PER_MSEC *
-					  glm::cross(eye.lookVector, eye.upVector);
-	eye.posVector += transEventVec.y * frame_delta * METERS_PER_MSEC * eye.upVector; 
-}
-
-void Engine::handle_view_rotation(void)
-{
-	eye.lookVector = glm::mat3(glm::rotate(glm::mat4(),
-							   -float(rotateEventVec.x * LOOKSPEED),
-								eye.upVector)) * eye.lookVector;
-	glm::vec3 newXAxisVector = glm::cross(eye.lookVector, eye.upVector);
-	eye.lookVector = glm::mat3(glm::rotate(glm::mat4(),
-							   -float(rotateEventVec.y * LOOKSPEED),
-							   newXAxisVector)) * eye.lookVector; 
-	rotateEventVec = glm::vec2(0.0f, 0.0f);	
 }
 
 void Engine::handle_time(void)
@@ -201,13 +166,6 @@ void Engine::handle_time(void)
 	frame_delta = ((frame_end_time - frame_start_time) * 1000.0 ) / SDL_GetPerformanceFrequency();
 	frame_start_time = SDL_GetPerformanceCounter();
 	fps = 1000.0 / frame_delta;
-	//measureTime.gauge();
-}
-
-void Engine::handle_model_rotation(void)
-{
-	glm::mat4 rotation = glm::rotate(glm::mat4(), radians(0.5f), glm::vec3(1.0, 1.0, 0.0));
-	rotationMatrix = rotation*rotationMatrix;
 }
 
 void Engine::handle_events(void)
@@ -231,8 +189,8 @@ void Engine::handle_events(void)
 			case SDL_MOUSEMOTION:
 				if (SDL_GetRelativeMouseMode() == SDL_TRUE)
 				{
-					rotateEventVec.x += evnt.motion.xrel;	
-					rotateEventVec.y += evnt.motion.yrel;	
+					eye.REventVec.x += evnt.motion.xrel;	
+					eye.REventVec.y += evnt.motion.yrel;	
 				}
 				break;
 			case SDL_KEYDOWN:
@@ -258,37 +216,37 @@ void Engine::handle_events(void)
 					case SDLK_w:
 						if (!evnt.key.repeat)
 						{	
-							transEventVec.z += 1.0;
+							eye.TEventVec.z += 1.0;
 						}
 						break;
 					case SDLK_s:
 						if (!evnt.key.repeat)
 						{
-							transEventVec.z -= 1.0;
+							eye.TEventVec.z -= 1.0;
 						}
 						break;
 					case SDLK_d:
 						if (!evnt.key.repeat)
 						{
-							transEventVec.x += 1.0;
+							eye.TEventVec.x += 1.0;
 						}
 						break;
 					case SDLK_a:
 						if (!evnt.key.repeat)
 						{
-							transEventVec.x -= 1.0;
+							eye.TEventVec.x -= 1.0;
 						}
 						break;
 					case SDLK_SPACE:
 						if (!evnt.key.repeat)
 						{
-							transEventVec.y += 1.0;
+							eye.TEventVec.y += 1.0;
 						}
 						break;
 					case SDLK_LSHIFT:
 						if (!evnt.key.repeat)
 						{
-							transEventVec.y -= 1.0;
+							eye.TEventVec.y -= 1.0;
 						}
 						break;
 				}
@@ -297,34 +255,39 @@ void Engine::handle_events(void)
 				switch(evnt.key.keysym.sym)
 				{
 					case SDLK_w:
-							transEventVec.z -= 1.0;
+							eye.TEventVec.z -= 1.0;
 						break;
 					case SDLK_s:
-							transEventVec.z += 1.0;
+							eye.TEventVec.z += 1.0;
 						break;
 					case SDLK_d:
-							transEventVec.x -= 1.0;
+							eye.TEventVec.x -= 1.0;
 						break;
 					case SDLK_a:
-							transEventVec.x += 1.0;
+							eye.TEventVec.x += 1.0;
 						break;
 					case SDLK_SPACE:
-							transEventVec.y -= 1.0;
+							eye.TEventVec.y -= 1.0;
 						break;
 					case SDLK_LSHIFT:
-							transEventVec.y += 1.0;
+							eye.TEventVec.y += 1.0;
 						break;
 				}
 				break;
-			}
 		}
 	}
-
+}
 
 void Engine::handle_resize(int width, int height)
 {
 	float aspect_ratio = float(width) / float(height);
 	SDL_SetWindowSize(p_window, width, height);
 	glViewport(0, 0, width, height);
-	projectionMatrix = glm::perspective(FIELD_OF_VIEW, aspect_ratio, Z_NEAR, Z_FAR);	
+	eye.projectionMatrix = glm::perspective(FIELD_OF_VIEW, aspect_ratio, Z_NEAR, Z_FAR);	
+}
+
+bool Engine::loadOBJ(std::string file)
+{
+	OBJReader obj(file);
+	rm.pullResource(obj.pushResource());
 }
