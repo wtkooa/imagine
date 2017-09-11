@@ -72,13 +72,18 @@ glm::mat4 Camera::getViewMatrix(void)
 //OBJReader
 OBJReader::OBJReader(std::string name)
 {
-	filename = name;	
+	objFilename = name;	
+	mtlFilename = "void";
 	vertexAmount = 0;
 	normalAmount = 0;
 	indexAmount = 0;
+	faceGroupAmount = 0;
+	materialAmount = 0;
 	preprocOBJ();
+	preprocMTL();
 	allocMem();
 	parseOBJ();
+	parseMTL();
 	allocConvMem();
 	vboConvert();
 	genResource();
@@ -87,7 +92,7 @@ OBJReader::OBJReader(std::string name)
 bool OBJReader::preprocOBJ(void)
 {
 	std::ifstream OBJFile;
-	OBJFile.open(filename.c_str());
+	OBJFile.open(objFilename.c_str());
 	if(OBJFile.is_open())
 	{
 		std::string line;
@@ -97,14 +102,38 @@ bool OBJReader::preprocOBJ(void)
 			if (command == "v") {vertexAmount++;}
 			else if (command == "vn") {normalAmount++;}
 			else if (command == "f") {indexAmount += 3;}
+			else if (command == "usemtl") {faceGroupAmount++;}
+			else if (command == "mtllib") {mtlFilename = split(line, ' ', 1);}
 		}
 	}
 	else
 	{
-		std::cout << "File " << filename << " failed to open for preproc..." << std::endl;
+		std::cout << "File " << objFilename << " failed to open for preproc..." << std::endl;
 		return false;
 	}
 	OBJFile.close();
+	return true;
+}
+
+bool OBJReader::preprocMTL(void)
+{
+	std::ifstream MTLFile;
+	MTLFile.open(mtlFilename.c_str());
+	if(MTLFile.is_open())
+	{
+		std::string line;
+		while (getline(MTLFile, line))
+		{
+			std::string command = split(line, ' ', 0);
+			if (command == "newmtl") {materialAmount++;}
+		}
+	}
+	else
+	{
+		std::cout << "File " << mtlFilename << " failed to open for preproc..." << std::endl;
+		return false;
+	}
+	MTLFile.close();
 	return true;
 }
 
@@ -115,6 +144,8 @@ bool OBJReader::allocMem(void)
 		vertexData = new glm::vec3[vertexAmount];
 		normalData = new glm::vec3[normalAmount];
 		indexData = new glm::ivec3[indexAmount];	
+		groupArr = new faceGroup[faceGroupAmount];
+		materialArr = new material[materialAmount];
 	}
 	catch (std::exception& exc)
 	{
@@ -135,17 +166,39 @@ bool OBJReader::releaseMem(void)
 bool OBJReader::parseOBJ(void)
 {
 	std::ifstream OBJFile;
-	OBJFile.open(filename.c_str());
+	OBJFile.open(objFilename.c_str());
 	if (OBJFile.is_open())
 	{
 		size_t vOffset = 0;
 		size_t nOffset = 0;
 		size_t iOffset = 0;
+		int gOffset = -1;
 		std::string line;
 		while (getline(OBJFile, line))
 		{
 			std::string command = split(line, ' ', 0);
-			if (command == "o")
+			if (command == "#")	{continue;} //Comment
+			else if (command == "") {continue;} //Blank Line
+			else if (command == "mtllib") {continue;} //Handled in preproc
+			else if (command == "usemtl")
+			{
+				gOffset++;
+				groupArr[gOffset].mtlName = split(line, ' ', 1);
+			}
+			else if (command == "s")
+			{
+				if (gOffset > -1)
+				{
+					std::string smooth = split(line, ' ', 1);
+					if (smooth == "off") {groupArr[gOffset].smooth = 0;}
+					else {groupArr[gOffset].smooth = stoi(smooth);}
+				}
+				else
+				{
+					std::cout << "Warning: Cannot define smooth param before material..." << std::endl;
+				} 
+			}
+			else if (command == "o")
 			{
 				name = split(line, ' ', 1);
 			}
@@ -156,6 +209,10 @@ bool OBJReader::parseOBJ(void)
 				float z = stof(split(line, ' ', 3));	
 				*(vertexData + vOffset) = glm::vec3(x,y,z);
 				vOffset++;
+			}
+			else if (command == "vt")
+			{
+				continue; //Texures - Coming Soon ^_^
 			}
 			else if (command == "vn")
 			{
@@ -179,14 +236,100 @@ bool OBJReader::parseOBJ(void)
 					iOffset++;
 				}	
 			}
+			else
+			{
+				std::cout << "Warning: Unrecognized command '" << command <<
+							 "' in OBJ file '" << objFilename << "'." << std::endl;
+			}
 		}
 	}
 	else
 	{
-		std::cout << "File " << filename << " failed to open for parsing..." << std::endl;
+		std::cout << "File " << objFilename << " failed to open for parsing..." << std::endl;
 		return false;
 	}	
 	OBJFile.close();
+	return true;
+}
+
+bool OBJReader::parseMTL(void)
+{
+	std::ifstream MTLFile;
+	MTLFile.open(mtlFilename.c_str());
+	if(MTLFile.is_open())
+	{
+		int mOffset = -1;
+		std::string line;
+		while (getline(MTLFile, line))
+		{
+			std::string command = split(line, ' ', 0);
+			if (command == "#")	{continue;} //Comment
+			else if (command == "") {continue;} //Blank
+			else if (command == "newmtl")
+			{
+				mOffset++;
+				materialArr[mOffset].id = mOffset;
+				materialArr[mOffset].name = split(line, ' ', 1);
+				materialMap[materialArr[mOffset].name] = mOffset;
+				materialArr[mOffset].mtlFilename = mtlFilename;
+			}
+			else if (command == "Ns")
+			{
+				materialArr[mOffset].Ns = stof(split(line, ' ', 1));
+			}
+			else if (command == "Ka")
+			{
+				float r = stof(split(line, ' ', 1));
+				float g = stof(split(line, ' ', 2));
+				float b = stof(split(line, ' ', 3));
+				materialArr[mOffset].Ka = glm::vec3(r,g,b);
+			}
+			else if (command == "Kd")
+			{
+				float r = stof(split(line, ' ', 1));
+				float g = stof(split(line, ' ', 2));
+				float b = stof(split(line, ' ', 3));
+				materialArr[mOffset].Kd = glm::vec3(r,g,b);
+			}
+			else if (command == "Ks")
+			{
+				float r = stof(split(line, ' ', 1));
+				float g = stof(split(line, ' ', 2));
+				float b = stof(split(line, ' ', 3));
+				materialArr[mOffset].Ks = glm::vec3(r,g,b);
+			}
+			else if (command == "Ke")
+			{
+				float r = stof(split(line, ' ', 1));
+				float g = stof(split(line, ' ', 2));
+				float b = stof(split(line, ' ', 3));
+				materialArr[mOffset].Ke == glm::vec3(r,g,b);
+			}			
+			else if (command == "Ni")
+			{
+				materialArr[mOffset].Ni == stof(split(line, ' ', 1));
+			}
+			else if (command == "d")
+			{
+				materialArr[mOffset].d = stof(split(line, ' ', 1));
+			}
+			else if (command == "illum")
+			{
+				materialArr[mOffset].illum = stoi(split(line, ' ', 1));
+			}
+			else
+			{
+				std::cout << "Warning: Unrecognized command '" << command <<
+							 "' in MTL file '" << mtlFilename << "'." << std::endl;
+			}
+		}
+	}
+	else
+	{
+		std::cout << "File " << mtlFilename << " failed to open for preproc..." << std::endl;
+		return false;
+	}
+	MTLFile.close();
 	return true;
 }
 
@@ -225,11 +368,13 @@ bool OBJReader::vboConvert(void)
 bool OBJReader::genResource(void)
 {
 	obj.name = name;
-	obj.filename = filename;
+	obj.objFilename = objFilename;
+	obj.mtlFilename = objFilename;
 	obj.vertexData = vboData;
 	obj.vertexAmount = indexAmount;
 	obj.vertexSizeBytes = indexAmount * 2 * sizeof(glm::vec3);
-	obj.vboload = true;
+	obj.tobevboloaded = true;
+	obj.vboloaded = false;
 	obj.hidden = false;
 	obj.translationMatrix = glm::mat4();
 	obj.rotationMatrix = glm::mat4(); 
@@ -243,31 +388,39 @@ modelResource OBJReader::pushResource(void) {return obj;}
 //Resource Manager
 ResourceManager::ResourceManager(void)
 {
-	resourceAmount = 0;
-	resArray = new modelResource[resourceAmount];
+	modelAmount = 0;
+	modelArr = new modelResource[modelAmount];
 }
 
-bool ResourceManager::pullResource(modelResource res)
+bool ResourceManager::pullOBJResources(modelResource res)
 {
-	res.id = resourceAmount;
-	resMap[res.name] = res.id;
-	resourceAmount++;
-	modelResource* newArray = new modelResource[resourceAmount - 1];
-	for (int n = 0; n < resourceAmount - 1; n++) {newArray[n] = resArray[n];}
-	delete [] resArray;
-	resArray = new modelResource[resourceAmount];
-	for (int n = 0; n < resourceAmount - 1; n++) {resArray[n] = newArray[n];}
-	delete [] newArray;
-	resArray[res.id] = res;
+	if (modelMap.find(res.name) == modelMap.end())
+	{
+		res.id = modelAmount;
+		modelMap[res.name] = res.id;
+		modelAmount++;
+		modelResource* newArr = new modelResource[modelAmount - 1];
+		for (int n = 0; n < modelAmount - 1; n++) {newArr[n] = modelArr[n];}
+		delete [] modelArr;
+		modelArr = new modelResource[modelAmount];
+		for (int n = 0; n < modelAmount - 1; n++) {modelArr[n] = newArr[n];}
+		delete [] newArr;
+		modelArr[res.id] = res;
+	}
+	else
+	{
+		std::cout << "Warning: Model resource with name '" << res.name << "' already exists." << std::endl;
+	}
 }
 
 bool ResourceManager::releaseMem(void)
 {
-	for (int i = 0; i < resourceAmount; i++)
+	for (int n = 0; n < modelAmount; n++)
 	{
-		delete [] resArray[i].vertexData;
+		delete [] modelArr[n].vertexData;
+		//delete [] modelArr[n].groupArr;
 	}
-	delete [] resArray;
+	delete [] modelArr;
 }
 
 
@@ -284,14 +437,14 @@ VRAMManager::VRAMManager(void)
 	glBindBuffer(GL_ARRAY_BUFFER, vboID);	
 }
 
-bool VRAMManager::genVBO(modelResource* resource, int resourceAmount)
+bool VRAMManager::genVBO(modelResource* model, int modelAmount)
 {
 	int newVBOSizeBytes = 0;
-	for (int i = 0; i < resourceAmount; i++)
+	for (int n = 0; n < modelAmount; n++)
 	{
-		if (resource[i].vboload == true)
+		if (model[n].vboloaded == true || model[n].tobevboloaded == true)
 		{
-			newVBOSizeBytes += resource[i].vertexSizeBytes;
+			newVBOSizeBytes += model[n].vertexSizeBytes;
 		}
 	}
 	glDeleteBuffers(1, &vboID);
@@ -301,18 +454,20 @@ bool VRAMManager::genVBO(modelResource* resource, int resourceAmount)
 	vboSizeBytes = newVBOSizeBytes;
 	size_t vOffset = 0;
 	size_t iOffset = 0;
-	for (int i = 0; i < resourceAmount; i++)
+	for (int n = 0; n < modelAmount; n++)
 	{
-		if (resource[i].vboload == true)
+		if (model[n].vboloaded == true || model[n].tobevboloaded == true)
 		{
-			resource[i].vboOffsetBytes = vOffset;
-			resource[i].vboOffsetIndex = iOffset;
+			model[n].vboOffsetBytes = vOffset;
+			model[n].vboOffsetIndex = iOffset;
 			glBufferSubData(GL_ARRAY_BUFFER,
 							vOffset,
-							resource[i].vertexSizeBytes,
-							resource[i].vertexData);
-			vOffset += (resource[i].vertexSizeBytes);
-			iOffset += (resource[i].vertexAmount);
+							model[n].vertexSizeBytes,
+							model[n].vertexData);
+			vOffset += (model[n].vertexSizeBytes);
+			iOffset += (model[n].vertexAmount);
+			model[n].vboloaded = true;
+			model[n].tobevboloaded = false;
 		}	
 	}	
 	glEnableVertexAttribArray(0);

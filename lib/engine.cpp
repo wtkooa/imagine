@@ -28,9 +28,9 @@ Engine::Engine(void)
 	vertexShaderFile = "lib/glsl/vshader.glsl";
 	fragmentShaderFile = "lib/glsl/fshader.glsl";
 	DEFAULT_CLEAR_COLOR = glm::vec4(0.0, 0.0, 0.0, 1.0);
-	LIGHT0POS = glm::vec3(0.0f, 3.0f, 0.0f);
+	LIGHT0POS = glm::vec3(0.0f, 3.0f, 5.0f);
 	AMBIENTLIGHT = glm::vec3(0.1f, 0.1f, 0.1f);
-	eye.movespeed = 1.0; //Meters per Second
+	eye.movespeed = 3.0; //Meters per Second
 	eye.lookspeed = radians(0.05); //Degrees per rel movment
 	init();
 	run();
@@ -98,7 +98,8 @@ bool Engine::loadResources(void)
 	loadOBJ("data/Windmillpole.obj");
 	loadOBJ("data/Windmillblades.obj");
 	loadOBJ("data/Ant.obj");
-	vram.genVBO(rm.resArray, rm.resourceAmount);
+	loadOBJ("data/Plane.obj");
+	vram.genVBO(rm.modelArr, rm.modelAmount);
 	return true;
 }
 
@@ -116,44 +117,46 @@ bool Engine::run(void)
 
 void Engine::handle_logic(void)
 {
-	modelResource* res = rm.resArray;
-	std::map<std::string, int> resMap = rm.resMap;
-	int Suzanne = resMap["Suzanne"];
-	int Cube = resMap["Cube"];
-	int Windmillpole = resMap["Windmillpole"];
-	int Windmillblades = resMap["Windmillblades"];
-	int Ant = resMap["Ant"];
-	res[Ant].translationMatrix = glm::translate(glm::mat4(), glm::vec3(8.0f, 0.0f, -3.0f));
-	res[Ant].rotationMatrix *= glm::rotate(glm::mat4(), radians(0.5), glm::vec3(0.0f, 1.0f, 0.0f));
-	res[Windmillpole].rotationMatrix = glm::rotate(glm::mat4(), radians(90), glm::vec3(0.0f, 1.0f, 0.0f));
-	res[Windmillpole].translationMatrix = glm::translate(glm::mat4(), glm::vec3(-4.0f, 0.0f, -3.0));
-	res[Windmillblades].translationMatrix = glm::translate(glm::mat4(), glm::vec3(-4.0f, 3.6f, -1.8f));
-	res[Windmillblades].rotationMatrix *= glm::rotate(glm::mat4(), radians(3), glm::vec3(0.0f, 0.0f, 1.0f));
-	res[Cube].translationMatrix = glm::translate(glm::mat4(), glm::vec3(4.0f, 0.0f, -3.0f));
-	res[Cube].rotationMatrix *= glm::rotate(glm::mat4(), radians(0.5), glm::vec3(-1.0f, -1.0f, 0.0f));
-	res[Suzanne].translationMatrix = glm::translate(glm::mat4(), glm::vec3(0.0f, 0.0f, -3.0f));
-	res[Suzanne].rotationMatrix *= glm::rotate(glm::mat4(), radians(0.5), glm::vec3(1.0f, 1.0f, 0.0f));
+	modelResource* model = rm.modelArr;
+	std::map<std::string, int> modelMap = rm.modelMap;
+	int Suzanne = modelMap["Suzanne"];
+	int Cube = modelMap["Cube"];
+	int Windmillpole = modelMap["Windmillpole"];
+	int Windmillblades = modelMap["Windmillblades"];
+	int Ant = modelMap["Ant"];
+	int Plane = modelMap["Plane"];
+	model[Plane].translationMatrix = glm::translate(glm::mat4(), glm::vec3(0.0f,- 0.5f, 0.0f));
+	model[Ant].translationMatrix = glm::translate(glm::mat4(), glm::vec3(8.0f, 0.2f, -3.0f));
+	model[Ant].rotationMatrix *= glm::rotate(glm::mat4(), radians(0.5), glm::vec3(0.0f, 1.0f, 0.0f));
+	model[Windmillpole].rotationMatrix = glm::rotate(glm::mat4(), radians(90), glm::vec3(0.0f, 1.0f, 0.0f));
+	model[Windmillpole].translationMatrix = glm::translate(glm::mat4(), glm::vec3(-4.0f, 0.0f, -3.0));
+	model[Windmillblades].translationMatrix = glm::translate(glm::mat4(), glm::vec3(-4.0f, 3.6f, -1.8f));
+	model[Windmillblades].rotationMatrix *= glm::rotate(glm::mat4(), radians(3), glm::vec3(0.0f, 0.0f, 1.0f));
+	model[Cube].translationMatrix = glm::translate(glm::mat4(), glm::vec3(4.0f, 0.5f, -3.0f));
+	model[Cube].rotationMatrix *= glm::rotate(glm::mat4(), radians(0.5), glm::vec3(-1.0f, -1.0f, 0.0f));
+	model[Suzanne].translationMatrix = glm::translate(glm::mat4(), glm::vec3(0.0f, 0.7f, -3.0f));
+	model[Suzanne].rotationMatrix *= glm::rotate(glm::mat4(), radians(0.5), glm::vec3(1.0f, 1.0f, 0.0f));
 }
 
 void Engine::render(void)
 {
-	modelResource* resource = rm.resArray;
-	int resourceAmount = rm.resourceAmount;
+	modelResource* model = rm.modelArr;
+	int modelAmount = rm.modelAmount;
 	if (SDL_GetWindowGrab(p_window) == SDL_TRUE) {eye.update(frame_delta);}
 	glClear(ACTIVEBUFFERS);
 	glBindBuffer(GL_ARRAY_BUFFER, vram.vboID);
-	for (int n = 0; n < resourceAmount; n++)
+	for (int n = 0; n < modelAmount; n++)
 	{
-		if (resource[n].vboload == true)
+		if (model[n].vboloaded == true && model[n].hidden == false)
 		{
-			glm::mat4 mtwMatrix = resource[n].translationMatrix *
-								  resource[n].rotationMatrix;
+			glm::mat4 mtwMatrix = model[n].translationMatrix *
+								  model[n].rotationMatrix;
 			glm::mat4 transformationMatrix = eye.projectionMatrix *
 											 eye.getViewMatrix() *
 											 mtwMatrix;
 			glUniformMatrix4fv(mtwMatShaderUniLoc, 1, GL_FALSE, &mtwMatrix[0][0]);
 			glUniformMatrix4fv(transformationMatShaderUniLoc, 1, GL_FALSE, &transformationMatrix[0][0]); 
-			glDrawArrays(GL_TRIANGLES, resource[n].vboOffsetIndex, resource[n].vertexAmount);
+			glDrawArrays(GL_TRIANGLES, model[n].vboOffsetIndex, model[n].vertexAmount);
 		}
 	}
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
@@ -289,5 +292,5 @@ void Engine::handle_resize(int width, int height)
 bool Engine::loadOBJ(std::string file)
 {
 	OBJReader obj(file);
-	rm.pullResource(obj.pushResource());
+	rm.pullOBJResources(obj.pushResource());
 }

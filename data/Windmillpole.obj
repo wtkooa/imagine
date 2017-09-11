@@ -1,6 +1,6 @@
 # Blender v2.76 (sub 0) OBJ File: ''
 # www.blender.org
-mtllib Windmillpole.mtl
+mtllib data/Windmillpole.mtl
 o Windmillpole
 v -1.027952 3.751185 0.000000
 v -1.008200 3.751185 -0.051947

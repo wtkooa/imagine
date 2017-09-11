@@ -33,16 +33,50 @@ class Camera
 
 
 //Resources
+class material
+{
+	public:
+	int id;
+	std::string name;
+	std::string mtlFilename;
+	float Ns;
+	glm::vec3 Ka;
+	glm::vec3 Kd;
+	glm::vec3 Ks;
+	glm::vec3 Ke;
+	float Ni;
+	float d;
+	int illum;
+};
+
+class faceGroup
+{
+	public:
+	std::string mtlName;
+	int smooth;
+	int vertexAmount;
+	int vertexSizeBytes;
+	int vboOffsetIndex;
+	int vboOffsetBytes;	
+};
+
 class modelResource
 {
 	public:
 	int id;
 	std::string name;
-	std::string filename;
+	std::string objFilename;
+	std::string mtlFilename;
 	glm::vec3* vertexData;
 	int vertexAmount;
 	int vertexSizeBytes;
-	bool vboload;
+	faceGroup* groupArr;
+	int faceGroupAmount;
+	material* materialArr;
+	int materialAmount;
+	std::map<std::string, int> materialMap;
+	bool tobevboloaded;
+	bool vboloaded;
 	int vboOffsetIndex;
 	int vboOffsetBytes;
 	bool hidden;
@@ -59,14 +93,17 @@ class OBJReader
 	modelResource pushResource(void);
 	private:
 	bool preprocOBJ(void);
+	bool preprocMTL(void);
 	bool allocMem(void);
 	bool allocConvMem(void);
 	bool parseOBJ(void);
+	bool parseMTL(void);
 	bool vboConvert(void);
 	bool genResource(void);
 	bool releaseMem(void);
 	std::string name;
-	std::string filename;
+	std::string objFilename;
+	std::string mtlFilename;
 	glm::vec3* vertexData;
 	glm::vec3* normalData;
 	glm::ivec3* indexData;
@@ -74,20 +111,25 @@ class OBJReader
 	int vertexAmount;
 	int normalAmount;
 	int indexAmount;
+	faceGroup* groupArr;
+	int faceGroupAmount;
+	material* materialArr;
+	std::map<std::string, int> materialMap;
+	int materialAmount;
 	modelResource obj;
 };
 
 
-//Managers
+//Manager
 class ResourceManager 
 {
 	public:
 	ResourceManager();
-	bool pullResource(modelResource);
+	bool pullOBJResources(modelResource);
 	bool releaseMem(void);
-	int resourceAmount;
-	modelResource* resArray;
-	std::map<std::string, int> resMap;
+	int modelAmount;
+	modelResource* modelArr;
+	std::map<std::string, int> modelMap;
 };
 
 class VRAMManager

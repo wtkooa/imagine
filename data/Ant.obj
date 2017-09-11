@@ -1,6 +1,6 @@
 # Blender v2.76 (sub 0) OBJ File: ''
 # www.blender.org
-mtllib Ant.mtl
+mtllib data/Ant.mtl
 o Ant
 v -0.072228 0.235568 0.624797
 v -0.169347 0.593931 0.680345

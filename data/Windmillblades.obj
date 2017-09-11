@@ -1,6 +1,6 @@
 # Blender v2.76 (sub 0) OBJ File: ''
 # www.blender.org
-mtllib Windmillblades.mtl
+mtllib data/Windmillblades.mtl
 o Windmillblades
 v -0.097545 -0.000000 -0.183659
 v -0.191342 -0.000000 -0.173003
