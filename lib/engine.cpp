@@ -29,7 +29,7 @@ Engine::Engine(void)
 	fragmentShaderFile = "lib/glsl/fshader.glsl";
 	DEFAULT_CLEAR_COLOR = glm::vec4(0.0, 0.0, 0.0, 1.0);
 	LIGHT0POS = glm::vec3(0.0f, 3.0f, 5.0f);
-	AMBIENTLIGHT = glm::vec3(0.1f, 0.1f, 0.1f);
+	AMBIENTLIGHT = glm::vec3(0.2f, 0.2f, 0.2f);
 	eye.movespeed = 3.0; //Meters per Second
 	eye.lookspeed = radians(0.05); //Degrees per rel movment
 	init();
@@ -70,8 +70,17 @@ bool Engine::init(void)
 	SDL_SetWindowGrab(p_window, SDL_TRUE);
 	SDL_SetRelativeMouseMode(SDL_TRUE);
 	init_shaders();
-	glUniform3fv(ambientLightShaderUniLoc, 1, &AMBIENTLIGHT[0]);	
+	glUniform3fv(ambientGlobalShaderUniLoc, 1, &AMBIENTLIGHT[0]);	
 	glUniform3fv(light0posShaderUniLoc, 1, &LIGHT0POS[0]);
+	glm::vec3 ambientLight = glm::vec3(0.3f, 0.3f, 0.3f);
+	glUniform3fv(ambientLightShaderUniLoc, 1, &ambientLight[0]);
+	glm::vec3 specularLight = glm::vec3(0.8f, 0.8f, 0.8f);
+	glUniform3fv(specularLightShaderUniLoc, 1, &specularLight[0]);
+	glm::vec3 diffuseLight = glm::vec3(0.8f, 0.8f, 0.8f);
+	glUniform3fv(diffuseLightShaderUniLoc, 1, &diffuseLight[0]);
+	glUniform1f(KcShaderUniLoc, 1.0);
+	glUniform1f(KlShaderUniLoc, 0.3);
+	glUniform1f(KqShaderUniLoc, 0.0); 
 	loadResources();
 	frame_start_time = SDL_GetPerformanceCounter();
 	return true;
@@ -87,7 +96,19 @@ bool Engine::init_shaders(void)
 	transformationMatShaderUniLoc = glGetUniformLocation(programID, "transformationMatrix");
 	mtwMatShaderUniLoc = glGetUniformLocation(programID, "mtwMatrix");
 	light0posShaderUniLoc = glGetUniformLocation(programID, "light0pos");
+	eyePosShaderUniLoc = glGetUniformLocation(programID, "eyePos");
 	ambientLightShaderUniLoc = glGetUniformLocation(programID, "ambientLight");
+	ambientGlobalShaderUniLoc = glGetUniformLocation(programID, "ambientGlobal");
+	specularLightShaderUniLoc = glGetUniformLocation(programID, "specularLight");
+	diffuseLightShaderUniLoc = glGetUniformLocation(programID, "diffuseLight");
+	KsShaderUniLoc = glGetUniformLocation(programID, "Ks");
+	NsShaderUniLoc = glGetUniformLocation(programID, "Ns");
+	KdShaderUniLoc = glGetUniformLocation(programID, "Kd");
+	KaShaderUniLoc = glGetUniformLocation(programID, "Ka");
+	KeShaderUniLoc = glGetUniformLocation(programID, "Ke");
+	KcShaderUniLoc = glGetUniformLocation(programID, "Kc");
+	KlShaderUniLoc = glGetUniformLocation(programID, "Kl");
+	KqShaderUniLoc = glGetUniformLocation(programID, "Kq");
 	return true;
 }
 
@@ -126,7 +147,7 @@ void Engine::handle_logic(void)
 	int Ant = modelMap["Ant"];
 	int Plane = modelMap["Plane"];
 	model[Plane].translationMatrix = glm::translate(glm::mat4(), glm::vec3(0.0f,- 0.5f, 0.0f));
-	model[Ant].translationMatrix = glm::translate(glm::mat4(), glm::vec3(8.0f, 0.2f, -3.0f));
+	model[Ant].translationMatrix = glm::translate(glm::mat4(), glm::vec3(0.0f, 0.2f, -3.0f));
 	model[Ant].rotationMatrix *= glm::rotate(glm::mat4(), radians(0.5), glm::vec3(0.0f, 1.0f, 0.0f));
 	model[Windmillpole].rotationMatrix = glm::rotate(glm::mat4(), radians(90), glm::vec3(0.0f, 1.0f, 0.0f));
 	model[Windmillpole].translationMatrix = glm::translate(glm::mat4(), glm::vec3(-4.0f, 0.0f, -3.0));
@@ -134,7 +155,7 @@ void Engine::handle_logic(void)
 	model[Windmillblades].rotationMatrix *= glm::rotate(glm::mat4(), radians(3), glm::vec3(0.0f, 0.0f, 1.0f));
 	model[Cube].translationMatrix = glm::translate(glm::mat4(), glm::vec3(4.0f, 0.5f, -3.0f));
 	model[Cube].rotationMatrix *= glm::rotate(glm::mat4(), radians(0.5), glm::vec3(-1.0f, -1.0f, 0.0f));
-	model[Suzanne].translationMatrix = glm::translate(glm::mat4(), glm::vec3(0.0f, 0.7f, -3.0f));
+	model[Suzanne].translationMatrix = glm::translate(glm::mat4(), glm::vec3(8.0f, 1.0f, -3.0f));
 	model[Suzanne].rotationMatrix *= glm::rotate(glm::mat4(), radians(0.5), glm::vec3(1.0f, 1.0f, 0.0f));
 }
 
@@ -145,18 +166,36 @@ void Engine::render(void)
 	if (SDL_GetWindowGrab(p_window) == SDL_TRUE) {eye.update(frame_delta);}
 	glClear(ACTIVEBUFFERS);
 	glBindBuffer(GL_ARRAY_BUFFER, vram.vboID);
+	 
+	glm::vec3 pos = eye.posVector;
+	glUniform3fv(eyePosShaderUniLoc, 1, &pos[0]);
 	for (int n = 0; n < modelAmount; n++)
 	{
+		glm::mat4 mtwMatrix = model[n].translationMatrix *
+							  model[n].rotationMatrix;
+		glm::mat4 transformationMatrix = eye.projectionMatrix *
+										 eye.getViewMatrix() *
+										 mtwMatrix;
+		glUniformMatrix4fv(mtwMatShaderUniLoc, 1, GL_FALSE, &mtwMatrix[0][0]);
+		glUniformMatrix4fv(transformationMatShaderUniLoc, 1, GL_FALSE, &transformationMatrix[0][0]);
 		if (model[n].vboloaded == true && model[n].hidden == false)
 		{
-			glm::mat4 mtwMatrix = model[n].translationMatrix *
-								  model[n].rotationMatrix;
-			glm::mat4 transformationMatrix = eye.projectionMatrix *
-											 eye.getViewMatrix() *
-											 mtwMatrix;
-			glUniformMatrix4fv(mtwMatShaderUniLoc, 1, GL_FALSE, &mtwMatrix[0][0]);
-			glUniformMatrix4fv(transformationMatShaderUniLoc, 1, GL_FALSE, &transformationMatrix[0][0]); 
-			glDrawArrays(GL_TRIANGLES, model[n].vboOffsetIndex, model[n].vertexAmount);
+			for (int j = 0; j < model[n].faceGroupAmount; j++)
+			{
+				glm::vec3 Ks = model[n].materialArr[model[n].groupArr[j].mtlID].Ks;
+				glUniform3fv(KsShaderUniLoc, 1, &Ks[0]);
+				float Ns = model[n].materialArr[model[n].groupArr[j].mtlID].Ns;
+				glUniform1f(NsShaderUniLoc, Ns);
+				glm::vec3 Kd = model[n].materialArr[model[n].groupArr[j].mtlID].Kd;
+				glUniform3fv(KdShaderUniLoc, 1, &Kd[0]);
+				glm::vec3 Ka = model[n].materialArr[model[n].groupArr[j].mtlID].Ka;
+				glUniform3fv(KaShaderUniLoc, 1, &Ka[0]);
+				glm::vec3 Ke = model[n].materialArr[model[n].groupArr[j].mtlID].Ke;
+				glUniform3fv(KeShaderUniLoc, 1, &Ke[0]);
+				glDrawArrays(GL_TRIANGLES,
+							 model[n].vboOffsetIndex + model[n].groupArr[j].offsetIndex,
+							 model[n].groupArr[j].vertexAmount);
+			}
 		}
 	}
 	glBindBuffer(GL_ARRAY_BUFFER, 0);

@@ -182,8 +182,16 @@ bool OBJReader::parseOBJ(void)
 			else if (command == "mtllib") {continue;} //Handled in preproc
 			else if (command == "usemtl")
 			{
+				if (gOffset > -1)
+				{
+					int vertexAmount = iOffset - groupArr[gOffset].offsetIndex;
+					groupArr[gOffset].vertexAmount = vertexAmount;
+					groupArr[gOffset].vertexSizeBytes = vertexAmount * 6 * sizeof(float);
+				}
 				gOffset++;
 				groupArr[gOffset].mtlName = split(line, ' ', 1);
+				groupArr[gOffset].offsetIndex = iOffset;
+				groupArr[gOffset].offsetBytes = iOffset * 6 * sizeof(float);
 			}
 			else if (command == "s")
 			{
@@ -241,7 +249,11 @@ bool OBJReader::parseOBJ(void)
 				std::cout << "Warning: Unrecognized command '" << command <<
 							 "' in OBJ file '" << objFilename << "'." << std::endl;
 			}
+			
 		}
+		int vertexAmount = iOffset - groupArr[gOffset].offsetIndex;
+		groupArr[gOffset].vertexAmount = vertexAmount;
+		groupArr[gOffset].vertexSizeBytes = vertexAmount * 6 * sizeof(float);
 	}
 	else
 	{
@@ -372,12 +384,20 @@ bool OBJReader::genResource(void)
 	obj.mtlFilename = objFilename;
 	obj.vertexData = vboData;
 	obj.vertexAmount = indexAmount;
+	obj.materialAmount = materialAmount;
+	obj.materialArr = materialArr;
+	obj.faceGroupAmount = faceGroupAmount;
+	for (int n = 0; n < faceGroupAmount; n++)
+	{
+		groupArr[n].mtlID = materialMap[groupArr[n].mtlName];
+	}
+	obj.groupArr = groupArr;
 	obj.vertexSizeBytes = indexAmount * 2 * sizeof(glm::vec3);
 	obj.tobevboloaded = true;
 	obj.vboloaded = false;
 	obj.hidden = false;
 	obj.translationMatrix = glm::mat4();
-	obj.rotationMatrix = glm::mat4(); 
+	obj.rotationMatrix = glm::mat4();
 	releaseMem();
 	return true;
 }
@@ -392,12 +412,12 @@ ResourceManager::ResourceManager(void)
 	modelArr = new modelResource[modelAmount];
 }
 
-bool ResourceManager::pullOBJResources(modelResource res)
+bool ResourceManager::pullOBJResources(modelResource model)
 {
-	if (modelMap.find(res.name) == modelMap.end())
+	if (modelMap.find(model.name) == modelMap.end())
 	{
-		res.id = modelAmount;
-		modelMap[res.name] = res.id;
+		model.id = modelAmount;
+		modelMap[model.name] = model.id;
 		modelAmount++;
 		modelResource* newArr = new modelResource[modelAmount - 1];
 		for (int n = 0; n < modelAmount - 1; n++) {newArr[n] = modelArr[n];}
@@ -405,11 +425,11 @@ bool ResourceManager::pullOBJResources(modelResource res)
 		modelArr = new modelResource[modelAmount];
 		for (int n = 0; n < modelAmount - 1; n++) {modelArr[n] = newArr[n];}
 		delete [] newArr;
-		modelArr[res.id] = res;
+		modelArr[model.id] = model;
 	}
 	else
 	{
-		std::cout << "Warning: Model resource with name '" << res.name << "' already exists." << std::endl;
+		std::cout << "Warning: Model resource with name '" << model.name << "' already exists." << std::endl;
 	}
 }
 
@@ -418,7 +438,8 @@ bool ResourceManager::releaseMem(void)
 	for (int n = 0; n < modelAmount; n++)
 	{
 		delete [] modelArr[n].vertexData;
-		//delete [] modelArr[n].groupArr;
+		delete [] modelArr[n].groupArr;
+		delete [] modelArr[n].materialArr;
 	}
 	delete [] modelArr;
 }
@@ -479,7 +500,6 @@ bool VRAMManager::genVBO(modelResource* model, int modelAmount)
 						  GL_FLOAT, GL_FALSE,
 						  vboStride, normalStart);
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
-	
 }
 
 bool VRAMManager::releaseMem(void)

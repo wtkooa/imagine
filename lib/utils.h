@@ -52,12 +52,13 @@ class material
 class faceGroup
 {
 	public:
+	int mtlID;
 	std::string mtlName;
 	int smooth;
 	int vertexAmount;
 	int vertexSizeBytes;
-	int vboOffsetIndex;
-	int vboOffsetBytes;	
+	int offsetIndex;
+	int offsetBytes;	
 };
 
 class modelResource

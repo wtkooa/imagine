@@ -46,6 +46,18 @@ class Engine
 	GLint mtwMatShaderUniLoc;
 	GLint light0posShaderUniLoc;
 	GLint ambientLightShaderUniLoc;
+	GLint eyePosShaderUniLoc;
+	GLint ambientGlobalShaderUniLoc;
+	GLint specularLightShaderUniLoc;
+	GLint diffuseLightShaderUniLoc;
+	GLint KsShaderUniLoc;
+	GLint NsShaderUniLoc;
+	GLint KdShaderUniLoc;
+	GLint KaShaderUniLoc;
+	GLint KeShaderUniLoc;
+	GLint KcShaderUniLoc;
+	GLint KlShaderUniLoc;
+	GLint KqShaderUniLoc;
 	unsigned long frame_start_time;
 	unsigned long frame_end_time;
 	float frame_delta;
