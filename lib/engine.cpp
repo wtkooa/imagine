@@ -4,6 +4,7 @@
 #include <string>
 #include <GL/gl.h>
 #include <GL/glu.h>
+#include <SDL2/SDL_image.h>
 #include <SDL2/SDL.h>
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
@@ -28,7 +29,7 @@ Engine::Engine(void)
 	vertexShaderFile = "lib/glsl/vshader.glsl";
 	fragmentShaderFile = "lib/glsl/fshader.glsl";
 	DEFAULT_CLEAR_COLOR = glm::vec4(0.0, 0.0, 0.0, 1.0);
-	LIGHT0POS = glm::vec3(0.0f, 3.0f, 5.0f);
+	LIGHT0POS = glm::vec3(0.0f, 8.0f, 5.0f);
 	AMBIENTLIGHT = glm::vec3(0.2f, 0.2f, 0.2f);
 	eye.movespeed = 3.0; //Meters per Second
 	eye.lookspeed = radians(0.05); //Degrees per rel movment
@@ -78,8 +79,8 @@ bool Engine::init(void)
 	glUniform3fv(specularLightShaderUniLoc, 1, &specularLight[0]);
 	glm::vec3 diffuseLight = glm::vec3(0.8f, 0.8f, 0.8f);
 	glUniform3fv(diffuseLightShaderUniLoc, 1, &diffuseLight[0]);
-	glUniform1f(KcShaderUniLoc, 1.0);
-	glUniform1f(KlShaderUniLoc, 0.3);
+	glUniform1f(KcShaderUniLoc, 0.5);
+	glUniform1f(KlShaderUniLoc, 0.1);
 	glUniform1f(KqShaderUniLoc, 0.0); 
 	loadResources();
 	frame_start_time = SDL_GetPerformanceCounter();
@@ -109,6 +110,10 @@ bool Engine::init_shaders(void)
 	KcShaderUniLoc = glGetUniformLocation(programID, "Kc");
 	KlShaderUniLoc = glGetUniformLocation(programID, "Kl");
 	KqShaderUniLoc = glGetUniformLocation(programID, "Kq");
+	textureShaderUniLoc = glGetUniformLocation(programID, "texID");
+	hasTextureShaderUniLoc = glGetUniformLocation(programID, "hasTexture");
+	glUniform1i(textureShaderUniLoc, 0);
+	glActiveTexture(GL_TEXTURE0);
 	return true;
 }
 
@@ -120,6 +125,8 @@ bool Engine::loadResources(void)
 	loadOBJ("data/Windmillblades.obj");
 	loadOBJ("data/Ant.obj");
 	loadOBJ("data/Plane.obj");
+	loadOBJ("data/Untitled.obj");
+	loadOBJ("data/Pot.obj");
 	vram.genVBO(rm.modelArr, rm.modelAmount);
 	return true;
 }
@@ -146,6 +153,12 @@ void Engine::handle_logic(void)
 	int Windmillblades = modelMap["Windmillblades"];
 	int Ant = modelMap["Ant"];
 	int Plane = modelMap["Plane"];
+	int Untitled = modelMap["Untitled"];
+	int Pot = modelMap["Pot"];
+	model[Pot].translationMatrix = glm::translate(glm::mat4(), glm::vec3(4.0f, 0.5f, 2.0f));
+	model[Pot].rotationMatrix *= glm::rotate(glm::mat4(), radians(0.5), glm::vec3(0.0f, 1.0f, 0.0f));
+	model[Untitled].translationMatrix = glm::translate(glm::mat4(), glm::vec3(-4.0f, 1.1f, 2.0f));
+	model[Untitled].rotationMatrix *= glm::rotate(glm::mat4(), radians(0.5), glm::vec3(1.0f, 0.0f, 1.0f));
 	model[Plane].translationMatrix = glm::translate(glm::mat4(), glm::vec3(0.0f,- 0.5f, 0.0f));
 	model[Ant].translationMatrix = glm::translate(glm::mat4(), glm::vec3(0.0f, 0.2f, -3.0f));
 	model[Ant].rotationMatrix *= glm::rotate(glm::mat4(), radians(0.5), glm::vec3(0.0f, 1.0f, 0.0f));
@@ -182,6 +195,16 @@ void Engine::render(void)
 		{
 			for (int j = 0; j < model[n].faceGroupAmount; j++)
 			{
+				GLuint textureID = model[n].materialArr[model[n].groupArr[j].mtlID].textureID;
+				if (textureID != 0)
+				{
+					glBindTexture(GL_TEXTURE_2D, textureID);
+					glUniform1i(hasTextureShaderUniLoc, 1);
+				}
+				else
+				{
+					glUniform1i(hasTextureShaderUniLoc, 0);
+				}
 				glm::vec3 Ks = model[n].materialArr[model[n].groupArr[j].mtlID].Ks;
 				glUniform3fv(KsShaderUniLoc, 1, &Ks[0]);
 				float Ns = model[n].materialArr[model[n].groupArr[j].mtlID].Ns;
@@ -195,6 +218,7 @@ void Engine::render(void)
 				glDrawArrays(GL_TRIANGLES,
 							 model[n].vboOffsetIndex + model[n].groupArr[j].offsetIndex,
 							 model[n].groupArr[j].vertexAmount);
+				if (textureID != 0) {glBindTexture(GL_TEXTURE_2D, 0);}
 			}
 		}
 	}

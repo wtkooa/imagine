@@ -10,6 +10,7 @@
 #include <GL/glu.h>
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
+#include <SDL2/SDL_image.h>
 #include <SDL2/SDL.h>
 #include "utils.h"
 
@@ -75,6 +76,7 @@ OBJReader::OBJReader(std::string name)
 	objFilename = name;	
 	mtlFilename = "void";
 	vertexAmount = 0;
+	textureAmount = 0;
 	normalAmount = 0;
 	indexAmount = 0;
 	faceGroupAmount = 0;
@@ -100,6 +102,7 @@ bool OBJReader::preprocOBJ(void)
 		{
 			std::string command = split(line, ' ', 0);
 			if (command == "v") {vertexAmount++;}
+			else if (command == "vt") {textureAmount++;}
 			else if (command == "vn") {normalAmount++;}
 			else if (command == "f") {indexAmount += 3;}
 			else if (command == "usemtl") {faceGroupAmount++;}
@@ -142,6 +145,7 @@ bool OBJReader::allocMem(void)
 	try
 	{
 		vertexData = new glm::vec3[vertexAmount];
+		textureData = new glm::vec3[textureAmount];
 		normalData = new glm::vec3[normalAmount];
 		indexData = new glm::ivec3[indexAmount];	
 		groupArr = new faceGroup[faceGroupAmount];
@@ -158,6 +162,7 @@ bool OBJReader::allocMem(void)
 bool OBJReader::releaseMem(void)
 {
 	delete [] vertexData;
+	delete [] textureData;
 	delete [] normalData;
 	delete [] indexData;
 	return true;
@@ -170,6 +175,7 @@ bool OBJReader::parseOBJ(void)
 	if (OBJFile.is_open())
 	{
 		size_t vOffset = 0;
+		size_t tOffset = 0;
 		size_t nOffset = 0;
 		size_t iOffset = 0;
 		int gOffset = -1;
@@ -215,19 +221,22 @@ bool OBJReader::parseOBJ(void)
 				float x = stof(split(line, ' ', 1));
 				float y = stof(split(line, ' ', 2));
 				float z = stof(split(line, ' ', 3));	
-				*(vertexData + vOffset) = glm::vec3(x,y,z);
+				vertexData[vOffset] = glm::vec3(x,y,z);
 				vOffset++;
 			}
 			else if (command == "vt")
 			{
-				continue; //Texures - Coming Soon ^_^
+				float u = stof(split(line, ' ', 1));
+				float v = stof(split(line, ' ', 2));
+				textureData[tOffset] = glm::vec3(u, v, 0.0);
+				tOffset++;
 			}
 			else if (command == "vn")
 			{
 				float x = stof(split(line, ' ', 1));
 				float y = stof(split(line, ' ', 2));
 				float z = stof(split(line, ' ', 3));
-				*(normalData + nOffset) = glm::vec3(x,y,z);
+				normalData[nOffset] = glm::vec3(x,y,z);
 				nOffset++;	
 			}
 			else if (command == "f")
@@ -240,7 +249,7 @@ bool OBJReader::parseOBJ(void)
 					if (str_t == "") {str_t = "0";}
 					int t = stoi(str_t);	
 					int n = stoi(split(subline, '/', 2));
-					*(indexData + iOffset) = glm::ivec3(v,t,n);
+					indexData[iOffset] = glm::ivec3(v,t,n);
 					iOffset++;
 				}	
 			}
@@ -284,6 +293,8 @@ bool OBJReader::parseMTL(void)
 				materialArr[mOffset].name = split(line, ' ', 1);
 				materialMap[materialArr[mOffset].name] = mOffset;
 				materialArr[mOffset].mtlFilename = mtlFilename;
+				materialArr[mOffset].map_Kd = "";
+				materialArr[mOffset].textureID = 0;
 			}
 			else if (command == "Ns")
 			{
@@ -329,6 +340,12 @@ bool OBJReader::parseMTL(void)
 			{
 				materialArr[mOffset].illum = stoi(split(line, ' ', 1));
 			}
+			else if (command == "map_Kd")
+			{
+				std::string textureFilename = split(line, ' ', 1);
+				materialArr[mOffset].map_Kd = textureFilename;
+				materialArr[mOffset].textureID = loadTexture(textureFilename); 
+			}
 			else
 			{
 				std::cout << "Warning: Unrecognized command '" << command <<
@@ -349,7 +366,7 @@ bool OBJReader::allocConvMem(void)
 {
 	try
 	{
-		vboData = new glm::vec3[indexAmount * 2];
+		vboData = new glm::vec3[indexAmount * 3];
 	}
 	catch (std::exception& exc)
 	{
@@ -363,13 +380,19 @@ bool OBJReader::vboConvert(void)
 {
 	size_t vboOffset = 0;	
 	size_t vOffset = 0;
+	size_t tOffset = 0;
 	size_t nOffset = 0;
 	for (int offset = 0; offset < indexAmount; offset++)
 	{
 		glm::ivec3 index = indexData[offset];
 		vOffset = index[0] - 1;
+		glm::vec3 textureVector;
+		if (index[1] == 0) {textureVector = glm::vec3(0.0, 0.0, 0.0);}
+		else {textureVector = textureData[index[1] - 1];}
 		nOffset = index[2] - 1;
 		vboData[vboOffset] = vertexData[vOffset];
+		vboOffset++;
+		vboData[vboOffset] = textureVector;
 		vboOffset++;
 		vboData[vboOffset] = normalData[nOffset];	
 		vboOffset++;
@@ -392,7 +415,7 @@ bool OBJReader::genResource(void)
 		groupArr[n].mtlID = materialMap[groupArr[n].mtlName];
 	}
 	obj.groupArr = groupArr;
-	obj.vertexSizeBytes = indexAmount * 2 * sizeof(glm::vec3);
+	obj.vertexSizeBytes = indexAmount * 3 * sizeof(glm::vec3);
 	obj.tobevboloaded = true;
 	obj.vboloaded = false;
 	obj.hidden = false;
@@ -404,6 +427,24 @@ bool OBJReader::genResource(void)
 
 modelResource OBJReader::pushResource(void) {return obj;}
 
+GLuint loadTexture(std::string filename)
+{
+	SDL_Surface* texture;
+	GLuint textureID;
+	int mode;
+	texture = IMG_Load(filename.c_str());
+	if (!texture) {std::cout << "Warning: Texture '" << filename << "' failed to load..." << std::endl;}
+	glGenTextures(1, &textureID);
+	glBindTexture(GL_TEXTURE_2D, textureID);
+	if (texture->format->BytesPerPixel == 4) {mode = GL_RGBA;}
+	else if (texture->format->BytesPerPixel = 3) {mode = GL_RGB;}
+	glTexImage2D(GL_TEXTURE_2D, 0, mode, texture->w, texture->h, 0, mode, GL_UNSIGNED_BYTE, texture->pixels);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	glBindTexture(GL_TEXTURE_2D, 0);
+	SDL_FreeSurface(texture);
+	return textureID;
+}
 
 //Resource Manager
 ResourceManager::ResourceManager(void)
@@ -451,9 +492,11 @@ VRAMManager::VRAMManager(void)
 	vboSizeBytes = 0;
 	positionStart = (void*)(0);
 	positionDim = 3;
-	normalStart = (void*)(sizeof(float) * 3);
+	textureStart = (void*)(sizeof(float) * 3);
+	textureDim = 3;
+	normalStart = (void*)(sizeof(float) * 6);
 	normalDim = 3;
-	vboStride = sizeof(float) * 6;
+	vboStride = sizeof(float) * 9;
 	glGenBuffers(1, &vboID);
 	glBindBuffer(GL_ARRAY_BUFFER, vboID);	
 }
@@ -493,10 +536,14 @@ bool VRAMManager::genVBO(modelResource* model, int modelAmount)
 	}	
 	glEnableVertexAttribArray(0);
 	glEnableVertexAttribArray(1);
+	glEnableVertexAttribArray(2);
 	glVertexAttribPointer(0, positionDim,
 						  GL_FLOAT, GL_FALSE,
 						  vboStride, positionStart);
-	glVertexAttribPointer(1, normalDim,
+	glVertexAttribPointer(1, textureDim,
+						  GL_FLOAT, GL_FALSE,
+						  vboStride, textureStart);
+	glVertexAttribPointer(2, normalDim,
 						  GL_FLOAT, GL_FALSE,
 						  vboStride, normalStart);
 	glBindBuffer(GL_ARRAY_BUFFER, 0);

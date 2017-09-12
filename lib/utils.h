@@ -47,6 +47,8 @@ class material
 	float Ni;
 	float d;
 	int illum;
+	std::string map_Kd;
+	GLuint textureID;
 };
 
 class faceGroup
@@ -106,10 +108,12 @@ class OBJReader
 	std::string objFilename;
 	std::string mtlFilename;
 	glm::vec3* vertexData;
+	glm::vec3* textureData;
 	glm::vec3* normalData;
 	glm::ivec3* indexData;
 	glm::vec3* vboData;
 	int vertexAmount;
+	int textureAmount;
 	int normalAmount;
 	int indexAmount;
 	faceGroup* groupArr;
@@ -119,6 +123,9 @@ class OBJReader
 	int materialAmount;
 	modelResource obj;
 };
+
+//Texture Reader 
+GLuint loadTexture(std::string);
 
 
 //Manager
@@ -143,6 +150,8 @@ class VRAMManager
 	int vboSizeBytes;
 	void* positionStart;
 	GLuint positionDim;
+	GLuint textureDim;
+	void* textureStart;
 	GLuint normalDim;
 	void* normalStart;
 	GLuint vboStride;

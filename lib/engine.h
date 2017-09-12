@@ -58,6 +58,8 @@ class Engine
 	GLint KcShaderUniLoc;
 	GLint KlShaderUniLoc;
 	GLint KqShaderUniLoc;
+	GLint hasTextureShaderUniLoc;
+	GLint textureShaderUniLoc;
 	unsigned long frame_start_time;
 	unsigned long frame_end_time;
 	float frame_delta;
