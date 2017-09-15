@@ -1,14 +1,18 @@
 #define GL_GLEXT_PROTOTYPES //Needs to be defined for some GL funcs to work.
+
 #include <iostream>
 #include <map>
 #include <string>
+
 #include <GL/gl.h>
 #include <GL/glu.h>
 #include <SDL2/SDL_image.h>
 #include <SDL2/SDL.h>
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
+
 #include "engine.h"
+#include "ie_time.h"
 #include "utils.h"
 
 Engine::Engine(void)
@@ -29,9 +33,9 @@ Engine::Engine(void)
 	vertexShaderFile = "lib/glsl/vshader.glsl";
 	fragmentShaderFile = "lib/glsl/fshader.glsl";
 	DEFAULT_CLEAR_COLOR = glm::vec4(0.0, 0.0, 0.0, 1.0);
-	LIGHT0POS = glm::vec3(0.0f, 8.0f, 5.0f);
+	LIGHT0POS = glm::vec3(0.0f, 3.0f, 0.0f);
 	AMBIENTLIGHT = glm::vec3(0.2f, 0.2f, 0.2f);
-	eye.movespeed = 3.0; //Meters per Second
+	eye.movespeed = 1.0; //Meters per Second
 	eye.lookspeed = radians(0.05); //Degrees per rel movment
 	init();
 	run();
@@ -83,7 +87,6 @@ bool Engine::init(void)
 	glUniform1f(KlShaderUniLoc, 0.1);
 	glUniform1f(KqShaderUniLoc, 0.0); 
 	loadResources();
-	frame_start_time = SDL_GetPerformanceCounter();
 	return true;
 }
 
@@ -119,14 +122,7 @@ bool Engine::init_shaders(void)
 
 bool Engine::loadResources(void)
 {
-	loadOBJ("data/Suzanne.obj");	
 	loadOBJ("data/Cube.obj");
-	loadOBJ("data/Windmillpole.obj");
-	loadOBJ("data/Windmillblades.obj");
-	loadOBJ("data/Ant.obj");
-	loadOBJ("data/Plane.obj");
-	loadOBJ("data/Untitled.obj");
-	loadOBJ("data/Pot.obj");
 	vram.genVBO(rm.modelArr, rm.modelAmount);
 	return true;
 }
@@ -135,7 +131,7 @@ bool Engine::run(void)
 {
 	engine_on = true;
 	while (engine_on) {
-		handle_time();
+		frameClock.measure();
 		handle_events();
 		handle_logic();
 		render();
@@ -147,36 +143,19 @@ void Engine::handle_logic(void)
 {
 	modelResource* model = rm.modelArr;
 	std::map<std::string, int> modelMap = rm.modelMap;
-	int Suzanne = modelMap["Suzanne"];
 	int Cube = modelMap["Cube"];
-	int Windmillpole = modelMap["Windmillpole"];
-	int Windmillblades = modelMap["Windmillblades"];
-	int Ant = modelMap["Ant"];
-	int Plane = modelMap["Plane"];
-	int Untitled = modelMap["Untitled"];
-	int Pot = modelMap["Pot"];
-	model[Pot].translationMatrix = glm::translate(glm::mat4(), glm::vec3(4.0f, 0.5f, 2.0f));
-	model[Pot].rotationMatrix *= glm::rotate(glm::mat4(), radians(0.5), glm::vec3(0.0f, 1.0f, 0.0f));
-	model[Untitled].translationMatrix = glm::translate(glm::mat4(), glm::vec3(-4.0f, 1.1f, 2.0f));
-	model[Untitled].rotationMatrix *= glm::rotate(glm::mat4(), radians(0.5), glm::vec3(1.0f, 0.0f, 1.0f));
-	model[Plane].translationMatrix = glm::translate(glm::mat4(), glm::vec3(0.0f,- 0.5f, 0.0f));
-	model[Ant].translationMatrix = glm::translate(glm::mat4(), glm::vec3(0.0f, 0.2f, -3.0f));
-	model[Ant].rotationMatrix *= glm::rotate(glm::mat4(), radians(0.5), glm::vec3(0.0f, 1.0f, 0.0f));
-	model[Windmillpole].rotationMatrix = glm::rotate(glm::mat4(), radians(90), glm::vec3(0.0f, 1.0f, 0.0f));
-	model[Windmillpole].translationMatrix = glm::translate(glm::mat4(), glm::vec3(-4.0f, 0.0f, -3.0));
-	model[Windmillblades].translationMatrix = glm::translate(glm::mat4(), glm::vec3(-4.0f, 3.6f, -1.8f));
-	model[Windmillblades].rotationMatrix *= glm::rotate(glm::mat4(), radians(3), glm::vec3(0.0f, 0.0f, 1.0f));
-	model[Cube].translationMatrix = glm::translate(glm::mat4(), glm::vec3(4.0f, 0.5f, -3.0f));
-	model[Cube].rotationMatrix *= glm::rotate(glm::mat4(), radians(0.5), glm::vec3(-1.0f, -1.0f, 0.0f));
-	model[Suzanne].translationMatrix = glm::translate(glm::mat4(), glm::vec3(8.0f, 1.0f, -3.0f));
-	model[Suzanne].rotationMatrix *= glm::rotate(glm::mat4(), radians(0.5), glm::vec3(1.0f, 1.0f, 0.0f));
+	model[Cube].translationMatrix = glm::translate(glm::mat4(), glm::vec3(0.0f, 0.0f, -3.0f));
+	model[Cube].rotationMatrix *= glm::rotate(glm::mat4(), radians(0.5), glm::vec3(1.0f, 1.0f, 0.0f));
 }
 
 void Engine::render(void)
 {
 	modelResource* model = rm.modelArr;
 	int modelAmount = rm.modelAmount;
-	if (SDL_GetWindowGrab(p_window) == SDL_TRUE) {eye.update(frame_delta);}
+	if (SDL_GetWindowGrab(p_window) == SDL_TRUE)
+	{
+		eye.update(frameClock.getFrameDelta());
+	}
 	glClear(ACTIVEBUFFERS);
 	glBindBuffer(GL_ARRAY_BUFFER, vram.vboID);
 	 
@@ -224,14 +203,6 @@ void Engine::render(void)
 	}
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 	SDL_GL_SwapWindow(p_window);
-}
-
-void Engine::handle_time(void)
-{
-	frame_end_time = SDL_GetPerformanceCounter();
-	frame_delta = ((frame_end_time - frame_start_time) * 1000.0 ) / SDL_GetPerformanceFrequency();
-	frame_start_time = SDL_GetPerformanceCounter();
-	fps = 1000.0 / frame_delta;
 }
 
 void Engine::handle_events(void)

@@ -187,18 +187,3 @@ class GLSL_Compiler
 	GLuint fragmentShaderID;
 	GLuint programID;
 };
-
-
-//Time
-class Time_Gauge
-{
-	public:
-	void start(void);
-	void end(void);
-	void gauge(void);
-	private:
-	unsigned long start_time;
-	unsigned long end_time;
-	float time_delta;
-	float per_second;
-};

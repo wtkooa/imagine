@@ -1,9 +1,12 @@
 #pragma once
 #include <string>
+
 #include <GL/gl.h>
 #include <GL/glu.h>
 #include <glm/glm.hpp>
 #include <SDL2/SDL.h>
+
+#include "ie_time.h"
 #include "utils.h"
 
 class Engine
@@ -60,15 +63,11 @@ class Engine
 	GLint KqShaderUniLoc;
 	GLint hasTextureShaderUniLoc;
 	GLint textureShaderUniLoc;
-	unsigned long frame_start_time;
-	unsigned long frame_end_time;
-	float frame_delta;
-	float fps;
 	GLSL_Compiler compiler;
 	glm::vec3 LIGHT0POS;
 	glm::vec3 AMBIENTLIGHT;
+	ie::FrameClock frameClock;
 	Camera eye;
-	Time_Gauge measureTime;
 	ResourceManager rm;
 	VRAMManager vram;
 };

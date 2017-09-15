@@ -673,19 +673,3 @@ bool GLSL_Compiler::cleanUpShaders(void)
 	glUseProgram(0);
 	glDeleteProgram(programID);
 }
-
-
-//Time
-void Time_Gauge::start(void) {start_time = SDL_GetPerformanceCounter();}
-
-void Time_Gauge::end(void)
-{
-	end_time = SDL_GetPerformanceCounter();
-	time_delta = ((end_time - start_time) * 1000.0) / SDL_GetPerformanceFrequency();
-	per_second = 1000.0 / time_delta;
-}
-
-void Time_Gauge::gauge(void)
-{
-	std::cout << time_delta << " msec | " << per_second << " exec per sec" << std::endl;
-}
