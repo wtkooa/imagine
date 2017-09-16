@@ -4,22 +4,25 @@ in vec3 mtwPosition;
 in vec3 texturePipe;
 in vec3 mtwNormal;
 
-uniform vec3 light0pos;
-uniform vec3 eyePos;
-uniform vec3 ambientGlobal; //Global Ambient Light
-uniform vec3 ambientLight;  //Ambient from Light Source
-uniform vec3 specularLight; //Specular Light Color
-uniform vec3 diffuseLight;  //Diffuse Light Color
-uniform vec3 Ks;            //Material Specular
-uniform float Ns;           //Material Shininess
-uniform vec3 Kd;            //Material Diffuse
-uniform vec3 Ka;            //Material Ambient
-uniform vec3 Ke;            //Material Emission
-uniform float Kc;           //Falloff Constant
-uniform float Kl;           //Falloff Linear
-uniform float Kq;           //Falloff Quadratic
-uniform sampler2D texID;
-uniform int hasTexture;
+uniform vec3 cameraPos;
+
+uniform vec3 pointLightPos;
+uniform vec3 globalAmbient;
+uniform vec3 lightAmbient;
+uniform vec3 lightSpecular;
+uniform vec3 lightDiffuse; 
+uniform float lightConstantFalloff;
+uniform float lightLinearFalloff;
+uniform float lightQuadraticFalloff;
+
+uniform vec3 materialSpecular;
+uniform float materialShininess;
+uniform vec3 materialDiffuse;
+uniform vec3 materialAmbient;
+uniform vec3 materialEmission;
+
+uniform sampler2D textureID;
+uniform int usingTexture;
 
 out vec4 fragmentColor;
 
@@ -27,44 +30,37 @@ void main()
 {
 
     //CALCULATING DIFFUSE LIGHT TERM
-    vec3 L = normalize(light0pos - mtwPosition);
+    vec3 L = normalize(pointLightPos - mtwPosition);
     float diffuseCos = clamp(dot(L, normalize(mtwNormal)), 0, 1);
     vec4 diffuseCalc = vec4(diffuseCos, diffuseCos, diffuseCos, 1.0);
 
     //CALCULATING SPECULAR LIGHT TERM
-    vec3 P = normalize(eyePos - mtwPosition);
+    vec3 P = normalize(cameraPos - mtwPosition);
     vec3 S = normalize(P + L);
-    float shine = pow(clamp(dot(S, normalize(mtwNormal)), 0, 1), Ns);
-    vec4 specular = shine * vec4(specularLight, 1.0) * vec4(Ks, 1.0);
+    float shine = pow(clamp(dot(S, normalize(mtwNormal)), 0, 1), materialShininess);
+    vec4 specular = shine * vec4(lightSpecular, 1.0) * vec4(materialSpecular, 1.0);
 
     //CALCULATING FALLOFF
-    float distance = length(light0pos - mtwPosition);
-    float falloff = 1 / (Kc + (Kl*distance) + (Kq * distance * distance));
+    float distance = length(pointLightPos - mtwPosition);
+    float falloff = 1 / (lightConstantFalloff +
+                        (lightLinearFalloff * distance) +
+                        (lightQuadraticFalloff * distance * distance));
 
     //CALCULATING REMAINING PHONG SHADING TERMS
-    vec4 emission = vec4(Ke, 1.0);    
-    vec4 ambientGlobal = vec4(ambientGlobal, 1.0) * vec4(Ks, 1.0);
-    vec4 ambientSource = vec4(ambientLight, 1.0) * vec4(Ks, 1.0);
-    vec4 diffuse = diffuseCalc * vec4(diffuseLight, 1.0) * vec4(Kd, 1.0);
+    vec4 emission = vec4(materialEmission, 1.0);    
+    vec4 globalAmbient = vec4(globalAmbient, 1.0) * vec4(materialAmbient, 1.0);
+    vec4 lightAmbient = vec4(lightAmbient, 1.0) * vec4(materialAmbient, 1.0);
+    vec4 diffuse = diffuseCalc * vec4(lightDiffuse, 1.0) * vec4(materialDiffuse, 1.0);
 
-    if (hasTexture == 0) //NO TEXTURE: PREFORM STANDARD PHONG SHADING
+    if (usingTexture == 0) //NO TEXTURE: PREFORM STANDARD PHONG SHADING
     {
-        fragmentColor = (emission + ambientGlobal + falloff) * (ambientSource + diffuse + specular);
+        fragmentColor = (emission + globalAmbient + falloff) * (lightAmbient + diffuse + specular);
     }
     else //HAS TEXTURE: PREFORM SPLIT SPECULAR AND TEXTURE BLENDING
     {
-        vec4 tex = texture(texID, texturePipe.xy);
-        vec4 primary = (emission + ambientGlobal + falloff) * (ambientSource + diffuse);
-        vec4 secondary = falloff * specular;
-        fragmentColor = (primary * tex) + secondary;
+        vec4 textureColor = texture(textureID, texturePipe.xy);
+        vec4 primaryColor = (emission + globalAmbient + falloff) * (lightAmbient + diffuse);
+        vec4 secondaryColor = falloff * specular;
+        fragmentColor = (primaryColor * textureColor) + secondaryColor;
     }
 }
-
-
-
-
-
-
-
-
-

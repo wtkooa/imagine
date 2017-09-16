@@ -7,6 +7,7 @@
 #include <SDL2/SDL.h>
 
 #include "ie_camera.h"
+#include "ie_lighting.h"
 #include "ie_time.h"
 #include "utils.h"
 
@@ -16,15 +17,15 @@ class Engine
   Engine();
   private:
   bool init(void);
-  bool loadResources(void);
+  bool loadAssets(void);
   bool run(void);
   bool cleanup(void);
   void render(void);
-  void handle_events(void);
-  void handle_logic(void);
-  void handle_resize(int,int);
-  void handle_time(void);
-  bool init_shaders(void);
+  void handleEvents(void);
+  void handleLogic(void);
+  void handleResize(int,int);
+  bool initLighting(void);
+  bool initShaders(void);
   bool loadOBJ(std::string);
   std::string vertexShaderFile;
   std::string fragmentShaderFile;
@@ -65,10 +66,9 @@ class Engine
   GLint hasTextureShaderUniLoc;
   GLint textureShaderUniLoc;
   GLSL_Compiler compiler;
-  glm::vec3 LIGHT0POS;
-  glm::vec3 AMBIENTLIGHT;
   ie::FrameClock frameClock;
   ie::Camera eye;
+  ie::PointLight light;
   ResourceManager rm;
   VRAMManager vram;
 };

@@ -12,6 +12,7 @@
 #include <glm/gtc/matrix_transform.hpp>
 
 #include "engine.h"
+#include "ie_const.h"
 #include "ie_camera.h"
 #include "ie_time.h"
 #include "utils.h"
@@ -34,8 +35,6 @@ Engine::Engine(void)
   vertexShaderFile = "lib/glsl/vshader.glsl";
   fragmentShaderFile = "lib/glsl/fshader.glsl";
   DEFAULT_CLEAR_COLOR = glm::vec4(0.0, 0.0, 0.0, 1.0);
-  LIGHT0POS = glm::vec3(0.0f, 3.0f, 0.0f);
-  AMBIENTLIGHT = glm::vec3(0.2f, 0.2f, 0.2f);
   eye.setMoveSpeed(3.0f); //Meters per Second
   eye.setLookSpeed(glm::radians(0.05f)); //Degrees per rel movment
   init();
@@ -75,53 +74,70 @@ bool Engine::init(void)
   eye.setProjectionMatrix(glm::perspective(FIELD_OF_VIEW, ASPECT_RATIO, Z_NEAR, Z_FAR));
   SDL_SetWindowGrab(p_window, SDL_TRUE);
   SDL_SetRelativeMouseMode(SDL_TRUE);
-  init_shaders();
-  glUniform3fv(ambientGlobalShaderUniLoc, 1, &AMBIENTLIGHT[0]); 
-  glUniform3fv(light0posShaderUniLoc, 1, &LIGHT0POS[0]);
-  glm::vec3 ambientLight = glm::vec3(0.3f, 0.3f, 0.3f);
-  glUniform3fv(ambientLightShaderUniLoc, 1, &ambientLight[0]);
-  glm::vec3 specularLight = glm::vec3(0.8f, 0.8f, 0.8f);
-  glUniform3fv(specularLightShaderUniLoc, 1, &specularLight[0]);
-  glm::vec3 diffuseLight = glm::vec3(0.8f, 0.8f, 0.8f);
-  glUniform3fv(diffuseLightShaderUniLoc, 1, &diffuseLight[0]);
-  glUniform1f(KcShaderUniLoc, 0.5);
-  glUniform1f(KlShaderUniLoc, 0.1);
-  glUniform1f(KqShaderUniLoc, 0.0); 
-  loadResources();
+  initLighting();
+  initShaders();
+  loadAssets();
   return true;
 }
 
-bool Engine::init_shaders(void)
+bool Engine::initLighting(void)
+{
+  light.setPosVector(glm::vec3(0.0f, 3.0f, 0.0f));
+  light.setGlobalAmbient(glm::vec3(0.1f, 0.1f, 0.1f));
+  light.setLightAmbient(glm::vec3(0.2f, 0.2f, 0.2f));
+  light.setLightSpecular(glm::vec3(0.4f, 0.4f, 0.4f));
+  light.setLightDiffuse(glm::vec3(0.8f, 0.8f, 0.8f));
+  light.setConstantFalloff(1.0f);
+  light.setLinearFalloff(0.1f);
+  light.setQuadraticFalloff(0.0f);
+}
+
+bool Engine::initShaders(void)
 {
   compiler.compileVertexShader(vertexShaderFile);
   compiler.compileFragmentShader(fragmentShaderFile);
   compiler.linkShaderProgram();
   programID = compiler.getProgramID();
   glUseProgram(programID);
+
   transformationMatShaderUniLoc = glGetUniformLocation(programID, "transformationMatrix");
   mtwMatShaderUniLoc = glGetUniformLocation(programID, "mtwMatrix");
-  light0posShaderUniLoc = glGetUniformLocation(programID, "light0pos");
-  eyePosShaderUniLoc = glGetUniformLocation(programID, "eyePos");
-  ambientLightShaderUniLoc = glGetUniformLocation(programID, "ambientLight");
-  ambientGlobalShaderUniLoc = glGetUniformLocation(programID, "ambientGlobal");
-  specularLightShaderUniLoc = glGetUniformLocation(programID, "specularLight");
-  diffuseLightShaderUniLoc = glGetUniformLocation(programID, "diffuseLight");
-  KsShaderUniLoc = glGetUniformLocation(programID, "Ks");
-  NsShaderUniLoc = glGetUniformLocation(programID, "Ns");
-  KdShaderUniLoc = glGetUniformLocation(programID, "Kd");
-  KaShaderUniLoc = glGetUniformLocation(programID, "Ka");
-  KeShaderUniLoc = glGetUniformLocation(programID, "Ke");
-  KcShaderUniLoc = glGetUniformLocation(programID, "Kc");
-  KlShaderUniLoc = glGetUniformLocation(programID, "Kl");
-  KqShaderUniLoc = glGetUniformLocation(programID, "Kq");
-  textureShaderUniLoc = glGetUniformLocation(programID, "texID");
-  hasTextureShaderUniLoc = glGetUniformLocation(programID, "hasTexture");
-  glUniform1i(textureShaderUniLoc, 0);
+  light0posShaderUniLoc = glGetUniformLocation(programID, "pointLightPos");
+  eyePosShaderUniLoc = glGetUniformLocation(programID, "cameraPos");
+  ambientLightShaderUniLoc = glGetUniformLocation(programID, "lightAmbient");
+  ambientGlobalShaderUniLoc = glGetUniformLocation(programID, "globalAmbient");
+  specularLightShaderUniLoc = glGetUniformLocation(programID, "lightSpecular");
+  diffuseLightShaderUniLoc = glGetUniformLocation(programID, "lightDiffuse");
+  KsShaderUniLoc = glGetUniformLocation(programID, "materialSpecular");
+  NsShaderUniLoc = glGetUniformLocation(programID, "materialShininess");
+  KdShaderUniLoc = glGetUniformLocation(programID, "materialDiffuse");
+  KaShaderUniLoc = glGetUniformLocation(programID, "materialAmbient");
+  KeShaderUniLoc = glGetUniformLocation(programID, "materialEmission");
+  KcShaderUniLoc = glGetUniformLocation(programID, "lightConstantFalloff");
+  KlShaderUniLoc = glGetUniformLocation(programID, "lightLinearFalloff");
+  KqShaderUniLoc = glGetUniformLocation(programID, "lightQuadraticFalloff");
+  textureShaderUniLoc = glGetUniformLocation(programID, "textureID");
+  hasTextureShaderUniLoc = glGetUniformLocation(programID, "usingTexture");
+
+  glm::vec3 globalAmbient = light.getGlobalAmbient();
+  glUniform3fv(ambientGlobalShaderUniLoc, 1, &globalAmbient[0]); 
+  glm::vec3 lightPosVec = light.getPosVector();
+  glUniform3fv(light0posShaderUniLoc, 1, &lightPosVec[0]);
+  glm::vec3 lightAmbient = light.getLightAmbient();
+  glUniform3fv(ambientLightShaderUniLoc, 1, &lightAmbient[0]);
+  glm::vec3 lightSpecular = light.getLightSpecular();
+  glUniform3fv(specularLightShaderUniLoc, 1, &lightSpecular[0]);
+  glm::vec3 lightDiffuse = light.getLightDiffuse();
+  glUniform3fv(diffuseLightShaderUniLoc, 1, &lightDiffuse[0]);
+  glUniform1f(KcShaderUniLoc, light.getConstantFalloff());
+  glUniform1f(KlShaderUniLoc, light.getLinearFalloff());
+  glUniform1f(KqShaderUniLoc, light.getQuadraticFalloff()); 
+  glUniform1i(textureShaderUniLoc, ie::DIFFUSE_TEXTURE_BINDING_POINT);
   glActiveTexture(GL_TEXTURE0);
   return true;
 }
 
-bool Engine::loadResources(void)
+bool Engine::loadAssets(void)
 {
   loadOBJ("data/Cube.obj");
   vram.genVBO(rm.modelArr, rm.modelAmount);
@@ -133,14 +149,14 @@ bool Engine::run(void)
   engine_on = true;
   while (engine_on) {
     frameClock.measure();
-    handle_events();
-    handle_logic();
+    handleEvents();
+    handleLogic();
     render();
   } 
   return true;
 }
 
-void Engine::handle_logic(void)
+void Engine::handleLogic(void)
 {
   modelResource* model = rm.modelArr;
   std::map<std::string, int> modelMap = rm.modelMap;
@@ -206,7 +222,7 @@ void Engine::render(void)
   SDL_GL_SwapWindow(p_window);
 }
 
-void Engine::handle_events(void)
+void Engine::handleEvents(void)
 {
   SDL_Event evnt;
   while (SDL_PollEvent(&evnt))
@@ -220,7 +236,7 @@ void Engine::handle_events(void)
         switch (evnt.window.event)
         {
         case SDL_WINDOWEVENT_RESIZED:
-          handle_resize(evnt.window.data1, evnt.window.data2);
+          handleResize(evnt.window.data1, evnt.window.data2);
           break;
         }
         break;
@@ -316,7 +332,7 @@ void Engine::handle_events(void)
   }
 }
 
-void Engine::handle_resize(int width, int height)
+void Engine::handleResize(int width, int height)
 {
   float aspect_ratio = float(width) / float(height);
   SDL_SetWindowSize(p_window, width, height);
