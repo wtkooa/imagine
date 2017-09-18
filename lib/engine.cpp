@@ -14,8 +14,8 @@
 #include "engine.h"
 #include "ie_const.h"
 #include "ie_camera.h"
+#include "ie_wavefront.h"
 #include "ie_time.h"
-#include "utils.h"
 
 Engine::Engine(void)
 {
@@ -44,9 +44,9 @@ Engine::Engine(void)
 
 bool Engine::cleanup(void)
 {
-  rm.releaseMem();
-  vram.releaseMem();
-  compiler.cleanUpShaders();
+  //rm.releaseMem();
+  //vram.releaseMem();
+  //compiler.cleanUpShaders();
   SDL_Quit();
   return true;
 }
@@ -139,8 +139,7 @@ bool Engine::initShaders(void)
 
 bool Engine::loadAssets(void)
 {
-  loadOBJ("data/Cube.obj");
-  vram.genVBO(rm.modelArr, rm.modelAmount);
+  //vram.genVBO(rm.modelArr, rm.modelAmount);
   return true;
 }
 
@@ -158,14 +157,14 @@ bool Engine::run(void)
 
 void Engine::handleLogic(void)
 {
-  modelResource* model = rm.modelArr;
-  std::map<std::string, int> modelMap = rm.modelMap;
-  int Cube = modelMap["Cube"];
-  model[Cube].translationMatrix = glm::translate(glm::mat4(), glm::vec3(0.0f, 0.0f, -3.0f));
-  model[Cube].rotationMatrix *= glm::rotate(glm::mat4(), glm::radians(0.5f), glm::vec3(1.0f, 1.0f, 0.0f));
+  //modelResource* model = rm.modelArr;
+  //std::map<std::string, int> modelMap = rm.modelMap;
+  //int Cube = modelMap["Cube"];
+  //model[Cube].translationMatrix = glm::translate(glm::mat4(), glm::vec3(0.0f, 0.0f, -3.0f));
+  //model[Cube].rotationMatrix *= glm::rotate(glm::mat4(), glm::radians(0.5f), glm::vec3(1.0f, 1.0f, 0.0f));
 }
 
-void Engine::render(void)
+/*void Engine::render(void)
 {
   modelResource* model = rm.modelArr;
   int modelAmount = rm.modelAmount;
@@ -220,7 +219,7 @@ void Engine::render(void)
   }
   glBindBuffer(GL_ARRAY_BUFFER, 0);
   SDL_GL_SwapWindow(p_window);
-}
+}*/
 
 void Engine::handleEvents(void)
 {
@@ -341,10 +340,4 @@ void Engine::handleResize(int width, int height)
                                              aspect_ratio,
                                              Z_NEAR, Z_FAR);
   eye.setProjectionMatrix(newProjection);  
-}
-
-bool Engine::loadOBJ(std::string file)
-{
-  OBJReader obj(file);
-  rm.pullOBJResources(obj.pushResource());
 }

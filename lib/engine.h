@@ -8,8 +8,8 @@
 
 #include "ie_camera.h"
 #include "ie_lighting.h"
+#include "ie_wavefront.h"
 #include "ie_time.h"
-#include "utils.h"
 
 class Engine
 {
@@ -65,10 +65,8 @@ class Engine
   GLint KqShaderUniLoc;
   GLint hasTextureShaderUniLoc;
   GLint textureShaderUniLoc;
-  GLSL_Compiler compiler;
+  //GLSL_Compiler compiler;
   ie::FrameClock frameClock;
   ie::Camera eye;
   ie::PointLight light;
-  ResourceManager rm;
-  VRAMManager vram;
 };
