@@ -9,6 +9,16 @@
 namespace ie
 {
 
+  enum TextureType {DIFFUSE_MAP, BUMP_MAP, ALPHA_MAP,
+                    AMBIENT_MAP, SPECULAR_MAP, HIGHLIGHT_MAP};
+
+  class WavefrontTexturePackage
+  {
+    public:
+    std::string filename;
+    TextureType type;
+  };
+
   class WavefrontMaterialPackage
   {
     public:
@@ -22,12 +32,7 @@ namespace ie
     float opticalDensity;
     float dissolve;
     int illum;
-    std::string ambientMap;
-    std::string diffuseMap; 
-    std::string specularMap;
-    std::string highlightMap;
-    std::string alphaMap;
-    std::string bumpMap;
+    std::vector<WavefrontTexturePackage> texturePackages;
   };
 
 
@@ -48,7 +53,7 @@ namespace ie
     std::vector<glm::vec4> v;
     std::vector<glm::vec3> vt;
     std::vector<glm::vec3> vn;
-    std::vector<glm::uvec4> f;  
+    std::vector<glm::ivec4> f;  
   };
 
 

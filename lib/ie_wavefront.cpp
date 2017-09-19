@@ -18,7 +18,7 @@
 #include "ie_utils.h"
 
 
-//Wavefront Object Reader
+//Wavefront Object File Reader
 ie::WavefrontObjectFileReader::WavefrontObjectFileReader(void) {}
 ie::WavefrontObjectFileReader::WavefrontObjectFileReader(std::string filename)
 {
@@ -42,9 +42,9 @@ bool ie::WavefrontObjectFileReader::clear(void)
 
 bool ie::WavefrontObjectFileReader::read(std::string filename)
 {
+  std::vector<std::string> mtllib;
   std::ifstream objFile;
   objFile.open(filename.c_str());
-  std::vector<std::string> mtllib;
   if (objFile.is_open())
   {
     clear();
@@ -144,7 +144,7 @@ bool ie::WavefrontObjectFileReader::read(std::string filename)
           if (tex != "") {t = std::stoi(tex);}
           n = std::stoi(split(token, '/', 3));
         }
-        filePackage.f.push_back(glm::uvec4(v,t,n,w));
+        filePackage.f.push_back(glm::ivec4(v,t,n,w));
         indexOffset++;
       }
 
@@ -169,7 +169,7 @@ bool ie::WavefrontObjectFileReader::read(std::string filename)
             if (tex != "") {t = std::stoi(tex);}
             n = std::stoi(split(token, '/', 3));
           }
-          filePackage.f.push_back(glm::uvec4(v,t,n,w));
+          filePackage.f.push_back(glm::ivec4(v,t,n,w));
           indexOffset++;
         }
       }
@@ -181,21 +181,21 @@ bool ie::WavefrontObjectFileReader::read(std::string filename)
         {
           std::string token = split(line, ' ', vertex);
           int subTokenAmount = std::count(token.begin(), token.end(), '/') + 1;
-          int v = std::stoi(split(token, '/', 1));
+          int v = std::stoi(split(token, '/', 0));
           int t = noData;
           int n = noData;
           int w = verticesInFace;
           if (subTokenAmount == 2)
           {
-            n = std::stoi(split(token, ' ', 2));
+            n = std::stoi(split(token, ' ', 1));
           }
           else if (subTokenAmount == 3)
           {
-            std::string tex = split(token, '/', 2);
+            std::string tex = split(token, '/', 1);
             if (tex != "") {t = std::stoi(tex);}
-            n = std::stoi(split(token, '/', 3));
+            n = std::stoi(split(token, '/', 2));
           }
-          filePackage.f.push_back(glm::uvec4(v,t,n,w));
+          filePackage.f.push_back(glm::ivec4(v,t,n,w));
           indexOffset++;
         } 
       }
@@ -227,7 +227,7 @@ bool ie::WavefrontObjectFileReader::read(std::string filename)
 ie::WavefrontObjectFilePackage ie::WavefrontObjectFileReader::getFilePackage(void) {return filePackage;}
 
 
-//Wavefront Material Reader
+//Wavefront Material File Reader
 ie::WavefrontMaterialFileReader::WavefrontMaterialFileReader(void) {}
 ie::WavefrontMaterialFileReader::WavefrontMaterialFileReader(std::string filename)
 {
@@ -316,27 +316,45 @@ bool ie::WavefrontMaterialFileReader::read(std::string filename)
       }
       else if (command == "map_Kd")
       {
-        filePackage.materials[materialOffset].diffuseMap = split(line, ' ', 1);
+        ie::WavefrontTexturePackage tex;
+        tex.filename = split(line, ' ', 1);
+        tex.type = ie::TextureType::DIFFUSE_MAP;
+        filePackage.materials[materialOffset].texturePackages.push_back(tex);
       }
       else if (command == "map_bump")
       {
-        filePackage.materials[materialOffset].bumpMap = split(line, ' ', 1);
+        ie::WavefrontTexturePackage tex;
+        tex.filename = split(line, ' ', 1);
+        tex.type = ie::TextureType::BUMP_MAP;
+        filePackage.materials[materialOffset].texturePackages.push_back(tex);
       }
       else if (command == "map_Ka")
       {
-        filePackage.materials[materialOffset].ambientMap = split(line, ' ', 1);
+        ie::WavefrontTexturePackage tex;
+        tex.filename = split(line, ' ', 1);
+        tex.type = ie::TextureType::AMBIENT_MAP;
+        filePackage.materials[materialOffset].texturePackages.push_back(tex);
       }
       else if (command == "map_Ks")
       {
-        filePackage.materials[materialOffset].specularMap = split(line, ' ', 1);
+        ie::WavefrontTexturePackage tex;
+        tex.filename = split(line, ' ', 1);
+        tex.type = ie::TextureType::SPECULAR_MAP;
+        filePackage.materials[materialOffset].texturePackages.push_back(tex);
       }
       else if (command == "map_Ns")
       {
-        filePackage.materials[materialOffset].highlightMap = split(line, ' ', 1);
+        ie::WavefrontTexturePackage tex;
+        tex.filename = split(line, ' ', 1);
+        tex.type = ie::TextureType::HIGHLIGHT_MAP;
+        filePackage.materials[materialOffset].texturePackages.push_back(tex);
       }
       else if (command == "map_d")
       {
-        filePackage.materials[materialOffset].alphaMap = split(line, ' ', 1);
+        ie::WavefrontTexturePackage tex;
+        tex.filename = split(line, ' ', 1);
+        tex.type = ie::TextureType::ALPHA_MAP;
+        filePackage.materials[materialOffset].texturePackages.push_back(tex);
       }
       else
       {

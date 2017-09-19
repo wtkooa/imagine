@@ -53,23 +53,22 @@ namespace ie
     float opticalDensity;
     float dissolve;
     int illum;
-    std::string ambientMap;
-    std::string diffuseMap; 
-    std::string specularMap;
-    std::string highlightMap;
-    std::string alphaMap;
-    std::string bumpMap;
+    GLuint ambientMapId;
+    GLuint diffuseMapId; 
+    GLuint specularMapId;
+    GLuint highlightMapId;
+    GLuint alphaMapId;
+    GLuint bumpMapId;
   };
 
-
-  enum TextureType {DIFFUSE_MAP, BUMP_MAP, ALPHA_MAP,
-                    AMBIENT_MAP, SPECULAR_MAP, HIGHLIGHT_MAP};
 
   class TextureAsset
   {
     public:
     unsigned int textureAssetId;
     GLuint textureOpenglId;
+    std::string filename;
+    std::string name;
     TextureType textureType; 
     bool tobeVramLoaded;
     bool vramLoaded;
@@ -80,8 +79,11 @@ namespace ie
   {
     public:
     void unwrapWavefrontObjectFilePackage(ie::WavefrontObjectFilePackage);
-    void unwrapWavefrontObjectPackage(ie::WavefrontObjectPackage);
-    private:
+    GLuint unwrapWavefrontObjectPackage(ie::WavefrontObjectPackage);
+    void unwrapWavefrontMaterialFilePackage(ie::WavefrontMaterialFilePackage);
+    GLuint unwrapWavefrontMaterialPackage(ie::WavefrontMaterialPackage);
+    GLuint unwrapWavefrontTexturePackage(ie::WavefrontTexturePackage);
+    //private:
     std::map<unsigned int, ModelAsset> modelAssets;
     std::map<std::string, unsigned int> modelNameIdMap;
     std::vector<unsigned int> availableModelIds; 
@@ -104,7 +106,7 @@ namespace ie
     std::vector<glm::vec3> normalVectorHeap;
     unsigned int pushNormalVectorData(std::vector<glm::vec3>);
     std::vector<glm::ivec4> indexHeap;
-    unsigned int pushIndexData(std::vector<glm::uvec4>);
+    unsigned int pushIndexData(std::vector<glm::ivec4>);
   };
 
 }

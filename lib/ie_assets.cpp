@@ -1,6 +1,7 @@
 #include "ie_assets.h"
 
 #include <iostream>
+#include <iterator>
 #include <map>
 #include <string>
 #include <vector>
@@ -74,20 +75,195 @@ unsigned int ie::AssetManager::pushNormalVectorData(std::vector<glm::vec3> vn)
   return offset;
 }
 
+unsigned int ie::AssetManager::pushIndexData(std::vector<glm::ivec4> f)
+{
+  unsigned int offset = indexHeap.size();
+  indexHeap.insert(indexHeap.end(), f.begin(), f.end());
+  return offset;
+}
+
 void ie::AssetManager::unwrapWavefrontObjectFilePackage(
                        ie::WavefrontObjectFilePackage filePackage)
 {
   unsigned int vertexHeapOffset = pushVertexData(filePackage.v);
   unsigned int textureCoordinateHeapOffset = pushTextureCoordinateData(filePackage.vt);
   unsigned int normalVectorHeapOffset = pushNormalVectorData(filePackage.vn);
+  unsigned int indexAmount = filePackage.f.size();
 
-  for (auto n = filePackage.objects.begin(); n != filePackage.objects.end(); n++)
+  for (int n = 0; n < indexAmount; n++)
   {
-    ie::WavefrontObjectPackage package = ie::WavefrontObjectPackage();
+    filePackage.f[n].x += vertexHeapOffset;
+    if (filePackage.f[n].y != -1)
+    {
+      filePackage.f[n].y += textureCoordinateHeapOffset;
+    }
+    if (filePackage.f[n].z != -1)
+    {
+      filePackage.f[n].z += normalVectorHeapOffset;
+    }
+  }
+  unsigned int indexOffset = pushIndexData(filePackage.f);
+
+  unsigned int materialFileAmount = filePackage.materialFilePackages.size();
+  for (int nFile = 0; nFile < materialFileAmount; nFile++)
+  {
+    unwrapWavefrontMaterialFilePackage(filePackage.materialFilePackages[nFile]);
+  }
+
+  for (auto it = filePackage.objects.begin(); it != filePackage.objects.end(); it++)
+  {
+    ie::ModelAsset asset;
+    asset.name = it->second;
+    bool modelNameTaken = modelNameIdMap.count(asset.name) == 1;
+    if (modelNameTaken)
+    {
+      std::cout << "Warning: Model with name '" << asset.name << "' already exists." << std::endl;
+      continue;
+    }
+    asset.modelId = getNewModelAssetId();
+    modelNameIdMap[asset.name] = asset.modelId;
+    asset.filename = filePackage.filename;
+    asset.translationMatrix = glm::mat4();
+    asset.rotationMatrix = glm::mat4();
+    asset.copy = false;
+    asset.hidden = false;
+    asset.tobeVboLoaded = true;
+    asset.vboLoaded = false;
+    unsigned int objectIndexBegin = it->first;
+    unsigned int objectIndexEnd = 0;
+    auto nextIt = it;
+    std::advance(nextIt, 1);
+    if (nextIt != filePackage.objects.end())
+    {
+      objectIndexEnd = nextIt->first;
+    }
+    else
+    {
+      objectIndexEnd = indexAmount;
+    }
+    for (auto mgIt = filePackage.materialGroups.begin();
+         mgIt != filePackage.materialGroups.end(); mgIt++)
+    {
+      unsigned int groupIndexBegin = mgIt->first;
+      std::string usingMaterialName = mgIt->second;
+      if (groupIndexBegin >= objectIndexBegin &&
+          groupIndexBegin < objectIndexEnd)
+      {
+        unsigned int groupIndexEnd = 0;
+        auto nextMgIt = mgIt;
+        std::advance(nextMgIt, 1);
+        if (nextMgIt != filePackage.materialGroups.end())
+        {
+          groupIndexEnd = nextMgIt->first;
+        }
+        else
+        {
+          groupIndexEnd = objectIndexEnd;
+        }
+        unsigned int groupVertexAmount = groupIndexEnd - groupIndexBegin;
+        ie::RenderUnit renderUnit;
+        renderUnit.materialId = materialNameIdMap[usingMaterialName];
+        renderUnit.shaderProgramId = 1;
+        renderUnit.indexOffset = indexOffset + groupIndexBegin + 1;
+        renderUnit.vertexAmount = groupVertexAmount;
+        asset.renderUnits.push_back(renderUnit);
+      }
+    }
+    modelAssets[asset.modelId] = asset;
   } 
 }
 
-void ie::AssetManager::unwrapWavefrontObjectPackage(
+GLuint ie::AssetManager::unwrapWavefrontObjectPackage(
                        ie::WavefrontObjectPackage package)
 {
 }
+
+void ie::AssetManager::unwrapWavefrontMaterialFilePackage(
+                       ie::WavefrontMaterialFilePackage filePackage)
+{
+  unsigned int materialAmount = filePackage.materials.size();
+  for (int nMaterial = 0; nMaterial < materialAmount; nMaterial++)
+  {
+    unwrapWavefrontMaterialPackage(filePackage.materials[nMaterial]); 
+  }
+}
+
+GLuint ie::AssetManager::unwrapWavefrontMaterialPackage(
+                         ie::WavefrontMaterialPackage package)
+{
+  MaterialAsset asset;
+  asset.name = package.name;
+  bool materialNameTaken = materialNameIdMap.count(asset.name) == 1;
+  if (materialNameTaken)
+  {
+    std::cout << "Warning: Material with name '" << asset.name <<
+                 "' already exists. Engine will use original." << std::endl;
+    return 0;
+  }
+  asset.materialId = getNewMaterialAssetId();
+  asset.filename = package.filename;
+  asset.shininess = package.shininess;
+  asset.ambient = package.ambient;
+  asset.diffuse = package.diffuse;
+  asset.specular = package.specular;
+  asset.emission = package.emission;
+  asset.opticalDensity = package.opticalDensity;
+  asset.dissolve = package.dissolve;
+  materialNameIdMap[asset.name] = asset.materialId;
+  unsigned int texturePackageAmount = package.texturePackages.size();
+  for (int ntex = 0; ntex < texturePackageAmount; ntex++)
+  {
+    WavefrontTexturePackage tex = package.texturePackages[ntex];
+    switch (tex.type)
+    {
+      case DIFFUSE_MAP:
+        asset.ambientMapId = unwrapWavefrontTexturePackage(tex);      
+        break;
+      case BUMP_MAP:
+        asset.bumpMapId = unwrapWavefrontTexturePackage(tex);
+        break;
+      case ALPHA_MAP:
+        asset.alphaMapId = unwrapWavefrontTexturePackage(tex);
+        break;
+      case AMBIENT_MAP:
+        asset.ambientMapId = unwrapWavefrontTexturePackage(tex);
+        break;
+      case SPECULAR_MAP:
+        asset.specularMapId = unwrapWavefrontTexturePackage(tex);
+        break;
+      case HIGHLIGHT_MAP:
+        asset.highlightMapId = unwrapWavefrontTexturePackage(tex);
+        break;
+    }
+  }
+  materialAssets[asset.materialId] = asset;
+}
+
+GLuint ie::AssetManager::unwrapWavefrontTexturePackage(
+                         ie::WavefrontTexturePackage package)
+{
+  GLuint id;
+  ie::TextureAsset asset;
+  asset.name = package.filename;
+  bool textureNameTaken = textureNameIdMap.count(asset.name) == 1;
+  if (textureNameTaken)
+  {
+    std::cout << "Warning: Texture with name '" << asset.name <<
+                 "' already exists. Engine will use original." << std::endl;
+    return textureNameIdMap[asset.name];
+  }
+  asset.textureAssetId = getNewTextureAssetId();
+  glGenTextures(1, &id);
+  asset.textureOpenglId = id;
+  asset.filename = package.filename;
+  asset.textureType = package.type;
+  asset.tobeVramLoaded = true;
+  asset.vramLoaded = false;
+  textureNameIdMap[asset.name] = asset.textureAssetId;
+  textureAssets[asset.textureAssetId] = asset;
+  return id;
+}
+
+
+
+
