@@ -6,9 +6,11 @@
 #include <string>
 #include <vector>
 
+#define GL_GLEXT_PROTOTYPES //Needs to be defined for some GL funcs to work.
 #include <GL/gl.h>
 #include <GL/glu.h>
 
+#include "ie_messages.h"
 #include "ie_packages.h"
 
 //Asset Manager
@@ -36,20 +38,6 @@ unsigned int ie::AssetManager::getNewMaterialAssetId(void)
   {
     unsigned int id = availableMaterialIds[0];
     availableMaterialIds.erase(availableMaterialIds.begin());
-    return id; 
-  }
-}
-
-unsigned int ie::AssetManager::getNewTextureAssetId(void)
-{
-  if (availableTextureIds.empty())
-  {
-    return textureAssets.size();  
-  }
-  else
-  {
-    unsigned int id = availableTextureIds[0];
-    availableTextureIds.erase(availableTextureIds.begin());
     return id; 
   }
 }
@@ -82,8 +70,7 @@ unsigned int ie::AssetManager::pushIndexData(std::vector<glm::ivec4> f)
   return offset;
 }
 
-void ie::AssetManager::unwrapWavefrontObjectFilePackage(
-                       ie::WavefrontObjectFilePackage filePackage)
+void ie::AssetManager::unwrapPackage(ie::WavefrontObjectFilePackage filePackage)
 {
   unsigned int vertexHeapOffset = pushVertexData(filePackage.v);
   unsigned int textureCoordinateHeapOffset = pushTextureCoordinateData(filePackage.vt);
@@ -107,7 +94,7 @@ void ie::AssetManager::unwrapWavefrontObjectFilePackage(
   unsigned int materialFileAmount = filePackage.materialFilePackages.size();
   for (int nFile = 0; nFile < materialFileAmount; nFile++)
   {
-    unwrapWavefrontMaterialFilePackage(filePackage.materialFilePackages[nFile]);
+    unwrapPackage(filePackage.materialFilePackages[nFile]);
   }
 
   for (auto it = filePackage.objects.begin(); it != filePackage.objects.end(); it++)
@@ -173,22 +160,22 @@ void ie::AssetManager::unwrapWavefrontObjectFilePackage(
   } 
 }
 
-GLuint ie::AssetManager::unwrapWavefrontObjectPackage(
+GLuint ie::AssetManager::unwrapPackage(
                        ie::WavefrontObjectPackage package)
 {
 }
 
-void ie::AssetManager::unwrapWavefrontMaterialFilePackage(
+void ie::AssetManager::unwrapPackage(
                        ie::WavefrontMaterialFilePackage filePackage)
 {
   unsigned int materialAmount = filePackage.materials.size();
   for (int nMaterial = 0; nMaterial < materialAmount; nMaterial++)
   {
-    unwrapWavefrontMaterialPackage(filePackage.materials[nMaterial]); 
+    unwrapPackage(filePackage.materials[nMaterial]); 
   }
 }
 
-GLuint ie::AssetManager::unwrapWavefrontMaterialPackage(
+GLuint ie::AssetManager::unwrapPackage(
                          ie::WavefrontMaterialPackage package)
 {
   MaterialAsset asset;
@@ -217,29 +204,29 @@ GLuint ie::AssetManager::unwrapWavefrontMaterialPackage(
     switch (tex.type)
     {
       case DIFFUSE_MAP:
-        asset.ambientMapId = unwrapWavefrontTexturePackage(tex);      
+        asset.ambientMapId = unwrapPackage(tex);      
         break;
       case BUMP_MAP:
-        asset.bumpMapId = unwrapWavefrontTexturePackage(tex);
+        asset.bumpMapId = unwrapPackage(tex);
         break;
       case ALPHA_MAP:
-        asset.alphaMapId = unwrapWavefrontTexturePackage(tex);
+        asset.alphaMapId = unwrapPackage(tex);
         break;
       case AMBIENT_MAP:
-        asset.ambientMapId = unwrapWavefrontTexturePackage(tex);
+        asset.ambientMapId = unwrapPackage(tex);
         break;
       case SPECULAR_MAP:
-        asset.specularMapId = unwrapWavefrontTexturePackage(tex);
+        asset.specularMapId = unwrapPackage(tex);
         break;
       case HIGHLIGHT_MAP:
-        asset.highlightMapId = unwrapWavefrontTexturePackage(tex);
+        asset.highlightMapId = unwrapPackage(tex);
         break;
     }
   }
   materialAssets[asset.materialId] = asset;
 }
 
-GLuint ie::AssetManager::unwrapWavefrontTexturePackage(
+GLuint ie::AssetManager::unwrapPackage(
                          ie::WavefrontTexturePackage package)
 {
   GLuint id;
@@ -252,18 +239,54 @@ GLuint ie::AssetManager::unwrapWavefrontTexturePackage(
                  "' already exists. Engine will use original." << std::endl;
     return textureNameIdMap[asset.name];
   }
-  asset.textureAssetId = getNewTextureAssetId();
   glGenTextures(1, &id);
   asset.textureOpenglId = id;
   asset.filename = package.filename;
   asset.textureType = package.type;
   asset.tobeVramLoaded = true;
   asset.vramLoaded = false;
-  textureNameIdMap[asset.name] = asset.textureAssetId;
-  textureAssets[asset.textureAssetId] = asset;
+  textureNameIdMap[asset.name] = asset.textureOpenglId;
+  textureAssets[asset.textureOpenglId] = asset;
   return id;
 }
 
+void ie::AssetManager::unwrapPackage(ie::ShaderProgramPackage package)
+{
+  ie::ShaderProgramAsset asset;
+  asset.name = package.name;
+  bool shaderProgramNameTaken = shaderProgramAssets.count(asset.name) == 1;
+  if (shaderProgramNameTaken)
+  {
+    std::cout << "Warning: shader program with name '" << asset.name <<
+                 "' already exists. Engine will use original." << std::endl;
+    return;
+  }
+  asset.programId = package.programId;
+  asset.vertexShaderId = package.vertexShaderId;
+  asset.fragmentShaderId = package.fragmentShaderId;
+  asset.uniforms = package.uniforms;
+  shaderProgramAssets[asset.name] = asset;
+}
 
+bool ie::AssetManager::releaseAllShaderPrograms(void)
+{
+  for (auto it = shaderProgramAssets.begin();
+       it != shaderProgramAssets.end(); it++)
+  {
+    ShaderProgramAsset asset = it->second;  
+    releaseShaderProgram(asset.name);
+  }
+}
+
+bool ie::AssetManager::releaseShaderProgram(std::string name)
+{
+  ShaderProgramAsset asset = shaderProgramAssets[name];
+  glDetachShader(asset.programId, asset.vertexShaderId);
+  glDetachShader(asset.programId, asset.fragmentShaderId);
+  glDeleteShader(asset.vertexShaderId);
+  glDeleteShader(asset.fragmentShaderId);
+  glUseProgram(0);
+  glDeleteProgram(asset.programId);
+}
 
 

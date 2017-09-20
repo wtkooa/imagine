@@ -1,9 +1,10 @@
-#define GL_GLEXT_PROTOTYPES //Needs to be defined for some GL funcs to work.
+#include "ie_engine.h"
 
 #include <iostream>
 #include <map>
 #include <string>
 
+#define GL_GLEXT_PROTOTYPES //Needs to be defined for some GL funcs to work.
 #include <GL/gl.h>
 #include <GL/glu.h>
 #include <SDL2/SDL_image.h>
@@ -11,11 +12,16 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 
-#include "engine.h"
+#include "ie_assets.h"
 #include "ie_const.h"
 #include "ie_camera.h"
-#include "ie_wavefront.h"
+#include "ie_lighting.h"
+#include "ie_messages.h"
+#include "ie_packages.h"
+#include "ie_shader.h"
 #include "ie_time.h"
+#include "ie_utils.h"
+#include "ie_wavefront.h"
 
 Engine::Engine(void)
 {
@@ -32,23 +38,10 @@ Engine::Engine(void)
   WIREFRAME = false;
   DEPTHTEST = true;
   CULLFACE = true;
-  vertexShaderFile = "lib/glsl/vshader.glsl";
-  fragmentShaderFile = "lib/glsl/fshader.glsl";
   DEFAULT_CLEAR_COLOR = glm::vec4(0.0, 0.0, 0.0, 1.0);
-  eye.setMoveSpeed(3.0f); //Meters per Second
-  eye.setLookSpeed(glm::radians(0.05f)); //Degrees per rel movment
   init();
   run();
   cleanup();
-}
-
-bool Engine::cleanup(void)
-{
-  //rm.releaseMem();
-  //vram.releaseMem();
-  //compiler.cleanUpShaders();
-  SDL_Quit();
-  return true;
 }
 
 bool Engine::init(void)
@@ -74,10 +67,17 @@ bool Engine::init(void)
   eye.setProjectionMatrix(glm::perspective(FIELD_OF_VIEW, ASPECT_RATIO, Z_NEAR, Z_FAR));
   SDL_SetWindowGrab(p_window, SDL_TRUE);
   SDL_SetRelativeMouseMode(SDL_TRUE);
+  initCamera();
   initLighting();
   initShaders();
   loadAssets();
   return true;
+}
+
+bool Engine::initCamera(void)
+{
+  eye.setMoveSpeed(3.0f); //Meters per Second
+  eye.setLookSpeed(glm::radians(0.05f)); //Degrees per rel movment
 }
 
 bool Engine::initLighting(void)
@@ -94,52 +94,19 @@ bool Engine::initLighting(void)
 
 bool Engine::initShaders(void)
 {
-  compiler.compileVertexShader(vertexShaderFile);
-  compiler.compileFragmentShader(fragmentShaderFile);
-  compiler.linkShaderProgram();
-  programID = compiler.getProgramID();
-  glUseProgram(programID);
-
-  transformationMatShaderUniLoc = glGetUniformLocation(programID, "transformationMatrix");
-  mtwMatShaderUniLoc = glGetUniformLocation(programID, "mtwMatrix");
-  light0posShaderUniLoc = glGetUniformLocation(programID, "pointLightPos");
-  eyePosShaderUniLoc = glGetUniformLocation(programID, "cameraPos");
-  ambientLightShaderUniLoc = glGetUniformLocation(programID, "lightAmbient");
-  ambientGlobalShaderUniLoc = glGetUniformLocation(programID, "globalAmbient");
-  specularLightShaderUniLoc = glGetUniformLocation(programID, "lightSpecular");
-  diffuseLightShaderUniLoc = glGetUniformLocation(programID, "lightDiffuse");
-  KsShaderUniLoc = glGetUniformLocation(programID, "materialSpecular");
-  NsShaderUniLoc = glGetUniformLocation(programID, "materialShininess");
-  KdShaderUniLoc = glGetUniformLocation(programID, "materialDiffuse");
-  KaShaderUniLoc = glGetUniformLocation(programID, "materialAmbient");
-  KeShaderUniLoc = glGetUniformLocation(programID, "materialEmission");
-  KcShaderUniLoc = glGetUniformLocation(programID, "lightConstantFalloff");
-  KlShaderUniLoc = glGetUniformLocation(programID, "lightLinearFalloff");
-  KqShaderUniLoc = glGetUniformLocation(programID, "lightQuadraticFalloff");
-  textureShaderUniLoc = glGetUniformLocation(programID, "textureID");
-  hasTextureShaderUniLoc = glGetUniformLocation(programID, "usingTexture");
-
-  glm::vec3 globalAmbient = light.getGlobalAmbient();
-  glUniform3fv(ambientGlobalShaderUniLoc, 1, &globalAmbient[0]); 
-  glm::vec3 lightPosVec = light.getPosVector();
-  glUniform3fv(light0posShaderUniLoc, 1, &lightPosVec[0]);
-  glm::vec3 lightAmbient = light.getLightAmbient();
-  glUniform3fv(ambientLightShaderUniLoc, 1, &lightAmbient[0]);
-  glm::vec3 lightSpecular = light.getLightSpecular();
-  glUniform3fv(specularLightShaderUniLoc, 1, &lightSpecular[0]);
-  glm::vec3 lightDiffuse = light.getLightDiffuse();
-  glUniform3fv(diffuseLightShaderUniLoc, 1, &lightDiffuse[0]);
-  glUniform1f(KcShaderUniLoc, light.getConstantFalloff());
-  glUniform1f(KlShaderUniLoc, light.getLinearFalloff());
-  glUniform1f(KqShaderUniLoc, light.getQuadraticFalloff()); 
-  glUniform1i(textureShaderUniLoc, ie::DIFFUSE_TEXTURE_BINDING_POINT);
-  glActiveTexture(GL_TEXTURE0);
+  compiler.compile("Static", "lib/glsl/vshader.glsl", "lib/glsl/fshader.glsl");
+  ie::ShaderProgramPackage statPack = compiler.wrapShaderProgramPackage();
+  am.unwrapPackage(statPack);
   return true;
 }
 
 bool Engine::loadAssets(void)
 {
-  //vram.genVBO(rm.modelArr, rm.modelAmount);
+  ie::WavefrontObjectFileReader objReader;  
+  ie::WavefrontObjectFilePackage pack1 = objReader.read("data/Cube.obj");
+  ie::WavefrontObjectFilePackage pack2 = objReader.read("data/Cubet.obj");
+  am.unwrapPackage(pack1);
+  am.unwrapPackage(pack2);
   return true;
 }
 
@@ -157,15 +124,11 @@ bool Engine::run(void)
 
 void Engine::handleLogic(void)
 {
-  //modelResource* model = rm.modelArr;
-  //std::map<std::string, int> modelMap = rm.modelMap;
-  //int Cube = modelMap["Cube"];
-  //model[Cube].translationMatrix = glm::translate(glm::mat4(), glm::vec3(0.0f, 0.0f, -3.0f));
-  //model[Cube].rotationMatrix *= glm::rotate(glm::mat4(), glm::radians(0.5f), glm::vec3(1.0f, 1.0f, 0.0f));
+
 }
 
-/*void Engine::render(void)
-{
+void Engine::render(void)
+{/*
   modelResource* model = rm.modelArr;
   int modelAmount = rm.modelAmount;
   if (SDL_GetWindowGrab(p_window) == SDL_TRUE)
@@ -218,8 +181,8 @@ void Engine::handleLogic(void)
     }
   }
   glBindBuffer(GL_ARRAY_BUFFER, 0);
-  SDL_GL_SwapWindow(p_window);
-}*/
+  SDL_GL_SwapWindow(p_window);*/
+}
 
 void Engine::handleEvents(void)
 {
@@ -340,4 +303,11 @@ void Engine::handleResize(int width, int height)
                                              aspect_ratio,
                                              Z_NEAR, Z_FAR);
   eye.setProjectionMatrix(newProjection);  
+}
+
+bool Engine::cleanup(void)
+{
+  am.releaseAllShaderPrograms();
+  SDL_Quit();
+  return true;
 }

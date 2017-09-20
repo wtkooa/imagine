@@ -1,7 +1,6 @@
-#define GL_GLEXT_PROTOTYPES //Needs to be defined for some GL funcs to work.
-
 #include "ie_camera.h"
 
+#define GL_GLEXT_PROTOTYPES //Needs to be defined for some GL funcs to work.
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 

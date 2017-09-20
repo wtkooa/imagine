@@ -1,5 +1,3 @@
-#define GL_GLEXT_PROTOTYPES //Needs to be defined for some GL funcs to work.
-
 #include "ie_wavefront.h"
 
 #include <algorithm>
@@ -9,6 +7,7 @@
 #include <string>
 #include <vector>
 
+#define GL_GLEXT_PROTOTYPES //Needs to be defined for some GL funcs to work.
 #include <GL/gl.h>
 #include <GL/glu.h>
 #include <glm/glm.hpp>
@@ -40,7 +39,7 @@ bool ie::WavefrontObjectFileReader::clear(void)
 }
 
 
-bool ie::WavefrontObjectFileReader::read(std::string filename)
+ie::WavefrontObjectFilePackage ie::WavefrontObjectFileReader::read(std::string filename)
 {
   std::vector<std::string> mtllib;
   std::ifstream objFile;
@@ -130,19 +129,19 @@ bool ie::WavefrontObjectFileReader::read(std::string filename)
         int verticesInPoint = 1;
         std::string token = split(line, ' ', 1);
         int subTokenAmount = std::count(token.begin(), token.end(), '/') + 1;
-        int v = std::stoi(split(token, '/', 1));
+        int v = std::stoi(split(token, '/', 0));
         int t = noData; 
         int n = noData;
         int w = verticesInPoint;
         if (subTokenAmount == 2)
         {
-          n = std::stoi(split(token, ' ', 2));
+          n = std::stoi(split(token, ' ', 1));
         }
         else if (subTokenAmount == 3)
         {
-          std::string tex = split(token, '/', 2);
+          std::string tex = split(token, '/', 1);
           if (tex != "") {t = std::stoi(tex);}
-          n = std::stoi(split(token, '/', 3));
+          n = std::stoi(split(token, '/', 2));
         }
         filePackage.f.push_back(glm::ivec4(v,t,n,w));
         indexOffset++;
@@ -155,19 +154,19 @@ bool ie::WavefrontObjectFileReader::read(std::string filename)
         {
           std::string token = split(line, ' ', vert);  
           int subTokenAmount = std::count(token.begin(), token.end(), '/') + 1;
-          int v = std::stoi(split(token, '/', 1));
+          int v = std::stoi(split(token, '/', 0));
           int t = noData;
           int n = noData;
           int w = verticesInLine;
           if (subTokenAmount == 2)
           {
-            n = std::stoi(split(token, ' ', 2));
+            n = std::stoi(split(token, ' ', 1));
           }
           else if (subTokenAmount == 3)
           {
-            std::string tex = split(token, '/', 2);
+            std::string tex = split(token, '/', 1);
             if (tex != "") {t = std::stoi(tex);}
-            n = std::stoi(split(token, '/', 3));
+            n = std::stoi(split(token, '/', 2));
           }
           filePackage.f.push_back(glm::ivec4(v,t,n,w));
           indexOffset++;
@@ -210,7 +209,6 @@ bool ie::WavefrontObjectFileReader::read(std::string filename)
   else
   {
     std::cout << "File " << filename << " failed to open for reading..." << std::endl;
-    return false;
   } 
   objFile.close();
 
@@ -219,12 +217,12 @@ bool ie::WavefrontObjectFileReader::read(std::string filename)
   {
     std::string materialFile = mtllib[n];
     materialReader.read(materialFile);
-    filePackage.materialFilePackages.push_back(materialReader.getFilePackage());
+    filePackage.materialFilePackages.push_back(materialReader.wrapFilePackage());
   } 
-  return true;
+  return filePackage;
 }
 
-ie::WavefrontObjectFilePackage ie::WavefrontObjectFileReader::getFilePackage(void) {return filePackage;}
+ie::WavefrontObjectFilePackage ie::WavefrontObjectFileReader::wrapFilePackage(void) {return filePackage;}
 
 
 //Wavefront Material File Reader
@@ -239,7 +237,7 @@ bool ie::WavefrontMaterialFileReader::clear(void)
   filePackage.materials.clear();
 }
 
-bool ie::WavefrontMaterialFileReader::read(std::string filename)
+ie::WavefrontMaterialFilePackage ie::WavefrontMaterialFileReader::read(std::string filename)
 {
   std::ifstream mtlFile;
   mtlFile.open(filename.c_str());
@@ -366,10 +364,9 @@ bool ie::WavefrontMaterialFileReader::read(std::string filename)
   else
   {
     std::cout << "File " << filename << " failed to open for reading..." << std::endl;
-    return false;
   }
   mtlFile.close();
-  return true;
+  return filePackage;
 }
 
-ie::WavefrontMaterialFilePackage ie::WavefrontMaterialFileReader::getFilePackage(void) {return filePackage;}
+ie::WavefrontMaterialFilePackage ie::WavefrontMaterialFileReader::wrapFilePackage(void) {return filePackage;}

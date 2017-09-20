@@ -4,10 +4,38 @@
 #include <string>
 #include <vector>
 
+#define GL_GLEXT_PROTOTYPES //Needs to be define for some GL func to work.
+#include <GL/gl.h>
+#include <GL/glu.h>
 #include <glm/glm.hpp>
 
 namespace ie
 {
+  
+  class GlslUniformPackage
+  {
+    public:
+    std::string name;
+    std::string type;
+    GLint location;
+  };
+  
+  class GlslSourcePackage
+  {
+    public:
+    std::string sourceCode;
+    std::vector<GlslUniformPackage> uniforms;
+  };
+
+  class ShaderProgramPackage
+  {
+    public:
+    std::string name;
+    GLuint programId;
+    GLuint vertexShaderId;
+    GLuint fragmentShaderId;
+    std::vector<GlslUniformPackage> uniforms;
+  };
 
   enum TextureType {DIFFUSE_MAP, BUMP_MAP, ALPHA_MAP,
                     AMBIENT_MAP, SPECULAR_MAP, HIGHLIGHT_MAP};

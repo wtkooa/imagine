@@ -1,5 +1,3 @@
-#define GL_GLEXT_PROTOTYPES //Needs to be defined for some GL funcs to work.
-
 #include "ie_lighting.h"
 
 #include <glm/glm.hpp>

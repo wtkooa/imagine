@@ -1,15 +1,18 @@
 #pragma once
 #include <string>
 
+#define GL_GLEXT_PROTOTYPES //Needs to be defined for some GL funcs to work.
 #include <GL/gl.h>
 #include <GL/glu.h>
 #include <glm/glm.hpp>
 #include <SDL2/SDL.h>
 
+#include "ie_assets.h"
 #include "ie_camera.h"
 #include "ie_lighting.h"
-#include "ie_wavefront.h"
+#include "ie_shader.h"
 #include "ie_time.h"
+#include "ie_wavefront.h"
 
 class Engine
 {
@@ -24,6 +27,7 @@ class Engine
   void handleEvents(void);
   void handleLogic(void);
   void handleResize(int,int);
+  bool initCamera(void);
   bool initLighting(void);
   bool initShaders(void);
   bool loadOBJ(std::string);
@@ -46,26 +50,8 @@ class Engine
   bool DEPTHTEST;
   bool CULLFACE;
   glm::vec4 DEFAULT_CLEAR_COLOR;
-  GLuint programID;
-  GLint transformationMatShaderUniLoc;
-  GLint mtwMatShaderUniLoc;
-  GLint light0posShaderUniLoc;
-  GLint ambientLightShaderUniLoc;
-  GLint eyePosShaderUniLoc;
-  GLint ambientGlobalShaderUniLoc;
-  GLint specularLightShaderUniLoc;
-  GLint diffuseLightShaderUniLoc;
-  GLint KsShaderUniLoc;
-  GLint NsShaderUniLoc;
-  GLint KdShaderUniLoc;
-  GLint KaShaderUniLoc;
-  GLint KeShaderUniLoc;
-  GLint KcShaderUniLoc;
-  GLint KlShaderUniLoc;
-  GLint KqShaderUniLoc;
-  GLint hasTextureShaderUniLoc;
-  GLint textureShaderUniLoc;
-  //GLSL_Compiler compiler;
+  ie::AssetManager am;
+  ie::GlslCompiler compiler;
   ie::FrameClock frameClock;
   ie::Camera eye;
   ie::PointLight light;

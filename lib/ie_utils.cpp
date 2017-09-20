@@ -1,10 +1,9 @@
-#define GL_GLEXT_PROTOTYPES //Needs to be defined for some GL funcs to work.
-
 #include "ie_utils.h"
 
 #include <iostream>
 #include <string>
 
+#define GL_GLEXT_PROTOTYPES //Needs to be defined for some GL funcs to work.
 #include <GL/gl.h>
 #include <GL/glu.h>
 #include <glm/glm.hpp>

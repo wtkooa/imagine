@@ -27,32 +27,3 @@ class VRAMManager
 };
 
 
-//Shader
-class GLSL_Reader
-{
-  public:
-  GLSL_Reader();
-  GLSL_Reader(std::string);
-  void setFilename(std::string);
-  std::string getFilename(void);
-  bool read(void);
-  std::string getCode(void);
-  private:
-  std::string filename;
-  std::string code;
-};
-
-
-class GLSL_Compiler
-{
-  public:
-  bool compileVertexShader(std::string);
-  bool compileFragmentShader(std::string);
-  bool linkShaderProgram(void);
-  GLuint getProgramID(void);
-  bool cleanUpShaders(void);
-  private:
-  GLuint vertexShaderID;
-  GLuint fragmentShaderID;
-  GLuint programID;
-};
