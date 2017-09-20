@@ -1,0 +1,16 @@
+#DEVELOPMENT EXECUTABLE
+engine
+
+#TEMPORARY STAGING FOLDER
+tmp
+
+#VIM SWAP FILES
+*.swp
+lib/*.swp
+
+#ROGUE OBJECT FILES
+*.o
+lib/*.o
+
+#SCRIBBLEPAD STUFF
+devnotes
