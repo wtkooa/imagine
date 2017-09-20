@@ -7,6 +7,6 @@ outputFile = -o engine
 compile:
 	g++ $(std) $(cppFiles) 
 	g++ $(std) $(objectFiles) $(libFiles) $(outputFile)
-	 rm *.o
+	rm *.o
 test:
 	./engine

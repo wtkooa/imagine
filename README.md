@@ -22,6 +22,9 @@ The project is still in development and will be for some time. However, if you'd
 
 Currently, the project has been compiled using g++ on Linux Mint 18.1 Serena 64-bit with nVIDIA GeForce GTX 970 graphics cards. Compilation on Mac and Windows is undefined; although, feel free to give it a try and let me know how it goes... In the future, the goal is to make the project Linux/Windows/Mac compatible. The libraries/APIs I've chosen thus far should be compatible to the best of my knowledge.
 
+#### Controls
+**This is somewhat important! Pay Attention!** By default the engine hides and locks the mouse into the window for camera use, even if nothing renders to the screen. **To get your mouse back simply press "e".** You can also press "Esc" to quit at any time. By default, move with WASD and look around with the mouse. Movement can only take place in "grab mode" when the program has control of the mouse. To toggle grab mode press "e".
+
 #### Dependencies:
 
 C++ Version: C++11   
