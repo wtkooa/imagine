@@ -13,6 +13,7 @@
 #include <glm/gtc/matrix_transform.hpp>
 
 #include "ie_assets.h"
+#include "ie_config.h"
 #include "ie_const.h"
 #include "ie_camera.h"
 #include "ie_lighting.h"
@@ -23,50 +24,31 @@
 #include "ie_utils.h"
 #include "ie_wavefront.h"
 
-Engine::Engine(void)
+ie::Engine::Engine(void)
 {
-  WINDOW_TITLE = "Imagine Engine";
-  WINDOW_WIDTH = 800;
-  WINDOW_HEIGHT = 600;
-  ASPECT_RATIO = float(WINDOW_WIDTH) / float(WINDOW_HEIGHT);
-  FIELD_OF_VIEW = glm::radians(60.0f);
-  Z_NEAR = 0.01;
-  Z_FAR = 30.0;
-  REQUIRED_SDL_MODULES = SDL_INIT_EVERYTHING;
-  SDL_MODE = SDL_WINDOW_SHOWN|SDL_WINDOW_RESIZABLE|SDL_WINDOW_OPENGL;
-  ACTIVEBUFFERS = GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT;
-  WIREFRAME = false;
-  DEPTHTEST = true;
-  CULLFACE = true;
-  DEFAULT_CLEAR_COLOR = glm::vec4(0.0, 0.0, 0.0, 1.0);
   init();
   run();
   cleanup();
 }
 
-bool Engine::init(void)
+bool ie::Engine::init(void)
 {
-  SDL_Init(REQUIRED_SDL_MODULES);
+  SDL_Init(ie::REQUIRED_SDL_MODULES);
   SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
-  p_window = SDL_CreateWindow(WINDOW_TITLE.c_str(),
+  mainWindow = SDL_CreateWindow(ie::WINDOW_TITLE.c_str(),
                 SDL_WINDOWPOS_CENTERED,
                 SDL_WINDOWPOS_CENTERED,
-                WINDOW_WIDTH, WINDOW_HEIGHT,
-                SDL_MODE);
-  glContext = SDL_GL_CreateContext(p_window);
-  SDL_GL_SetSwapInterval(1);
-  glViewport(0, 0, WINDOW_WIDTH, WINDOW_HEIGHT);
-  if (WIREFRAME) {glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);}
-  if (DEPTHTEST) {glEnable(GL_DEPTH_TEST);}
-  if (CULLFACE) {glEnable(GL_CULL_FACE);}
-  glClearColor(DEFAULT_CLEAR_COLOR.r,
-         DEFAULT_CLEAR_COLOR.g,
-         DEFAULT_CLEAR_COLOR.b,
-         DEFAULT_CLEAR_COLOR.a);
-  glClear(ACTIVEBUFFERS);
-  eye.setProjectionMatrix(glm::perspective(FIELD_OF_VIEW, ASPECT_RATIO, Z_NEAR, Z_FAR));
-  SDL_SetWindowGrab(p_window, SDL_TRUE);
-  SDL_SetRelativeMouseMode(SDL_TRUE);
+                ie::WINDOW_WIDTH, ie::WINDOW_HEIGHT,
+                ie::SDL_MODE);
+  mainGlContext = SDL_GL_CreateContext(mainWindow);
+  SDL_GL_SetSwapInterval(ie::LOCK_TO_LOCAL_FRAMERATE);
+  glViewport(0, 0, ie::WINDOW_WIDTH, ie::WINDOW_HEIGHT);
+  if (ie::WIREFRAME_ON) {glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);}
+  if (ie::DEPTHTEST_ON) {glEnable(GL_DEPTH_TEST);}
+  if (ie::CULLFACE_ON) {glEnable(GL_CULL_FACE);}
+  glClearColor(ie::DEFAULT_CLEAR_COLOR.r, ie::DEFAULT_CLEAR_COLOR.g,
+         ie::DEFAULT_CLEAR_COLOR.b, ie::DEFAULT_CLEAR_COLOR.a);
+  glClear(ie::ACTIVEBUFFERS);
   initCamera();
   initLighting();
   initShaders();
@@ -74,13 +56,17 @@ bool Engine::init(void)
   return true;
 }
 
-bool Engine::initCamera(void)
+bool ie::Engine::initCamera(void)
 {
+  eye.setWindow(mainWindow);
   eye.setMoveSpeed(3.0f); //Meters per Second
   eye.setLookSpeed(glm::radians(0.05f)); //Degrees per rel movment
+  eye.setProjectionMatrix(glm::perspective(ie::FIELD_OF_VIEW,
+                                           ie::ASPECT_RATIO,
+                                           ie::Z_NEAR, ie::Z_FAR));
 }
 
-bool Engine::initLighting(void)
+bool ie::Engine::initLighting(void)
 {
   light.setPosVector(glm::vec3(0.0f, 3.0f, 0.0f));
   light.setGlobalAmbient(glm::vec3(0.1f, 0.1f, 0.1f));
@@ -92,15 +78,16 @@ bool Engine::initLighting(void)
   light.setQuadraticFalloff(0.0f);
 }
 
-bool Engine::initShaders(void)
+bool ie::Engine::initShaders(void)
 {
-  compiler.compile("Static", "lib/glsl/vshader.glsl", "lib/glsl/fshader.glsl");
-  ie::ShaderProgramPackage statPack = compiler.wrapShaderProgramPackage();
+  ie::ShaderProgramPackage statPack = compiler.compile("Static",
+                                                       "src/glsl/vshader.glsl",
+                                                       "src/glsl/fshader.glsl");
   am.unwrapPackage(statPack);
   return true;
 }
 
-bool Engine::loadAssets(void)
+bool ie::Engine::loadAssets(void)
 {
   ie::WavefrontObjectFileReader objReader;  
   ie::WavefrontObjectFilePackage pack1 = objReader.read("data/Cube.obj");
@@ -110,10 +97,10 @@ bool Engine::loadAssets(void)
   return true;
 }
 
-bool Engine::run(void)
+bool ie::Engine::run(void)
 {
-  engine_on = true;
-  while (engine_on) {
+  engineOn = true;
+  while (engineOn) {
     frameClock.measure();
     handleEvents();
     handleLogic();
@@ -122,16 +109,16 @@ bool Engine::run(void)
   return true;
 }
 
-void Engine::handleLogic(void)
+void ie::Engine::handleLogic(void)
 {
 
 }
 
-void Engine::render(void)
+void ie::Engine::render(void)
 {/*
   modelResource* model = rm.modelArr;
   int modelAmount = rm.modelAmount;
-  if (SDL_GetWindowGrab(p_window) == SDL_TRUE)
+  if (SDL_GetWindowGrab(mainWindow) == SDL_TRUE)
   {
     eye.frameUpdate(frameClock.getFrameDelta());
   }
@@ -181,10 +168,10 @@ void Engine::render(void)
     }
   }
   glBindBuffer(GL_ARRAY_BUFFER, 0);
-  SDL_GL_SwapWindow(p_window);*/
+  SDL_GL_SwapWindow(mainWindow);*/
 }
 
-void Engine::handleEvents(void)
+void ie::Engine::handleEvents(void)
 {
   SDL_Event evnt;
   while (SDL_PollEvent(&evnt))
@@ -192,7 +179,7 @@ void Engine::handleEvents(void)
     switch (evnt.type)
     {
       case SDL_QUIT:
-        engine_on = false;
+        engineOn = false;
         break;
       case SDL_WINDOWEVENT:
         switch (evnt.window.event)
@@ -213,21 +200,13 @@ void Engine::handleEvents(void)
         switch (evnt.key.keysym.sym)
         {
           case SDLK_ESCAPE:
-            engine_on = false;
+            engineOn = false;
             break;
           case SDLK_e:
-            if (SDL_GetWindowGrab(p_window) == SDL_FALSE) 
+            if (!evnt.key.repeat)
             {
-              std::cout << "GrabMode On" << std::endl;
-              SDL_SetWindowGrab(p_window, SDL_TRUE);
-              SDL_SetRelativeMouseMode(SDL_TRUE);
+              eye.toggleGrabMode();
             }
-            else
-            {
-              std::cout << "GrabMode Off" << std::endl;
-              SDL_SetWindowGrab(p_window, SDL_FALSE);
-              SDL_SetRelativeMouseMode(SDL_FALSE);
-            } 
             break;
           case SDLK_w:
             if (!evnt.key.repeat)
@@ -294,20 +273,19 @@ void Engine::handleEvents(void)
   }
 }
 
-void Engine::handleResize(int width, int height)
+void ie::Engine::handleResize(int width, int height)
 {
-  float aspect_ratio = float(width) / float(height);
-  SDL_SetWindowSize(p_window, width, height);
+  float aspectRatio = float(width) / float(height);
+  SDL_SetWindowSize(mainWindow, width, height);
   glViewport(0, 0, width, height);
-  glm::mat4 newProjection = glm::perspective(FIELD_OF_VIEW,
-                                             aspect_ratio,
-                                             Z_NEAR, Z_FAR);
-  eye.setProjectionMatrix(newProjection);  
+  eye.setProjectionMatrix(glm::perspective(ie::FIELD_OF_VIEW,
+                                           aspectRatio,
+                                           ie::Z_NEAR, ie::Z_FAR));
 }
 
-bool Engine::cleanup(void)
+bool ie::Engine::cleanup(void)
 {
-  am.releaseAllShaderPrograms();
+  am.quit();
   SDL_Quit();
   return true;
 }

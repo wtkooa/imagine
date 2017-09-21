@@ -97,6 +97,7 @@ namespace ie
     void unwrapPackage(ie::ShaderProgramPackage);
     bool releaseAllShaderPrograms(void);
     bool releaseShaderProgram(std::string);
+    bool quit(void);
     private:
     std::map<unsigned int, ModelAsset> modelAssets;
     std::map<std::string, unsigned int> modelNameIdMap;

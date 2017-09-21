@@ -1,7 +1,7 @@
-#include "lib/ie_engine.h"
+#include "src/ie_engine.h"
 
 int main(int argc, char ** argv)
 {
-  Engine newgame;
+  ie::Engine newgame;
   return 0;
 }

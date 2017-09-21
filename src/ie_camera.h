@@ -1,6 +1,7 @@
 #pragma once
 
 #include <glm/glm.hpp>
+#include <SDL2/SDL.h>
 
 namespace ie
 {
@@ -25,14 +26,15 @@ namespace ie
     void setLookVector(glm::vec3);
     glm::mat4 getProjectionMatrix(void);
     void setProjectionMatrix(glm::mat4);
+    void setGrabMode(SDL_bool);
+    void toggleGrabMode(void);
+    void setWindow(SDL_Window*);
+    SDL_Window* getWindow(void);
     glm::vec3 translEventVec;
     glm::vec2 rotateEventVec;    
     private:
     CameraType cameraType;
-    const float FIELD_OF_VIEW;
-    const float ASPECT_RATIO;
-    const float Z_NEAR;
-    const float Z_FAR;
+    SDL_Window * window;
     float moveSpeed;
     float lookSpeed;
     glm::vec3 upVector;

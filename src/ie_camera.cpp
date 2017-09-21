@@ -1,14 +1,16 @@
 #include "ie_camera.h"
 
+#include <iostream>
+
 #define GL_GLEXT_PROTOTYPES //Needs to be defined for some GL funcs to work.
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
+#include <SDL2/SDL.h>
 
 #include "ie_const.h"
 
 //Camera
-ie::Camera::Camera(void) : FIELD_OF_VIEW(60.0), ASPECT_RATIO(16.0/9.0),
-                           Z_NEAR(0.01), Z_FAR(100.0)
+ie::Camera::Camera()
 {
   CameraType cameraType = FIRST_PERSON;
   moveSpeed = 1.0; //Meters per Second
@@ -18,9 +20,39 @@ ie::Camera::Camera(void) : FIELD_OF_VIEW(60.0), ASPECT_RATIO(16.0/9.0),
   posVector = glm::vec3(0.0f, 0.0f, 0.0f);
   translEventVec = glm::vec3(0.0f, 0.0f, 0.0f);
   rotateEventVec = glm::vec2(0.0f, 0.0f);
-  projectionMatrix = glm::perspective(glm::radians(FIELD_OF_VIEW),
-                                                   ASPECT_RATIO,
-                                                   Z_NEAR, Z_FAR);
+  projectionMatrix = glm::perspective(glm::radians(60.0f),
+                                                  (16.0f / 9.0f),
+                                                   0.01f, 100.0f);
+  setGrabMode(SDL_TRUE);
+}
+
+void ie::Camera::setGrabMode(SDL_bool mode)
+{
+  SDL_SetWindowGrab(window, mode);
+  SDL_SetRelativeMouseMode(mode);
+}
+
+void ie::Camera::toggleGrabMode(void)
+{
+  if (SDL_GetWindowGrab(window) == SDL_FALSE) 
+  {
+    std::cout << "GrabMode On" << std::endl;
+    setGrabMode(SDL_TRUE);
+  }
+  else
+  {
+    std::cout << "GrabMode Off" << std::endl;
+    setGrabMode(SDL_FALSE);
+  } 
+}
+void ie::Camera::setWindow(SDL_Window* win)
+{
+  window = win;
+}
+
+SDL_Window* ie::Camera::getWindow(void)
+{
+  return window;
 }
 
 void ie::Camera::frameUpdate(float frameDelta)

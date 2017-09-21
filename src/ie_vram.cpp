@@ -1,24 +1,19 @@
-#define GL_GLEXT_PROTOTYPES //Needs to be defined for some GL funcs to work.
-#include <iostream>
-#include <fstream>
+#include "vram.h"
+
 #include <map>
 #include <string>
-#include <cmath>
-#include <exception>
-#include <sstream>
+
+#define GL_GLEXT_PROTOTYPES //Needs to be defined for some GL funcs to work.
 #include <GL/gl.h>
 #include <GL/glu.h>
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <SDL2/SDL_image.h>
 #include <SDL2/SDL.h>
-#include "ie_wavefront.h"
-
-
 
 
 //Video Memory Manger
-VRAMManager::VRAMManager(void)
+VramManager::VramManager(void)
 {
   vboSizeBytes = 0;
   positionStart = (void*)(0);

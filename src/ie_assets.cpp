@@ -289,4 +289,8 @@ bool ie::AssetManager::releaseShaderProgram(std::string name)
   glDeleteProgram(asset.programId);
 }
 
+bool ie::AssetManager::quit(void)
+{
+  releaseAllShaderPrograms();
+}
 
