@@ -8,6 +8,7 @@
 #include <GL/gl.h>
 #include <GL/glu.h>
 
+#include "ie_assets.h"
 #include "ie_messages.h"
 
 namespace ie
@@ -48,8 +49,9 @@ namespace ie
   {
     public:
     short renderUnit;
+    VboDataFormat format;
     unsigned int location;
-    unsigned int indexSize;
+    unsigned int indexAmount;
   };
 
   class VramManager
@@ -59,15 +61,13 @@ namespace ie
     void recieveMessage(CreateVboMessage); 
 
     void quit(void);
-    private:
+    //private:
     void loadTexture(TextureAsset);
     std::map<std::string, VboPair> vboIdPairs;
+    std::map<unsigned int, std::vector<VboRenderUnitLocation>> vboMemoryMap; 
     std::vector<VFormat> vboV;
-    std::map<unsigned int, VboRenderUnitLocation> vboVMemoryMap; 
     std::vector<VNFormat> vboVN;
-    std::map<unsigned int, VboRenderUnitLocation> vboVNMemoryMap; 
     std::vector<VTNFormat> vboVTN;
-    std::map<unsigned int, VboRenderUnitLocation> vboVTNMemoryMap; 
   };
 
 }

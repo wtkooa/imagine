@@ -219,7 +219,7 @@ ie::WavefrontObjectFilePackage ie::WavefrontObjectFileReader::read(std::string f
   } 
   if (hasQuads)
   {
-    std::cout << "Warning: This file contains QUAD faces. These will not be rendered." << std::endl;
+    std::cout << "Warning: This OBJ file contains QUAD faces. These will not be rendered." << std::endl;
   }
   return filePackage;
 }

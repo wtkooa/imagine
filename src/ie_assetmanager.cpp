@@ -1,7 +1,6 @@
 #include "ie_assetmanager.h"
 
 #include <iostream>
-#include <iterator>
 #include <map>
 #include <string>
 #include <vector>
@@ -80,14 +79,14 @@ void ie::AssetManager::unwrapPackage(ie::WavefrontObjectFilePackage filePackage)
 
   for (int n = 0; n < indexAmount; n++)
   {
-    filePackage.f[n].x += vertexHeapOffset;
+    filePackage.f[n].x += vertexHeapOffset - 1;
     if (filePackage.f[n].y != -1)
     {
-      filePackage.f[n].y += textureCoordinateHeapOffset;
+      filePackage.f[n].y += textureCoordinateHeapOffset - 1;
     }
     if (filePackage.f[n].z != -1)
     {
-      filePackage.f[n].z += normalVectorHeapOffset;
+      filePackage.f[n].z += normalVectorHeapOffset - 1;
     }
   }
   unsigned int indexOffset = pushIndexData(filePackage.f);
@@ -166,7 +165,7 @@ void ie::AssetManager::unwrapPackage(ie::WavefrontObjectFilePackage filePackage)
         }
         renderUnit.materialId = materialNameIdMap[usingMaterialName];
         renderUnit.shaderProgramId = 1;
-        renderUnit.indexOffset = indexOffset + groupIndexBegin + 1;
+        renderUnit.indexOffset = indexOffset + groupIndexBegin;
         renderUnit.vertexAmount = groupVertexAmount;
         renderUnit.hidden = false;
         asset.renderUnits.push_back(renderUnit);

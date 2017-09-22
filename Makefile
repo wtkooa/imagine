@@ -11,11 +11,18 @@ objectFiles = main.o ie_engine.o ie_const.o ie_time.o ie_camera.o \
 
 srcFiles = -lSDL2 -lSDL2main -lSDL2_image -lGL -lGLU
 
-outputFile = -o engine
+outputFile = engine
+outputFlag = -o $(outputFile)
 
 compile:
 	g++ $(std) $(cppFiles) 
-	g++ $(std) $(objectFiles) $(srcFiles) $(outputFile)
+	g++ $(std) $(objectFiles) $(srcFiles) $(outputFlag)
 	rm *.o
+
 test:
 	./engine
+
+debug:
+	g++ -g $(std) $(cppFiles) 
+	g++ -g $(std) $(objectFiles) $(srcFiles) $(outputFlag)
+	gdb $(outputFile)

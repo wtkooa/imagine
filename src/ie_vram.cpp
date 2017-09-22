@@ -56,7 +56,80 @@ void ie::VramManager::recieveMessage(ie::CreateVboMessage msg)
     loadTexture(texIt->second);
   }
 
+  for (auto modIt = models->begin(); modIt != models->end(); modIt++)
+  {
+    unsigned int modelId = modIt->first;
+    ie::ModelAsset model = modIt->second;
+    short renderUnitAmount = model.renderUnits.size();
+    std::vector<VboRenderUnitLocation> ruLocations;
+    for (short ru = 0; ru < renderUnitAmount; ru++)
+    {
+      ie::VboDataFormat dataFormat = model.renderUnits[ru].dataFormat;
+      VboRenderUnitLocation ruLocation;
+      ruLocation.renderUnit = ru;
+      ruLocation.format = dataFormat;
+      unsigned int indexAmount = model.renderUnits[ru].vertexAmount;
+      ruLocation.indexAmount = indexAmount;
+      switch (dataFormat)
+      {
+        case V:
+          ruLocation.location = vboV.size(); 
+          ruLocations.push_back(ruLocation);
 
+          for (unsigned int n = 0; n < indexAmount; n++)
+          {
+            ie::VFormat vboDataUnit;
+            unsigned int baseIndex = model.renderUnits[ru].indexOffset;
+            glm::ivec4 faceElement = (*iHeap)[baseIndex + n];
+            unsigned int vertexIndex = faceElement.x;
+            glm::vec4 vertex = (*vHeap)[vertexIndex];
+            vboDataUnit.vertex = vertex;
+            vboV.push_back(vboDataUnit);
+          }
+          break;
+        case VN:
+          ruLocation.location = vboVN.size(); 
+          ruLocations.push_back(ruLocation);
+
+          for (unsigned int n = 0; n < indexAmount; n++)
+          {
+            ie::VNFormat vboDataUnit;
+            unsigned int baseIndex = model.renderUnits[ru].indexOffset;
+            glm::ivec4 faceElement = (*iHeap)[baseIndex + n];
+            unsigned int vertexIndex = faceElement.x;
+            unsigned int normalIndex = faceElement.z;
+            glm::vec4 vertex = (*vHeap)[vertexIndex];
+            glm::vec3 normal = (*nHeap)[normalIndex];
+            vboDataUnit.vertex = vertex;
+            vboDataUnit.normal = normal;
+            vboVN.push_back(vboDataUnit);
+          }
+          break;
+        case VTN:
+          ruLocation.location = vboVTN.size(); 
+          ruLocations.push_back(ruLocation);
+
+          for (unsigned int n = 0; n < indexAmount; n++)
+          {
+            ie::VTNFormat vboDataUnit;
+            unsigned int baseIndex = model.renderUnits[ru].indexOffset;
+            glm::ivec4 faceElement = (*iHeap)[baseIndex + n];
+            unsigned int vertexIndex = faceElement.x;
+            unsigned int textureIndex = faceElement.y;
+            unsigned int normalIndex = faceElement.z;
+            glm::vec4 vertex = (*vHeap)[vertexIndex];
+            glm::vec3 texture = (*tHeap)[textureIndex];
+            glm::vec3 normal = (*nHeap)[normalIndex];
+            vboDataUnit.vertex = vertex;
+            vboDataUnit.texture = texture;
+            vboDataUnit.normal = normal;
+            vboVTN.push_back(vboDataUnit);
+          }
+        break;
+      }
+    }
+    vboMemoryMap[model.modelId] = ruLocations;
+  }
 }
 
 void ie::VramManager::loadTexture(ie::TextureAsset textureAsset)
