@@ -114,8 +114,8 @@ void ie::AssetManager::unwrapPackage(ie::WavefrontObjectFilePackage filePackage)
     asset.rotationMatrix = glm::mat4();
     asset.copy = false;
     asset.hidden = false;
-    asset.tobeVboLoaded = true;
-    asset.vboLoaded = false;
+    asset.tobeVramLoaded = true;
+    asset.vramLoaded = false;
     unsigned int objectIndexBegin = it->first;
     unsigned int objectIndexEnd = 0;
     auto nextIt = it;
@@ -294,6 +294,47 @@ ie::CreateVboMessage ie::AssetManager::sendCreateVboMessage(void)
   msg.nHeap = &normalVectorHeap;
   msg.iHeap = &indexHeap;
   return msg;
+}
+
+void ie::AssetManager::createQuickLists(void)
+{
+  std::vector<QuickListElement> vList;
+  std::vector<QuickListElement> vnList;
+  std::vector<QuickListElement> vtnList;
+  for (auto modIt = modelAssets.begin(); modIt != modelAssets.end(); modIt++)
+  {
+    ModelAsset model = modIt->second;
+    if (model.hidden == false)
+    {
+      QuickListElement element;
+      element.modelId = model.modelId;
+      for (int nUnit = 0; nUnit < model.renderUnits.size(); nUnit++)
+      {
+        RenderUnit ru = model.renderUnits[nUnit];
+        if (ru.hidden == false)
+        {
+          switch (ru.dataFormat)
+          {
+            case V:
+              element.renderUnitList.push_back(nUnit);
+              vList.push_back(element);
+              break;
+            case VN:
+              element.renderUnitList.push_back(nUnit);
+              vnList.push_back(element);
+              break;
+            case VTN:
+              element.renderUnitList.push_back(nUnit);
+              vtnList.push_back(element);
+              break;
+          }
+        }
+      }
+    }
+  }
+  quickLists["vList"] = vList;
+  quickLists["vnList"] = vnList;
+  quickLists["vtnList"] = vtnList;
 }
 
 bool ie::AssetManager::releaseAllShaderPrograms(void)

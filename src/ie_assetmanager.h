@@ -33,6 +33,9 @@ namespace ie
     bool releaseTexture(GLuint);
     bool releaseAllShaderPrograms(void);
     bool releaseShaderProgram(std::string);
+    
+    void createQuickLists(void);
+
     bool quit(void);
     private:
     std::map<unsigned int, ModelAsset> modelAssets;
@@ -58,6 +61,8 @@ namespace ie
     unsigned int pushNormalVectorData(std::vector<glm::vec3>);
     std::vector<glm::ivec4> indexHeap;
     unsigned int pushIndexData(std::vector<glm::ivec4>);
+
+    std::map<std::string, std::vector<QuickListElement>> quickLists; 
   };
 
 }

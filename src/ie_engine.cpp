@@ -100,8 +100,7 @@ bool ie::Engine::loadAssets(void)
 
   ie::CreateVboMessage vboMsg = am.sendCreateVboMessage();
   vram.recieveMessage(vboMsg);
-  std::cout <<  (vram.vboMemoryMap[1])[0].location << std::endl;
-  
+  am.createQuickLists();
   return true;
 }
 

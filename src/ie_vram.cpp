@@ -53,13 +53,21 @@ void ie::VramManager::recieveMessage(ie::CreateVboMessage msg)
 
   for (auto texIt = textures->begin(); texIt != textures->end(); texIt++)
   {
-    loadTexture(texIt->second);
+    if ((texIt->second).tobeVramLoaded == true)
+    {
+      (texIt->second).tobeVramLoaded = false;
+      (texIt->second).vramLoaded = true;
+      loadTexture(texIt->second);
+    }
   }
 
   for (auto modIt = models->begin(); modIt != models->end(); modIt++)
   {
     unsigned int modelId = modIt->first;
     ie::ModelAsset model = modIt->second;
+    if (model.tobeVramLoaded == false) {continue;} 
+    (modIt->second).vramLoaded = true;
+    (modIt->second).tobeVramLoaded = false;
     short renderUnitAmount = model.renderUnits.size();
     std::vector<VboRenderUnitLocation> ruLocations;
     for (short ru = 0; ru < renderUnitAmount; ru++)
@@ -130,6 +138,7 @@ void ie::VramManager::recieveMessage(ie::CreateVboMessage msg)
     }
     vboMemoryMap[model.modelId] = ruLocations;
   }
+  loadVbo();
 }
 
 void ie::VramManager::loadTexture(ie::TextureAsset textureAsset)
@@ -151,6 +160,29 @@ void ie::VramManager::loadTexture(ie::TextureAsset textureAsset)
   SDL_FreeSurface(surface);
 }
 
+void ie::VramManager::loadVbo(void)
+{
+  short dataSize = sizeof(VFormat);
+  VboPair pair = vboIdPairs["vPair"];
+  glBindBuffer(GL_ARRAY_BUFFER, pair.readVbo);
+  glBufferData(GL_ARRAY_BUFFER, vboV.size() * dataSize, vboV.data(), GL_STATIC_DRAW);
+  glBindBuffer(GL_ARRAY_BUFFER, pair.writeVbo);
+  glBufferData(GL_ARRAY_BUFFER, vboV.size() * dataSize, vboV.data(), GL_STATIC_DRAW);
+  dataSize = sizeof(VNFormat);
+  pair = vboIdPairs["vnPair"];
+  glBindBuffer(GL_ARRAY_BUFFER, pair.readVbo);
+  glBufferData(GL_ARRAY_BUFFER, vboVN.size() * dataSize, vboV.data(), GL_STATIC_DRAW);
+  glBindBuffer(GL_ARRAY_BUFFER, pair.writeVbo);
+  glBufferData(GL_ARRAY_BUFFER, vboVN.size() * dataSize, vboV.data(), GL_STATIC_DRAW);
+  dataSize = sizeof(VTNFormat);
+  pair = vboIdPairs["vtnPair"];
+  glBindBuffer(GL_ARRAY_BUFFER, pair.readVbo);
+  glBufferData(GL_ARRAY_BUFFER, vboVTN.size() * dataSize, vboV.data(), GL_STATIC_DRAW);
+  glBindBuffer(GL_ARRAY_BUFFER, pair.writeVbo);
+  glBufferData(GL_ARRAY_BUFFER, vboVTN.size() * dataSize, vboV.data(), GL_STATIC_DRAW);
+  glBindBuffer(GL_ARRAY_BUFFER, 0);
+}
+
 void ie::VramManager::quit(void)
 {
   for (auto vboIt = vboIdPairs.begin(); vboIt != vboIdPairs.end(); vboIt++)
@@ -159,56 +191,7 @@ void ie::VramManager::quit(void)
   }
 }
 
-
 /*
-//Video Memory Manger
-VramManager::VramManager(void)
-{
-  vboSizeBytes = 0;
-  positionStart = (void*)(0);
-  positionDim = 3;
-  textureStart = (void*)(sizeof(float) * 3);
-  textureDim = 3;
-  normalStart = (void*)(sizeof(float) * 6);
-  normalDim = 3;
-  vboStride = sizeof(float) * 9;
-  glGenBuffers(1, &vboID);
-  glBindBuffer(GL_ARRAY_BUFFER, vboID); 
-}
-
-bool VRAMManager::genVBO(modelResource* model, int modelAmount)
-{
-  int newVBOSizeBytes = 0;
-  for (int n = 0; n < modelAmount; n++)
-  {
-    if (model[n].vboloaded == true || model[n].tobevboloaded == true)
-    {
-      newVBOSizeBytes += model[n].vertexSizeBytes;
-    }
-  }
-  glDeleteBuffers(1, &vboID);
-  glGenBuffers(1, &vboID);
-  glBindBuffer(GL_ARRAY_BUFFER, vboID);
-  glBufferData(GL_ARRAY_BUFFER, newVBOSizeBytes, NULL, GL_STATIC_DRAW);
-  vboSizeBytes = newVBOSizeBytes;
-  size_t vOffset = 0;
-  size_t iOffset = 0;
-  for (int n = 0; n < modelAmount; n++)
-  {
-    if (model[n].vboloaded == true || model[n].tobevboloaded == true)
-    {
-      model[n].vboOffsetBytes = vOffset;
-      model[n].vboOffsetIndex = iOffset;
-      glBufferSubData(GL_ARRAY_BUFFER,
-             vOffset,
-              model[n].vertexSizeBytes,
-              model[n].vertexData);
-      vOffset += (model[n].vertexSizeBytes);
-      iOffset += (model[n].vertexAmount);
-      model[n].vboloaded = true;
-      model[n].tobevboloaded = false;
-    } 
-  } 
   glEnableVertexAttribArray(0);
   glEnableVertexAttribArray(1);
   glEnableVertexAttribArray(2);

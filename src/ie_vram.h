@@ -61,8 +61,9 @@ namespace ie
     void recieveMessage(CreateVboMessage); 
 
     void quit(void);
-    //private:
+    private:
     void loadTexture(TextureAsset);
+    void loadVbo(void);
     std::map<std::string, VboPair> vboIdPairs;
     std::map<unsigned int, std::vector<VboRenderUnitLocation>> vboMemoryMap; 
     std::vector<VFormat> vboV;
@@ -71,22 +72,3 @@ namespace ie
   };
 
 }
-
-/*
-  class VramManager
-  {
-    public:
-    VramManager();
-    bool genVBO(modelResource*, int);
-    bool releaseMem(void);  
-    GLuint vboID;
-    int vboSizeBytes;
-    void* positionStart;
-    GLuint positionDim;
-    GLuint textureDim;
-    void* textureStart;
-    GLuint normalDim;
-    void* normalStart;
-    GLuint vboStride;
-  };
-*/

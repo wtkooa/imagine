@@ -1,6 +1,7 @@
 #pragma once
 
 #include <string>
+#include <map>
 #include <vector>
 
 #define GL_GLEXT_PROTOTYPES //Needs to be defined for some GL funcs to work.
@@ -12,6 +13,13 @@
 
 namespace ie
 {
+
+  class QuickListElement
+  {
+    public:
+    unsigned int modelId;
+    std::vector<short> renderUnitList;
+  };
 
   class ShaderProgramAsset
   {
@@ -47,8 +55,8 @@ namespace ie
     glm::mat4 rotationMatrix;
     bool copy;
     bool hidden;
-    bool tobeVboLoaded;
-    bool vboLoaded;
+    bool tobeVramLoaded;
+    bool vramLoaded;
   };
 
 
