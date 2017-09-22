@@ -6,11 +6,11 @@ tmp
 
 #VIM SWAP FILES
 *.swp
-lib/*.swp
+src/*.swp
 
 #ROGUE OBJECT FILES
 *.o
-lib/*.o
+src/*.o
 
 #SCRIBBLEPAD STUFF
 devnotes

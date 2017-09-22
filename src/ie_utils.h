@@ -8,6 +8,3 @@
 
 //String Split 
 std::string split(std::string, char, size_t);
-
-//Texture Loader
-GLuint loadTexture(std::string);

@@ -28,6 +28,7 @@ namespace ie
     WavefrontObjectFilePackage read(std::string);
     WavefrontObjectFilePackage wrapFilePackage(void);
     private:
+    bool hasQuads;
     bool clear(void);
     WavefrontObjectFilePackage filePackage;
     WavefrontMaterialFileReader materialReader;

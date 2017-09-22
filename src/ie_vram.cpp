@@ -1,5 +1,7 @@
-#include "vram.h"
+#include "ie_vram.h"
 
+#include <algorithm>
+#include <iostream>
 #include <map>
 #include <string>
 
@@ -11,7 +13,81 @@
 #include <SDL2/SDL_image.h>
 #include <SDL2/SDL.h>
 
+#include "ie_assets.h"
 
+ie::VboPair::VboPair()
+{
+  glGenBuffers(1, &readVbo);
+  glGenBuffers(1, &writeVbo);
+}
+
+void ie::VboPair::swap(void)
+{
+  std::swap(readVbo, writeVbo);
+}
+
+void ie::VboPair::release(void)
+{
+  glDeleteBuffers(1, &readVbo);
+  glDeleteBuffers(1, &writeVbo);
+}
+
+ie::VramManager::VramManager()
+{
+  ie::VboPair vPair;
+  ie::VboPair vnPair;
+  ie::VboPair vtnPair;
+  vboIdPairs["vPair"] = vPair;
+  vboIdPairs["vnPair"] = vnPair;
+  vboIdPairs["vtnPair"] = vtnPair;
+}
+
+void ie::VramManager::recieveMessage(ie::CreateVboMessage msg)
+{
+  std::map<unsigned int, ModelAsset>* models = msg.models;
+  std::map<unsigned int, TextureAsset>* textures = msg.textures;
+  std::vector<glm::vec4>* vHeap = msg.vHeap;
+  std::vector<glm::vec3>* tHeap = msg.tHeap;
+  std::vector<glm::vec3>* nHeap = msg.nHeap;
+  std::vector<glm::ivec4>* iHeap = msg.iHeap;
+
+  for (auto texIt = textures->begin(); texIt != textures->end(); texIt++)
+  {
+    loadTexture(texIt->second);
+  }
+
+
+}
+
+void ie::VramManager::loadTexture(ie::TextureAsset textureAsset)
+{ 
+  SDL_Surface* surface;
+  GLuint textureId = textureAsset.textureOpenglId;
+  int mode;
+  surface = IMG_Load(textureAsset.filename.c_str());
+  if (!surface) {std::cout << "Warning: Texture '" << textureAsset.filename <<
+                 "' failed to load..." << std::endl;}
+  glGenTextures(1, &textureId);
+  glBindTexture(GL_TEXTURE_2D, textureId);
+  if (surface->format->BytesPerPixel == 4) {mode = GL_RGBA;}
+  else if (surface->format->BytesPerPixel = 3) {mode = GL_RGB;}
+  glTexImage2D(GL_TEXTURE_2D, 0, mode, surface->w, surface->h, 0, mode, GL_UNSIGNED_BYTE, surface->pixels);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+  glBindTexture(GL_TEXTURE_2D, 0);
+  SDL_FreeSurface(surface);
+}
+
+void ie::VramManager::quit(void)
+{
+  for (auto vboIt = vboIdPairs.begin(); vboIt != vboIdPairs.end(); vboIt++)
+  {
+    (vboIt->second).release();
+  }
+}
+
+
+/*
 //Video Memory Manger
 VramManager::VramManager(void)
 {
@@ -79,5 +155,5 @@ bool VRAMManager::releaseMem(void)
 { 
   glDeleteBuffers(1, &vboID);
 }
-
+*/
 

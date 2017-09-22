@@ -12,7 +12,7 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 
-#include "ie_assets.h"
+#include "ie_assetmanager.h"
 #include "ie_config.h"
 #include "ie_const.h"
 #include "ie_camera.h"
@@ -22,6 +22,7 @@
 #include "ie_shader.h"
 #include "ie_time.h"
 #include "ie_utils.h"
+#include "ie_vram.h"
 #include "ie_wavefront.h"
 
 ie::Engine::Engine(void)
@@ -47,7 +48,7 @@ bool ie::Engine::init(void)
   if (ie::DEPTHTEST_ON) {glEnable(GL_DEPTH_TEST);}
   if (ie::CULLFACE_ON) {glEnable(GL_CULL_FACE);}
   glClearColor(ie::DEFAULT_CLEAR_COLOR.r, ie::DEFAULT_CLEAR_COLOR.g,
-         ie::DEFAULT_CLEAR_COLOR.b, ie::DEFAULT_CLEAR_COLOR.a);
+               ie::DEFAULT_CLEAR_COLOR.b, ie::DEFAULT_CLEAR_COLOR.a);
   glClear(ie::ACTIVEBUFFERS);
   initCamera();
   initLighting();
@@ -64,6 +65,7 @@ bool ie::Engine::initCamera(void)
   eye.setProjectionMatrix(glm::perspective(ie::FIELD_OF_VIEW,
                                            ie::ASPECT_RATIO,
                                            ie::Z_NEAR, ie::Z_FAR));
+  return true;
 }
 
 bool ie::Engine::initLighting(void)
@@ -76,6 +78,7 @@ bool ie::Engine::initLighting(void)
   light.setConstantFalloff(1.0f);
   light.setLinearFalloff(0.1f);
   light.setQuadraticFalloff(0.0f);
+  return true;
 }
 
 bool ie::Engine::initShaders(void)
@@ -94,6 +97,9 @@ bool ie::Engine::loadAssets(void)
   ie::WavefrontObjectFilePackage pack2 = objReader.read("data/Cubet.obj");
   am.unwrapPackage(pack1);
   am.unwrapPackage(pack2);
+
+  ie::CreateVboMessage vboMsg = am.sendCreateVboMessage();
+  vram.recieveMessage(vboMsg);
   return true;
 }
 
@@ -285,6 +291,7 @@ void ie::Engine::handleResize(int width, int height)
 
 bool ie::Engine::cleanup(void)
 {
+  vram.quit();
   am.quit();
   SDL_Quit();
   return true;

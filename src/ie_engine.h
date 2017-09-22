@@ -2,11 +2,12 @@
 
 #include <SDL2/SDL.h>
 
-#include "ie_assets.h"
+#include "ie_assetmanager.h"
 #include "ie_camera.h"
 #include "ie_lighting.h"
 #include "ie_shader.h"
 #include "ie_time.h"
+#include "ie_vram.h"
 
 namespace ie
 {
@@ -31,6 +32,7 @@ namespace ie
     SDL_GLContext mainGlContext;
     bool engineOn;
     ie::AssetManager am;
+    ie::VramManager vram;
     ie::GlslCompiler compiler;
     ie::FrameClock frameClock;
     ie::Camera eye;

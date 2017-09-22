@@ -37,6 +37,7 @@ bool ie::WavefrontObjectFileReader::clear(void)
 
 ie::WavefrontObjectFilePackage ie::WavefrontObjectFileReader::read(std::string filename)
 {
+  hasQuads = false;
   std::vector<std::string> mtllib;
   std::ifstream objFile;
   objFile.open(filename.c_str());
@@ -172,6 +173,7 @@ ie::WavefrontObjectFilePackage ie::WavefrontObjectFileReader::read(std::string f
       else if (command == "f")
       {
         int verticesInFace = tokenAmount;
+        if (verticesInFace == 4) {hasQuads = true;}
         for (int vertex = 1; vertex <= verticesInFace; vertex++)
         {
           std::string token = split(line, ' ', vertex);
@@ -215,6 +217,10 @@ ie::WavefrontObjectFilePackage ie::WavefrontObjectFileReader::read(std::string f
     materialReader.read(materialFile);
     filePackage.materialFilePackages.push_back(materialReader.wrapFilePackage());
   } 
+  if (hasQuads)
+  {
+    std::cout << "Warning: This file contains QUAD faces. These will not be rendered." << std::endl;
+  }
   return filePackage;
 }
 

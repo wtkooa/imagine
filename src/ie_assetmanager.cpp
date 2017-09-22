@@ -1,4 +1,4 @@
-#include "ie_assets.h"
+#include "ie_assetmanager.h"
 
 #include <iostream>
 #include <iterator>
@@ -10,6 +10,7 @@
 #include <GL/gl.h>
 #include <GL/glu.h>
 
+#include "ie_assets.h"
 #include "ie_messages.h"
 #include "ie_packages.h"
 
@@ -132,6 +133,8 @@ void ie::AssetManager::unwrapPackage(ie::WavefrontObjectFilePackage filePackage)
          mgIt != filePackage.materialGroups.end(); mgIt++)
     {
       unsigned int groupIndexBegin = mgIt->first;
+      unsigned int heapSampleIndex = indexOffset + groupIndexBegin;
+      glm::ivec4 sampleFaceElement = indexHeap[heapSampleIndex];
       std::string usingMaterialName = mgIt->second;
       if (groupIndexBegin >= objectIndexBegin &&
           groupIndexBegin < objectIndexEnd)
@@ -149,10 +152,23 @@ void ie::AssetManager::unwrapPackage(ie::WavefrontObjectFilePackage filePackage)
         }
         unsigned int groupVertexAmount = groupIndexEnd - groupIndexBegin;
         ie::RenderUnit renderUnit;
+        if (sampleFaceElement.y == -1 && sampleFaceElement.z == -1)
+        {
+          renderUnit.dataFormat = VboDataFormat::V;
+        }
+        else if (sampleFaceElement.y == -1)
+        {
+          renderUnit.dataFormat = VboDataFormat::VN;
+        }
+        else
+        {
+          renderUnit.dataFormat = VboDataFormat::VTN;
+        }
         renderUnit.materialId = materialNameIdMap[usingMaterialName];
         renderUnit.shaderProgramId = 1;
         renderUnit.indexOffset = indexOffset + groupIndexBegin + 1;
         renderUnit.vertexAmount = groupVertexAmount;
+        renderUnit.hidden = false;
         asset.renderUnits.push_back(renderUnit);
       }
     }
@@ -242,6 +258,7 @@ GLuint ie::AssetManager::unwrapPackage(
   glGenTextures(1, &id);
   asset.textureOpenglId = id;
   asset.filename = package.filename;
+  asset.name = package.filename;
   asset.textureType = package.type;
   asset.tobeVramLoaded = true;
   asset.vramLoaded = false;
@@ -268,6 +285,18 @@ void ie::AssetManager::unwrapPackage(ie::ShaderProgramPackage package)
   shaderProgramAssets[asset.name] = asset;
 }
 
+ie::CreateVboMessage ie::AssetManager::sendCreateVboMessage(void)
+{
+  ie::CreateVboMessage msg;
+  msg.models = &modelAssets;
+  msg.textures = &textureAssets;
+  msg.vHeap = &vertexHeap;
+  msg.tHeap = &textureCoordinateHeap;
+  msg.nHeap = &normalVectorHeap;
+  msg.iHeap = &indexHeap;
+  return msg;
+}
+
 bool ie::AssetManager::releaseAllShaderPrograms(void)
 {
   for (auto it = shaderProgramAssets.begin();
@@ -289,8 +318,29 @@ bool ie::AssetManager::releaseShaderProgram(std::string name)
   glDeleteProgram(asset.programId);
 }
 
-bool ie::AssetManager::quit(void)
+bool ie::AssetManager::releaseAllTextures(void)
 {
-  releaseAllShaderPrograms();
+  for (auto texIt = textureAssets.begin(); texIt != textureAssets.end(); texIt++)
+  {
+    ie::TextureAsset asset = texIt->second;
+    releaseTexture(asset.textureOpenglId);
+  }
 }
 
+bool ie::AssetManager::releaseTexture(std::string name)
+{
+  GLuint id = textureNameIdMap[name];
+  releaseTexture(id);  
+}
+
+bool ie::AssetManager::releaseTexture(GLuint id)
+{
+  
+  glDeleteTextures(1, &id);
+}
+
+bool ie::AssetManager::quit(void)
+{
+  releaseAllTextures();
+  releaseAllShaderPrograms();
+}

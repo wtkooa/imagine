@@ -26,22 +26,3 @@ std::string split(std::string str, char delim, size_t tokenNum)
   return substr;
 }
 
-//Loads textures image to vram; returns texture ID
-GLuint loadTexture(std::string filename)
-{
-  SDL_Surface* texture;
-  GLuint textureID;
-  int mode;
-  texture = IMG_Load(filename.c_str());
-  if (!texture) {std::cout << "Warning: Texture '" << filename << "' failed to load..." << std::endl;}
-  glGenTextures(1, &textureID);
-  glBindTexture(GL_TEXTURE_2D, textureID);
-  if (texture->format->BytesPerPixel == 4) {mode = GL_RGBA;}
-  else if (texture->format->BytesPerPixel = 3) {mode = GL_RGB;}
-  glTexImage2D(GL_TEXTURE_2D, 0, mode, texture->w, texture->h, 0, mode, GL_UNSIGNED_BYTE, texture->pixels);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-  glBindTexture(GL_TEXTURE_2D, 0);
-  SDL_FreeSurface(texture);
-  return textureID;
-}
