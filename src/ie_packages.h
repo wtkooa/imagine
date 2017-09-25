@@ -24,7 +24,6 @@ namespace ie
   {
     public:
     std::string sourceCode;
-    std::vector<GlslUniformPackage> uniforms;
   };
 
   class ShaderProgramPackage
@@ -34,7 +33,7 @@ namespace ie
     GLuint programId;
     GLuint vertexShaderId;
     GLuint fragmentShaderId;
-    std::vector<GlslUniformPackage> uniforms;
+    std::map<std::string, GlslUniformPackage> uniforms;
   };
 
   enum TextureType {DIFFUSE_MAP, BUMP_MAP, ALPHA_MAP,

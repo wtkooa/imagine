@@ -1,14 +1,14 @@
 #version 450
 
 in layout(location=0) vec3 position;
-in layout(location=1) vec3 texture;
+in layout(location=1) vec2 texture;
 in layout(location=2) vec3 normal;
 
 uniform mat4 mtwMatrix;
 uniform mat4 transformationMatrix;
 
 out vec3 mtwPosition;
-out vec3 texturePipe;
+out vec2 texturePipe;
 out vec3 mtwNormal;
 
 void main()

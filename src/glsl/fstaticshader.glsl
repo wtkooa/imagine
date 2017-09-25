@@ -1,7 +1,7 @@
 #version 450
 
 in vec3 mtwPosition;
-in vec3 texturePipe;
+in vec2 texturePipe;
 in vec3 mtwNormal;
 
 uniform vec3 cameraPos;
@@ -21,7 +21,7 @@ uniform vec3 materialDiffuse;
 uniform vec3 materialAmbient;
 uniform vec3 materialEmission;
 
-uniform sampler2D textureID;
+uniform sampler2D textureId;
 uniform int usingTexture;
 
 out vec4 fragmentColor;
@@ -58,7 +58,7 @@ void main()
     }
     else //HAS TEXTURE: PREFORM SPLIT SPECULAR AND TEXTURE BLENDING
     {
-        vec4 textureColor = texture(textureID, texturePipe.xy);
+        vec4 textureColor = texture(textureId, texturePipe.xy);
         vec4 primaryColor = (emission + globalAmbient + falloff) * (lightAmbient + diffuse);
         vec4 secondaryColor = falloff * specular;
         fragmentColor = (primaryColor * textureColor) + secondaryColor;

@@ -10,6 +10,7 @@
 #include <GL/glu.h>
 
 #include "ie_assets.h"
+#include "ie_definitions.h"
 #include "ie_messages.h"
 #include "ie_packages.h"
 
@@ -213,13 +214,21 @@ GLuint ie::AssetManager::unwrapPackage(
   asset.dissolve = package.dissolve;
   materialNameIdMap[asset.name] = asset.materialId;
   unsigned int texturePackageAmount = package.texturePackages.size();
+  if (texturePackageAmount > 0)
+  {
+    asset.containsTexture = true;
+  }
+  else
+  {
+    asset.containsTexture = false;
+  }
   for (int ntex = 0; ntex < texturePackageAmount; ntex++)
   {
     WavefrontTexturePackage tex = package.texturePackages[ntex];
     switch (tex.type)
     {
       case DIFFUSE_MAP:
-        asset.ambientMapId = unwrapPackage(tex);      
+        asset.diffuseMapId = unwrapPackage(tex);
         break;
       case BUMP_MAP:
         asset.bumpMapId = unwrapPackage(tex);
@@ -296,6 +305,17 @@ ie::CreateVboMessage ie::AssetManager::sendCreateVboMessage(void)
   return msg;
 }
 
+ie::RenderAssetMessage ie::AssetManager::sendRenderAssetMessage(std::string prog,
+                                                              std::string list)
+{
+  ie::RenderAssetMessage msg;
+  msg.shaderProgram = &(shaderProgramAssets[prog]);
+  msg.quickList = &(quickLists[list]);
+  msg.materials = &materialAssets;
+  msg.models = &modelAssets;
+  return msg;
+}
+
 void ie::AssetManager::createQuickLists(void)
 {
   std::vector<QuickListElement> vList;
@@ -306,8 +326,12 @@ void ie::AssetManager::createQuickLists(void)
     ModelAsset model = modIt->second;
     if (model.hidden == false)
     {
-      QuickListElement element;
-      element.modelId = model.modelId;
+      QuickListElement vElement;
+      QuickListElement vnElement;
+      QuickListElement vtnElement;
+      vElement.modelId = model.modelId;
+      vnElement.modelId = model.modelId;
+      vtnElement.modelId = model.modelId;
       for (int nUnit = 0; nUnit < model.renderUnits.size(); nUnit++)
       {
         RenderUnit ru = model.renderUnits[nUnit];
@@ -316,20 +340,20 @@ void ie::AssetManager::createQuickLists(void)
           switch (ru.dataFormat)
           {
             case V:
-              element.renderUnitList.push_back(nUnit);
-              vList.push_back(element);
+              vElement.renderUnitList.push_back(nUnit);
               break;
             case VN:
-              element.renderUnitList.push_back(nUnit);
-              vnList.push_back(element);
+              vnElement.renderUnitList.push_back(nUnit);
               break;
             case VTN:
-              element.renderUnitList.push_back(nUnit);
-              vtnList.push_back(element);
+              vtnElement.renderUnitList.push_back(nUnit);
               break;
           }
         }
       }
+      if (vElement.renderUnitList.size() > 0) {vList.push_back(vElement);}
+      if (vnElement.renderUnitList.size() > 0) {vnList.push_back(vnElement);}
+      if (vtnElement.renderUnitList.size() > 0) {vtnList.push_back(vtnElement);}
     }
   }
   quickLists["vList"] = vList;

@@ -9,17 +9,11 @@
 #include <GL/glu.h>
 #include <glm/glm.hpp>
 
+#include "ie_definitions.h"
 #include "ie_packages.h"
 
 namespace ie
 {
-
-  class QuickListElement
-  {
-    public:
-    unsigned int modelId;
-    std::vector<short> renderUnitList;
-  };
 
   class ShaderProgramAsset
   {
@@ -28,10 +22,8 @@ namespace ie
     GLuint programId;
     GLuint vertexShaderId;
     GLuint fragmentShaderId;
-    std::vector<GlslUniformPackage> uniforms;
+    std::map<std::string, GlslUniformPackage> uniforms;
   };
-
-  enum VboDataFormat {V, VN, VTN};
 
   class RenderUnit
   {
@@ -74,6 +66,7 @@ namespace ie
     float opticalDensity;
     float dissolve;
     int illum;
+    bool containsTexture;
     GLuint ambientMapId;
     GLuint diffuseMapId; 
     GLuint specularMapId;

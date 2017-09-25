@@ -40,40 +40,9 @@ ie::GlslSourcePackage ie::GlslFileReader::read(std::string filename)
   } else {
     std::cout << "GLSL file '" << filename << "' failed to open..." << std::endl;
   }
-  package.uniforms = findUniforms(filename);
   return package;
 }
 
-std::vector<ie::GlslUniformPackage> ie::GlslFileReader::findUniforms(std::string filename)
-{
-  std::ifstream glslFile;
-  glslFile.open(filename.c_str());
-  if (glslFile.is_open())
-  {
-    std::vector<ie::GlslUniformPackage> uniforms;
-    std::string line;
-    while (getline(glslFile, line))
-    {
-      std::string token = split(line, ' ', 0);
-      if (token == "uniform")
-      {
-        ie::GlslUniformPackage package;
-        std::string type = split(line, ' ', 1);
-        std::string name = split(line, ' ', 2);
-        name.pop_back();
-        package.name = name;
-        package.type = type;
-        uniforms.push_back(package);
-      }
-    }
-  glslFile.close();
-  return uniforms;
-  }
-  else
-  {
-    std::cout << "GLSL file '" << filename << "' failed to open for uniform search" << std::endl;
-  }
-}
 
 ie::GlslSourcePackage ie::GlslFileReader::wrapGlslSourcePackage(void) {return package;}
 
@@ -105,16 +74,14 @@ ie::ShaderProgramPackage ie::GlslCompiler::compile(std::string name,
   package.programId = programId;
   package.vertexShaderId = vertexShaderId;
   package.fragmentShaderId = fragmentShaderId;
-  vSourcePack.uniforms.insert(vSourcePack.uniforms.end(),
-                              fSourcePack.uniforms.begin(),
-                              fSourcePack.uniforms.end());
-  package.uniforms = vSourcePack.uniforms; 
-  unsigned int uniformAmount = package.uniforms.size();
-  for (int uni = 0; uni < uniformAmount; uni++)
-  {
-    package.uniforms[uni].location = glGetUniformLocation(package.programId,
-                                     package.uniforms[uni].name.c_str());
-  }
+
+  std::map<std::string, GlslUniformPackage> vShaderUniforms = findUniforms(programId,
+                                                                           vShader);
+  std::map<std::string, GlslUniformPackage> fShaderUniforms = findUniforms(programId,
+                                                                           fShader);
+  vShaderUniforms.insert(fShaderUniforms.begin(),
+                         fShaderUniforms.end());
+  package.uniforms = vShaderUniforms; 
   return package; 
 }
 
@@ -141,6 +108,41 @@ GLuint ie::GlslCompiler::compileShader(std::string filename,
   }
   return shaderId;
 }
+
+
+std::map<std::string, ie::GlslUniformPackage> ie::GlslCompiler::findUniforms(
+                                              GLuint progId, std::string filename)
+{
+  std::ifstream glslFile;
+  glslFile.open(filename.c_str());
+  if (glslFile.is_open())
+  {
+    std::map<std::string, ie::GlslUniformPackage> uniforms;
+    std::string line;
+    while (getline(glslFile, line))
+    {
+      std::string token = split(line, ' ', 0);
+      if (token == "uniform")
+      {
+        ie::GlslUniformPackage uniPackage;
+        std::string type = split(line, ' ', 1);
+        std::string name = split(line, ' ', 2);
+        name.pop_back();
+        uniPackage.name = name;
+        uniPackage.type = type;
+        uniPackage.location = glGetUniformLocation(progId, uniPackage.name.c_str());
+        uniforms[uniPackage.name] = uniPackage;
+      }
+    }
+  glslFile.close();
+  return uniforms;
+  }
+  else
+  {
+    std::cout << "GLSL file '" << filename << "' failed to open for uniform search" << std::endl;
+  }
+}
+
 
 bool ie::GlslCompiler::linkShaderProgram(void)
 {

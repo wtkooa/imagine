@@ -18,7 +18,6 @@ namespace ie
     GlslSourcePackage read(std::string);
     GlslSourcePackage wrapGlslSourcePackage(void);
     private:
-    std::vector<GlslUniformPackage> findUniforms(std::string);
     bool clear(void);
     std::string filename;
     GlslSourcePackage package;
@@ -33,6 +32,7 @@ namespace ie
     ShaderProgramPackage compile(std::string, std::string, std::string);
     ShaderProgramPackage wrapShaderProgramPackage(void);
     private:
+    std::map<std::string, GlslUniformPackage> findUniforms(GLuint, std::string);
     bool clear(void);
     GLuint compileShader(std::string, std::string, GLenum);
     bool linkShaderProgram(void);

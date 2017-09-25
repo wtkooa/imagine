@@ -27,6 +27,7 @@ namespace ie
     void unwrapPackage(ie::ShaderProgramPackage);
 
     CreateVboMessage sendCreateVboMessage(void); 
+    RenderAssetMessage sendRenderAssetMessage(std::string, std::string);
 
     bool releaseAllTextures(void);
     bool releaseTexture(std::string);
@@ -37,7 +38,7 @@ namespace ie
     void createQuickLists(void);
 
     bool quit(void);
-    private:
+    //private:
     std::map<unsigned int, ModelAsset> modelAssets;
     std::map<std::string, unsigned int> modelNameIdMap;
     std::vector<unsigned int> availableModelIds; 

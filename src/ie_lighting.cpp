@@ -1,6 +1,10 @@
 #include "ie_lighting.h"
 
+#include <iostream>
+
 #include <glm/glm.hpp>
+
+#include "ie_messages.h"
 
 glm::vec3 ie::PointLight::globalAmbient = glm::vec3(0.1f, 0.1f, 0.1f);
 
@@ -38,3 +42,17 @@ void ie::PointLight::setLinearFalloff(float l) {linearFalloff = l;}
 
 float ie::PointLight::getQuadraticFalloff(void) {return quadraticFalloff;}
 void ie::PointLight::setQuadraticFalloff(float q) {quadraticFalloff = q;}
+
+ie::RenderLightMessage ie::PointLight::sendRenderLightMessage(void)
+{
+  ie::RenderLightMessage msg;
+  msg.globalAmbient = globalAmbient;
+  msg.posVector = posVector;
+  msg.lightAmbient = lightAmbient;
+  msg.lightSpecular = lightSpecular;
+  msg.lightDiffuse = lightDiffuse;
+  msg.constantFalloff = constantFalloff;
+  msg.linearFalloff = linearFalloff;
+  msg.quadraticFalloff = quadraticFalloff;
+  return msg;
+}

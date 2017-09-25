@@ -7,10 +7,10 @@
 #define GL_GLEXT_PROTOTYPES //Needs to be defined for some GL funcs to work.
 #include <GL/gl.h>
 #include <GL/glu.h>
-#include <SDL2/SDL_image.h>
-#include <SDL2/SDL.h>
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
+#include <SDL2/SDL_image.h>
+#include <SDL2/SDL.h>
 
 #include "ie_assetmanager.h"
 #include "ie_config.h"
@@ -19,6 +19,7 @@
 #include "ie_lighting.h"
 #include "ie_messages.h"
 #include "ie_packages.h"
+#include "ie_render.h"
 #include "ie_shader.h"
 #include "ie_time.h"
 #include "ie_utils.h"
@@ -53,7 +54,8 @@ bool ie::Engine::init(void)
   initCamera();
   initLighting();
   initShaders();
-  loadAssets();
+  initAssets();
+  initRenders();
   return true;
 }
 
@@ -84,24 +86,30 @@ bool ie::Engine::initLighting(void)
 bool ie::Engine::initShaders(void)
 {
   ie::ShaderProgramPackage statPack = compiler.compile("Static",
-                                                       "src/glsl/vshader.glsl",
-                                                       "src/glsl/fshader.glsl");
+                                                       "src/glsl/vstaticshader.glsl",
+                                                       "src/glsl/fstaticshader.glsl");
   am.unwrapPackage(statPack);
   return true;
 }
 
-bool ie::Engine::loadAssets(void)
+bool ie::Engine::initAssets(void)
 {
   ie::WavefrontObjectFileReader objReader;  
   ie::WavefrontObjectFilePackage pack1 = objReader.read("data/Cube.obj");
-  ie::WavefrontObjectFilePackage pack2 = objReader.read("data/Cubet.obj");
   am.unwrapPackage(pack1);
-  am.unwrapPackage(pack2);
 
   ie::CreateVboMessage vboMsg = am.sendCreateVboMessage();
-  vram.recieveMessage(vboMsg);
+  vram.receiveMessage(vboMsg);
   am.createQuickLists();
   return true;
+}
+
+bool ie::Engine::initRenders(void)
+{
+  ie::RenderAssetMessage assetsToRender = am.sendRenderAssetMessage("Static", "vtnList");
+  ie::RenderMemoryMessage memoryToRender = vram.sendRenderMemoryMessage("vtnPair");
+  staticRender.receiveMessage(assetsToRender);
+  staticRender.receiveMessage(memoryToRender);
 }
 
 bool ie::Engine::run(void)
@@ -118,64 +126,27 @@ bool ie::Engine::run(void)
 
 void ie::Engine::handleLogic(void)
 {
-
+  unsigned int CubeId = am.modelNameIdMap["Cube"];
+  glm::mat4 transMatrix = glm::translate(glm::mat4(), glm::vec3(0.0f, 0.0f, -3.0f));
+  glm::mat4 rotMatrix = glm::rotate(glm::mat4(), glm::radians(0.5f), glm::vec3(1.0f, 1.0f, 0.0f));
+  am.modelAssets[CubeId].translationMatrix = transMatrix; 
+  am.modelAssets[CubeId].rotationMatrix *= rotMatrix;
 }
 
 void ie::Engine::render(void)
-{/*
-  modelResource* model = rm.modelArr;
-  int modelAmount = rm.modelAmount;
-  if (SDL_GetWindowGrab(mainWindow) == SDL_TRUE)
-  {
-    eye.frameUpdate(frameClock.getFrameDelta());
-  }
+{
   glClear(ACTIVEBUFFERS);
-  glBindBuffer(GL_ARRAY_BUFFER, vram.vboID);
-   
-  glm::vec3 pos = eye.getPosVector();
-  glUniform3fv(eyePosShaderUniLoc, 1, &pos[0]);
-  for (int n = 0; n < modelAmount; n++)
-  {
-    glm::mat4 mtwMatrix = model[n].translationMatrix *
-                model[n].rotationMatrix;
-    glm::mat4 transformationMatrix = eye.getProjectionMatrix() *
-                     eye.getViewMatrix() *
-                     mtwMatrix;
-    glUniformMatrix4fv(mtwMatShaderUniLoc, 1, GL_FALSE, &mtwMatrix[0][0]);
-    glUniformMatrix4fv(transformationMatShaderUniLoc, 1, GL_FALSE, &transformationMatrix[0][0]);
-    if (model[n].vboloaded == true && model[n].hidden == false)
-    {
-      for (int j = 0; j < model[n].faceGroupAmount; j++)
-      {
-        GLuint textureID = model[n].materialArr[model[n].groupArr[j].mtlID].textureID;
-        if (textureID != 0)
-        {
-          glBindTexture(GL_TEXTURE_2D, textureID);
-          glUniform1i(hasTextureShaderUniLoc, 1);
-        }
-        else
-        {
-          glUniform1i(hasTextureShaderUniLoc, 0);
-        }
-        glm::vec3 Ks = model[n].materialArr[model[n].groupArr[j].mtlID].Ks;
-        glUniform3fv(KsShaderUniLoc, 1, &Ks[0]);
-        float Ns = model[n].materialArr[model[n].groupArr[j].mtlID].Ns;
-        glUniform1f(NsShaderUniLoc, Ns);
-        glm::vec3 Kd = model[n].materialArr[model[n].groupArr[j].mtlID].Kd;
-        glUniform3fv(KdShaderUniLoc, 1, &Kd[0]);
-        glm::vec3 Ka = model[n].materialArr[model[n].groupArr[j].mtlID].Ka;
-        glUniform3fv(KaShaderUniLoc, 1, &Ka[0]);
-        glm::vec3 Ke = model[n].materialArr[model[n].groupArr[j].mtlID].Ke;
-        glUniform3fv(KeShaderUniLoc, 1, &Ke[0]);
-        glDrawArrays(GL_TRIANGLES,
-               model[n].vboOffsetIndex + model[n].groupArr[j].offsetIndex,
-               model[n].groupArr[j].vertexAmount);
-        if (textureID != 0) {glBindTexture(GL_TEXTURE_2D, 0);}
-      }
-    }
-  }
-  glBindBuffer(GL_ARRAY_BUFFER, 0);
-  SDL_GL_SwapWindow(mainWindow);*/
+
+  float frameDelta = frameClock.getFrameDelta();
+  eye.frameUpdate(frameDelta);
+  ie::RenderCameraMessage cameraMsg = eye.sendRenderCameraMessage();
+  ie::RenderLightMessage lightMsg = light.sendRenderLightMessage();
+
+  staticRender.receiveMessage(lightMsg);
+  staticRender.receiveMessage(cameraMsg);
+  staticRender.render();
+
+  SDL_GL_SwapWindow(mainWindow);
 }
 
 void ie::Engine::handleEvents(void)

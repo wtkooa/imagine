@@ -9,62 +9,27 @@
 #include <GL/glu.h>
 
 #include "ie_assets.h"
+#include "ie_definitions.h"
 #include "ie_messages.h"
 
 namespace ie
 {
   
-  class VFormat
-  {
-    public:
-    glm::vec4 vertex;
-  };
-
-  class VNFormat
-  {
-    public:
-    glm::vec4 vertex;
-    glm::vec3 normal;
-  };
-
-  class VTNFormat
-  {
-    public:
-    glm::vec4 vertex;
-    glm::vec3 texture;
-    glm::vec3 normal;
-  };
-
-  class VboPair
-  {
-    public:
-    VboPair();
-    GLuint readVbo;
-    GLuint writeVbo;
-    void swap(void);
-    void release(void);
-  };
-
-  class VboRenderUnitLocation 
-  {
-    public:
-    short renderUnit;
-    VboDataFormat format;
-    unsigned int location;
-    unsigned int indexAmount;
-  };
-
   class VramManager
   {
     public:
-    VramManager();
-    void recieveMessage(CreateVboMessage); 
+    void receiveMessage(CreateVboMessage); 
+
+    RenderMemoryMessage sendRenderMemoryMessage(std::string);
 
     void quit(void);
     private:
     void loadTexture(TextureAsset);
     void loadVbo(void);
     std::map<std::string, VboPair> vboIdPairs;
+    VboPair vPair;
+    VboPair vnPair;
+    VboPair vtnPair;
     std::map<unsigned int, std::vector<VboRenderUnitLocation>> vboMemoryMap; 
     std::vector<VFormat> vboV;
     std::vector<VNFormat> vboVN;

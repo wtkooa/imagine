@@ -1,12 +1,6 @@
 #include "ie_utils.h"
 
-#include <iostream>
 #include <string>
-
-#define GL_GLEXT_PROTOTYPES //Needs to be defined for some GL funcs to work.
-#include <GL/gl.h>
-#include <GL/glu.h>
-#include <SDL2/SDL_image.h>
 
 //String Split 
 std::string split(std::string str, char delim, size_t tokenNum)
@@ -25,4 +19,3 @@ std::string split(std::string str, char delim, size_t tokenNum)
   while (foundtoken < tokenNum);
   return substr;
 }
-

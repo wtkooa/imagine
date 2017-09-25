@@ -8,11 +8,11 @@
 #include <SDL2/SDL.h>
 
 #include "ie_const.h"
+#include "ie_messages.h"
 
 //Camera
 ie::Camera::Camera()
 {
-  CameraType cameraType = FIRST_PERSON;
   moveSpeed = 1.0; //Meters per Second
   lookSpeed = glm::radians(0.05f); //Degrees per rel movment
   upVector = glm::vec3(0.0f, 1.0f, 0.0f);
@@ -57,29 +57,35 @@ SDL_Window* ie::Camera::getWindow(void)
 
 void ie::Camera::frameUpdate(float frameDelta)
 {
-  switch (cameraType)
+  if (SDL_GetWindowGrab(window) == SDL_TRUE)
   {
-    case FIRST_PERSON:
-      float delta = frameDelta * float(moveSpeed / ie::MSECS_PER_SEC); 
-      posVector += translEventVec.z * delta * lookVector;
-      posVector += translEventVec.x * delta * glm::cross(lookVector, upVector);
-      posVector += translEventVec.y * delta * upVector;
-      lookVector = glm::mat3(glm::rotate(glm::mat4(),
-                             -float(rotateEventVec.x * lookSpeed),
-                             upVector)) * lookVector;
-      glm::vec3 newXAxisVector = glm::cross(lookVector, upVector);
-      lookVector = glm::mat3(glm::rotate(glm::mat4(),
-                             -float(rotateEventVec.y * lookSpeed),
-                             newXAxisVector)) * lookVector; 
-      rotateEventVec = glm::vec2(0.0f, 0.0f);
-    break;
+    float delta = frameDelta * float(moveSpeed / ie::MSECS_PER_SEC); 
+    posVector += translEventVec.z * delta * lookVector;
+    posVector += translEventVec.x * delta * glm::cross(lookVector, upVector);
+    posVector += translEventVec.y * delta * upVector;
+    lookVector = glm::mat3(glm::rotate(glm::mat4(),
+                           -float(rotateEventVec.x * lookSpeed),
+                           upVector)) * lookVector;
+    glm::vec3 newXAxisVector = glm::cross(lookVector, upVector);
+    lookVector = glm::mat3(glm::rotate(glm::mat4(),
+                           -float(rotateEventVec.y * lookSpeed),
+                           newXAxisVector)) * lookVector; 
+    rotateEventVec = glm::vec2(0.0f, 0.0f);
+    viewMatrix = glm::lookAt(posVector, (lookVector+posVector), upVector);
   }
 }
 
-glm::mat4 ie::Camera::getViewMatrix(void)
+
+ie::RenderCameraMessage ie::Camera::sendRenderCameraMessage(void)
 {
-  return glm::lookAt(posVector, (lookVector+posVector), upVector);
+  ie::RenderCameraMessage msg;
+  msg.cameraPos = posVector;
+  msg.projectionMatrix = projectionMatrix;
+  msg.viewMatrix = viewMatrix; 
+  return msg;
 }
+
+glm::mat4 ie::Camera::getViewMatrix(void) {return viewMatrix;}
 
 float ie::Camera::getMoveSpeed(void) {return moveSpeed;}
 void ie::Camera::setMoveSpeed(float speed) {moveSpeed = speed;}

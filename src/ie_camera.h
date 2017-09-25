@@ -3,10 +3,10 @@
 #include <glm/glm.hpp>
 #include <SDL2/SDL.h>
 
+#include "ie_messages.h"
+
 namespace ie
 {
-
-  enum CameraType {FIRST_PERSON, THIRD_PERSON};
 
   class Camera
   {
@@ -29,11 +29,11 @@ namespace ie
     void setGrabMode(SDL_bool);
     void toggleGrabMode(void);
     void setWindow(SDL_Window*);
+    RenderCameraMessage sendRenderCameraMessage(void);
     SDL_Window* getWindow(void);
     glm::vec3 translEventVec;
     glm::vec2 rotateEventVec;    
     private:
-    CameraType cameraType;
     SDL_Window * window;
     float moveSpeed;
     float lookSpeed;
@@ -41,6 +41,7 @@ namespace ie
     glm::vec3 posVector;
     glm::vec3 lookVector;
     glm::mat4 projectionMatrix;
+    glm::mat4 viewMatrix;
   };
 
 }

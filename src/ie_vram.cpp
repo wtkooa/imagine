@@ -14,8 +14,10 @@
 #include <SDL2/SDL.h>
 
 #include "ie_assets.h"
+#include "ie_definitions.h"
+#include "ie_messages.h"
 
-ie::VboPair::VboPair()
+void ie::VboPair::genBuffers(void)
 {
   glGenBuffers(1, &readVbo);
   glGenBuffers(1, &writeVbo);
@@ -32,18 +34,13 @@ void ie::VboPair::release(void)
   glDeleteBuffers(1, &writeVbo);
 }
 
-ie::VramManager::VramManager()
+void ie::VramManager::receiveMessage(ie::CreateVboMessage msg)
 {
-  ie::VboPair vPair;
-  ie::VboPair vnPair;
-  ie::VboPair vtnPair;
-  vboIdPairs["vPair"] = vPair;
-  vboIdPairs["vnPair"] = vnPair;
-  vboIdPairs["vtnPair"] = vtnPair;
-}
+  vPair.genBuffers();
+  vnPair.genBuffers();
+  vtnPair.genBuffers();
 
-void ie::VramManager::recieveMessage(ie::CreateVboMessage msg)
-{
+
   std::map<unsigned int, ModelAsset>* models = msg.models;
   std::map<unsigned int, TextureAsset>* textures = msg.textures;
   std::vector<glm::vec4>* vHeap = msg.vHeap;
@@ -55,8 +52,6 @@ void ie::VramManager::recieveMessage(ie::CreateVboMessage msg)
   {
     if ((texIt->second).tobeVramLoaded == true)
     {
-      (texIt->second).tobeVramLoaded = false;
-      (texIt->second).vramLoaded = true;
       loadTexture(texIt->second);
     }
   }
@@ -91,7 +86,7 @@ void ie::VramManager::recieveMessage(ie::CreateVboMessage msg)
             glm::ivec4 faceElement = (*iHeap)[baseIndex + n];
             unsigned int vertexIndex = faceElement.x;
             glm::vec4 vertex = (*vHeap)[vertexIndex];
-            vboDataUnit.vertex = vertex;
+            vboDataUnit.vertex = glm::vec3(vertex.x, vertex.y, vertex.z);
             vboV.push_back(vboDataUnit);
           }
           break;
@@ -108,8 +103,8 @@ void ie::VramManager::recieveMessage(ie::CreateVboMessage msg)
             unsigned int normalIndex = faceElement.z;
             glm::vec4 vertex = (*vHeap)[vertexIndex];
             glm::vec3 normal = (*nHeap)[normalIndex];
-            vboDataUnit.vertex = vertex;
-            vboDataUnit.normal = normal;
+            vboDataUnit.vertex = glm::vec3(vertex.x, vertex.y, vertex.z);
+            vboDataUnit.normal = glm::vec3(normal.x, normal.y, normal.z);
             vboVN.push_back(vboDataUnit);
           }
           break;
@@ -128,9 +123,9 @@ void ie::VramManager::recieveMessage(ie::CreateVboMessage msg)
             glm::vec4 vertex = (*vHeap)[vertexIndex];
             glm::vec3 texture = (*tHeap)[textureIndex];
             glm::vec3 normal = (*nHeap)[normalIndex];
-            vboDataUnit.vertex = vertex;
-            vboDataUnit.texture = texture;
-            vboDataUnit.normal = normal;
+            vboDataUnit.vertex = glm::vec3(vertex.x, vertex.y, vertex.z);
+            vboDataUnit.texture = glm::vec2(texture.x, texture.y);
+            vboDataUnit.normal = glm::vec3(normal.x, normal.y, normal.z);
             vboVTN.push_back(vboDataUnit);
           }
         break;
@@ -149,7 +144,6 @@ void ie::VramManager::loadTexture(ie::TextureAsset textureAsset)
   surface = IMG_Load(textureAsset.filename.c_str());
   if (!surface) {std::cout << "Warning: Texture '" << textureAsset.filename <<
                  "' failed to load..." << std::endl;}
-  glGenTextures(1, &textureId);
   glBindTexture(GL_TEXTURE_2D, textureId);
   if (surface->format->BytesPerPixel == 4) {mode = GL_RGBA;}
   else if (surface->format->BytesPerPixel = 3) {mode = GL_RGB;}
@@ -163,53 +157,38 @@ void ie::VramManager::loadTexture(ie::TextureAsset textureAsset)
 void ie::VramManager::loadVbo(void)
 {
   short dataSize = sizeof(VFormat);
-  VboPair pair = vboIdPairs["vPair"];
-  glBindBuffer(GL_ARRAY_BUFFER, pair.readVbo);
+  glBindBuffer(GL_ARRAY_BUFFER, vPair.readVbo);
   glBufferData(GL_ARRAY_BUFFER, vboV.size() * dataSize, vboV.data(), GL_STATIC_DRAW);
-  glBindBuffer(GL_ARRAY_BUFFER, pair.writeVbo);
+  glBindBuffer(GL_ARRAY_BUFFER, vPair.writeVbo);
   glBufferData(GL_ARRAY_BUFFER, vboV.size() * dataSize, vboV.data(), GL_STATIC_DRAW);
+
   dataSize = sizeof(VNFormat);
-  pair = vboIdPairs["vnPair"];
-  glBindBuffer(GL_ARRAY_BUFFER, pair.readVbo);
-  glBufferData(GL_ARRAY_BUFFER, vboVN.size() * dataSize, vboV.data(), GL_STATIC_DRAW);
-  glBindBuffer(GL_ARRAY_BUFFER, pair.writeVbo);
-  glBufferData(GL_ARRAY_BUFFER, vboVN.size() * dataSize, vboV.data(), GL_STATIC_DRAW);
+  glBindBuffer(GL_ARRAY_BUFFER, vnPair.readVbo);
+  glBufferData(GL_ARRAY_BUFFER, vboVN.size() * dataSize, vboVN.data(), GL_STATIC_DRAW);
+  glBindBuffer(GL_ARRAY_BUFFER, vnPair.writeVbo);
+  glBufferData(GL_ARRAY_BUFFER, vboVN.size() * dataSize, vboVN.data(), GL_STATIC_DRAW);
+
   dataSize = sizeof(VTNFormat);
-  pair = vboIdPairs["vtnPair"];
-  glBindBuffer(GL_ARRAY_BUFFER, pair.readVbo);
-  glBufferData(GL_ARRAY_BUFFER, vboVTN.size() * dataSize, vboV.data(), GL_STATIC_DRAW);
-  glBindBuffer(GL_ARRAY_BUFFER, pair.writeVbo);
-  glBufferData(GL_ARRAY_BUFFER, vboVTN.size() * dataSize, vboV.data(), GL_STATIC_DRAW);
+  glBindBuffer(GL_ARRAY_BUFFER, vtnPair.readVbo);
+  glBufferData(GL_ARRAY_BUFFER, vboVTN.size() * dataSize, vboVTN.data(), GL_STATIC_DRAW);
+  glBindBuffer(GL_ARRAY_BUFFER, vtnPair.writeVbo);
+  glBufferData(GL_ARRAY_BUFFER, vboVTN.size() * dataSize, vboVTN.data(), GL_STATIC_DRAW);
   glBindBuffer(GL_ARRAY_BUFFER, 0);
 }
 
 void ie::VramManager::quit(void)
 {
-  for (auto vboIt = vboIdPairs.begin(); vboIt != vboIdPairs.end(); vboIt++)
-  {
-    (vboIt->second).release();
-  }
+  vPair.release();
+  vnPair.release();
+  vtnPair.release();
 }
 
-/*
-  glEnableVertexAttribArray(0);
-  glEnableVertexAttribArray(1);
-  glEnableVertexAttribArray(2);
-  glVertexAttribPointer(0, positionDim,
-              GL_FLOAT, GL_FALSE,
-              vboStride, positionStart);
-  glVertexAttribPointer(1, textureDim,
-              GL_FLOAT, GL_FALSE,
-              vboStride, textureStart);
-  glVertexAttribPointer(2, normalDim,
-              GL_FLOAT, GL_FALSE,
-              vboStride, normalStart);
-  glBindBuffer(GL_ARRAY_BUFFER, 0);
+ie::RenderMemoryMessage ie::VramManager::sendRenderMemoryMessage(std::string pair)
+{
+  ie::RenderMemoryMessage msg;
+  if (pair == "vPair") {msg.vboPair = &(vPair);}
+  else if (pair == "vnPair") {msg.vboPair = &(vnPair);}
+  else if (pair == "vtnPair") {msg.vboPair = &(vtnPair);}
+  msg.memMap = &(vboMemoryMap);
+  return msg;
 }
-
-bool VRAMManager::releaseMem(void)
-{ 
-  glDeleteBuffers(1, &vboID);
-}
-*/
-

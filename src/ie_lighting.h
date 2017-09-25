@@ -2,6 +2,8 @@
 
 #include <glm/glm.hpp>
 
+#include "ie_messages.h"
+
 namespace ie
 {
   
@@ -25,6 +27,7 @@ namespace ie
     void setLinearFalloff(float);
     float getQuadraticFalloff(void);
     void setQuadraticFalloff(float);
+    RenderLightMessage sendRenderLightMessage(void);
     private:
     static glm::vec3 globalAmbient;
     glm::vec3 posVector;
