@@ -63,13 +63,16 @@ void ie::Camera::frameUpdate(float frameDelta)
     posVector += translEventVec.z * delta * lookVector;
     posVector += translEventVec.x * delta * glm::cross(lookVector, upVector);
     posVector += translEventVec.y * delta * upVector;
-    lookVector = glm::mat3(glm::rotate(glm::mat4(),
-                           -float(rotateEventVec.x * lookSpeed),
-                           upVector)) * lookVector;
+    glm::mat3 yRotate = glm::mat3(glm::rotate(glm::mat4(),
+                                  -float(rotateEventVec.x * lookSpeed),
+                                  upVector));
+    lookVector = yRotate * lookVector;
     glm::vec3 newXAxisVector = glm::cross(lookVector, upVector);
-    lookVector = glm::mat3(glm::rotate(glm::mat4(),
+    glm::mat3 xRotate = glm::mat3(glm::rotate(glm::mat4(),
                            -float(rotateEventVec.y * lookSpeed),
-                           newXAxisVector)) * lookVector; 
+                           newXAxisVector));
+    lookVector =  xRotate * lookVector; 
+    upVector = xRotate * upVector;
     rotateEventVec = glm::vec2(0.0f, 0.0f);
     viewMatrix = glm::lookAt(posVector, (lookVector+posVector), upVector);
   }
