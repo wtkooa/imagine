@@ -10,4 +10,4 @@ const int ie::VEC2_DIM = 2;
 const int ie::STRIDE_VTN_BYTES = sizeof(float) * 8;
 const void* ie::OFFSET_VOID = (void*)(0);
 const void* ie::OFFSET_1VEC3 = (void*)(sizeof(float) * 3);
-const void* ie::OFFSET_1VEC3_1VEC2 = (void*)(sizeof(float) * 6);
+const void* ie::OFFSET_1VEC3_1VEC2 = (void*)(sizeof(float) * 5);
