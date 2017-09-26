@@ -11,3 +11,4 @@ const int ie::STRIDE_VTN_BYTES = sizeof(float) * 8;
 const void* ie::OFFSET_VOID = (void*)(0);
 const void* ie::OFFSET_1VEC3 = (void*)(sizeof(float) * 3);
 const void* ie::OFFSET_1VEC3_1VEC2 = (void*)(sizeof(float) * 5);
+const glm::vec3 ie::UP_VECTOR = glm::vec3(0.0f, 1.0f, 0.0f);

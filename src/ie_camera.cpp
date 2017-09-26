@@ -1,10 +1,12 @@
 #include "ie_camera.h"
 
+#include <cmath>
 #include <iostream>
 
 #define GL_GLEXT_PROTOTYPES //Needs to be defined for some GL funcs to work.
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtx/vector_angle.hpp>
 #include <SDL2/SDL.h>
 
 #include "ie_const.h"
@@ -57,27 +59,68 @@ SDL_Window* ie::Camera::getWindow(void)
 
 void ie::Camera::frameUpdate(float frameDelta)
 {
+  float refinedMoveSpeed = 0;
   if (SDL_GetWindowGrab(window) == SDL_TRUE)
   {
-    float delta = frameDelta * float(moveSpeed / ie::MSECS_PER_SEC); 
+    short directionality = std::abs(translEventVec.x) +
+                           std::abs(translEventVec.y) +
+                           std::abs(translEventVec.z);
+    if (directionality == 1)
+    {
+      refinedMoveSpeed = moveSpeed;
+    }
+    else if (directionality == 2)
+    {
+      refinedMoveSpeed = moveSpeed * (1 / std::sqrt(2));
+    }
+    else if (directionality == 3)
+    {
+      refinedMoveSpeed = moveSpeed * (1 / std::sqrt(3));
+    }
+std::cout << refinedMoveSpeed  << std::endl;
+    float delta = frameDelta * float(refinedMoveSpeed / ie::MSECS_PER_SEC); 
+    
+
+
+
     posVector += translEventVec.z * delta * lookVector;
-    posVector += translEventVec.x * delta * glm::cross(lookVector, upVector);
-    posVector += translEventVec.y * delta * upVector;
+    posVector += translEventVec.x * delta * glm::normalize(glm::cross(lookVector, upVector));
+    posVector += translEventVec.y * delta * ie::UP_VECTOR;
+    glm::vec3 newXAxisVector = glm::normalize(glm::cross(lookVector, upVector));
     glm::mat3 yRotate = glm::mat3(glm::rotate(glm::mat4(),
-                                  -float(rotateEventVec.x * lookSpeed),
-                                  upVector));
-    lookVector = yRotate * lookVector;
-    glm::vec3 newXAxisVector = glm::cross(lookVector, upVector);
+                           -float(rotateEventVec.x * lookSpeed),
+                           UP_VECTOR));
     glm::mat3 xRotate = glm::mat3(glm::rotate(glm::mat4(),
                            -float(rotateEventVec.y * lookSpeed),
-                           newXAxisVector));
-    lookVector =  xRotate * lookVector; 
-    upVector = xRotate * upVector;
+                           newXAxisVector)); 
+    glm::mat3 rotation = yRotate * xRotate;
+    lookVector = rotation * lookVector;
+    upVector = rotation * upVector;
+    float offsetAngle = glm::orientedAngle(ie::UP_VECTOR, upVector, newXAxisVector);
+    if (offsetAngle > glm::radians(90.0f))
+    {
+      float correctionAngle = offsetAngle - glm::radians(90.0f);
+      glm::mat3 correctionRotation = glm::mat3(glm::rotate(glm::mat4(),
+                                               -correctionAngle,
+                                               newXAxisVector));
+      lookVector = correctionRotation * lookVector;
+      upVector = correctionRotation * upVector;
+    }
+    else if (offsetAngle < glm::radians(-90.0f))
+    {
+      float correctionAngle = offsetAngle - glm::radians(-90.0f);
+      glm::mat3 correctionRotation = glm::mat3(glm::rotate(glm::mat4(),
+                                               -correctionAngle,
+                                               newXAxisVector));
+      lookVector = correctionRotation * lookVector;
+      upVector = correctionRotation * upVector;
+
+    }
     rotateEventVec = glm::vec2(0.0f, 0.0f);
+
     viewMatrix = glm::lookAt(posVector, (lookVector+posVector), upVector);
   }
 }
-
 
 ie::RenderCameraMessage ie::Camera::sendRenderCameraMessage(void)
 {

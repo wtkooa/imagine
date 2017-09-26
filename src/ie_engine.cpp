@@ -128,9 +128,9 @@ void ie::Engine::handleLogic(void)
 {
   unsigned int CubeId = am.modelNameIdMap["Cube"];
   glm::mat4 transMatrix = glm::translate(glm::mat4(), glm::vec3(0.0f, 0.0f, -3.0f));
-  glm::mat4 rotMatrix = glm::rotate(glm::mat4(), glm::radians(0.5f), glm::vec3(1.0f, 1.0f, 0.0f));
+  //glm::mat4 rotMatrix = glm::rotate(glm::mat4(), glm::radians(0.5f), glm::vec3(1.0f, 1.0f, 0.0f));
   am.modelAssets[CubeId].translationMatrix = transMatrix; 
-  am.modelAssets[CubeId].rotationMatrix *= rotMatrix;
+  //am.modelAssets[CubeId].rotationMatrix *= rotMatrix;
 }
 
 void ie::Engine::render(void)

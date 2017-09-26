@@ -1,5 +1,7 @@
 #pragma once
 
+#include <glm/glm.hpp>
+
 namespace ie
 {
   extern const float MSECS_PER_SEC;
@@ -11,4 +13,5 @@ namespace ie
   extern const void* OFFSET_VOID;
   extern const void* OFFSET_1VEC3;
   extern const void* OFFSET_1VEC3_1VEC2;
+  extern const glm::vec3 UP_VECTOR;
 }
