@@ -53,6 +53,8 @@ void ie::VramManager::receiveMessage(ie::CreateVboMessage msg)
     if ((texIt->second).tobeVramLoaded == true)
     {
       loadTexture(texIt->second);
+      (texIt->second).tobeVramLoaded = false;
+      (texIt->second).vramLoaded = true;
     }
   }
 

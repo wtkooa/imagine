@@ -77,48 +77,42 @@ void ie::Camera::frameUpdate(float frameDelta)
     {
       refinedMoveSpeed = moveSpeed * (1 / std::sqrt(3));
     }
-std::cout << refinedMoveSpeed  << std::endl;
     float delta = frameDelta * float(refinedMoveSpeed / ie::MSECS_PER_SEC); 
     
-
-
-
     posVector += translEventVec.z * delta * lookVector;
     posVector += translEventVec.x * delta * glm::normalize(glm::cross(lookVector, upVector));
     posVector += translEventVec.y * delta * ie::UP_VECTOR;
+
     glm::vec3 newXAxisVector = glm::normalize(glm::cross(lookVector, upVector));
     glm::mat3 yRotate = glm::mat3(glm::rotate(glm::mat4(),
-                           -float(rotateEventVec.x * lookSpeed),
-                           UP_VECTOR));
+                                  -float(rotateEventVec.x * lookSpeed),
+                                  UP_VECTOR));
     glm::mat3 xRotate = glm::mat3(glm::rotate(glm::mat4(),
-                           -float(rotateEventVec.y * lookSpeed),
-                           newXAxisVector)); 
+                                  -float(rotateEventVec.y * lookSpeed),
+                                  newXAxisVector)); 
     glm::mat3 rotation = yRotate * xRotate;
     lookVector = rotation * lookVector;
-    upVector = rotation * upVector;
-    float offsetAngle = glm::orientedAngle(ie::UP_VECTOR, upVector, newXAxisVector);
-    if (offsetAngle > glm::radians(90.0f))
-    {
-      float correctionAngle = offsetAngle - glm::radians(90.0f);
-      glm::mat3 correctionRotation = glm::mat3(glm::rotate(glm::mat4(),
-                                               -correctionAngle,
-                                               newXAxisVector));
-      lookVector = correctionRotation * lookVector;
-      upVector = correctionRotation * upVector;
-    }
-    else if (offsetAngle < glm::radians(-90.0f))
-    {
-      float correctionAngle = offsetAngle - glm::radians(-90.0f);
-      glm::mat3 correctionRotation = glm::mat3(glm::rotate(glm::mat4(),
-                                               -correctionAngle,
-                                               newXAxisVector));
-      lookVector = correctionRotation * lookVector;
-      upVector = correctionRotation * upVector;
 
+    float xOffsetAngle = glm::angle(ie::UP_VECTOR, lookVector);
+    if (xOffsetAngle > glm::radians(170.0f))
+    {
+      float correctionAngle = xOffsetAngle - glm::radians(170.0f);
+      glm::mat3 correctionRotation = glm::mat3(glm::rotate(glm::mat4(),
+                                               correctionAngle,
+                                               newXAxisVector));
+      lookVector = correctionRotation * lookVector;
     }
-    rotateEventVec = glm::vec2(0.0f, 0.0f);
+    else if (xOffsetAngle < glm::radians(10.0f))
+    {
+      float correctionAngle = glm::radians(10.0f) - xOffsetAngle;
+      glm::mat3 correctionRotation = glm::mat3(glm::rotate(glm::mat4(),
+                                               -correctionAngle,
+                                               newXAxisVector));
+      lookVector = correctionRotation * lookVector;
+    }
 
     viewMatrix = glm::lookAt(posVector, (lookVector+posVector), upVector);
+    rotateEventVec = glm::vec2(0.0f, 0.0f);
   }
 }
 
