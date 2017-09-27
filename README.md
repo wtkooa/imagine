@@ -30,7 +30,7 @@ Currently, the project has been compiled using g++ on Linux Mint 18.1 Serena 64-
 C++ Version: C++11   
 GLSL Version: 450 *See note below...
 
-OpenGL 4.5 - *Note: You can change the GLSL code manually to accommodate earlier OpenGL/GLSL versions. In the near future, the software will be able to detect some video card settings and act accordingly.  
+OpenGL 4.5 - *Note: So far, the project should still support OpenGL 3.0, but it may not in the future. The Engine checks the locally supported GLSL version and uses an appropriate shader program (currently v. 450 or 130).  
 https://www.opengl.org/
 
 OpenGL Mathematics v. 0.9.7.2-1 or higher  
