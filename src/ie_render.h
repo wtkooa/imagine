@@ -24,6 +24,7 @@ namespace ie
     void render(void);
     private:
     ShaderProgramAsset* shader;
+    std::string formatType;
     std::vector<QuickListElement>* list;
     std::map<unsigned int, MaterialAsset>* materials;
     std::map<unsigned int, ModelAsset>* models;

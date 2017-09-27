@@ -95,8 +95,10 @@ bool ie::Engine::initShaders(void)
 bool ie::Engine::initAssets(void)
 {
   ie::WavefrontObjectFileReader objReader;  
-  ie::WavefrontObjectFilePackage pack1 = objReader.read("data/wavefront/", "Cube.obj");
-  am.unwrapPackage(pack1);
+  ie::WavefrontObjectFilePackage packVTN = objReader.read("data/wavefront/", "CubeVTN.obj");
+  ie::WavefrontObjectFilePackage packVN = objReader.read("data/wavefront/", "CubeVN.obj");
+  am.unwrapPackage(packVTN);
+  am.unwrapPackage(packVN);
 
   ie::CreateVboMessage vboMsg = am.sendCreateVboMessage();
   vram.receiveMessage(vboMsg);
@@ -106,10 +108,6 @@ bool ie::Engine::initAssets(void)
 
 bool ie::Engine::initRenders(void)
 {
-  ie::RenderAssetMessage assetsToRender = am.sendRenderAssetMessage("static", "vtnList");
-  ie::RenderMemoryMessage memoryToRender = vram.sendRenderMemoryMessage("vtnPair");
-  staticRender.receiveMessage(assetsToRender);
-  staticRender.receiveMessage(memoryToRender);
 }
 
 bool ie::Engine::run(void)
@@ -126,11 +124,17 @@ bool ie::Engine::run(void)
 
 void ie::Engine::handleLogic(void)
 {
-  unsigned int CubeId = am.modelNameIdMap["Cube"];
+  unsigned int CubeVTN = am.modelNameIdMap["CubeVTN"];
   glm::mat4 transMatrix = glm::translate(glm::mat4(), glm::vec3(0.0f, 0.0f, -3.0f));
   glm::mat4 rotMatrix = glm::rotate(glm::mat4(), glm::radians(0.5f), glm::vec3(1.0f, 1.0f, 0.0f));
-  am.modelAssets[CubeId].translationMatrix = transMatrix; 
-  am.modelAssets[CubeId].rotationMatrix *= rotMatrix;
+  am.modelAssets[CubeVTN].translationMatrix = transMatrix; 
+  am.modelAssets[CubeVTN].rotationMatrix *= rotMatrix;
+
+  unsigned int CubeVN = am.modelNameIdMap["CubeVN"];
+  transMatrix = glm::translate(glm::mat4(), glm::vec3(2.5f, 0.0f, -3.0f));
+  rotMatrix = glm::rotate(glm::mat4(), glm::radians(0.5f), glm::vec3(-1.0f, 1.0f, 0.0f));
+  am.modelAssets[CubeVN].translationMatrix = transMatrix; 
+  am.modelAssets[CubeVN].rotationMatrix *= rotMatrix;
 }
 
 void ie::Engine::render(void)
@@ -141,9 +145,20 @@ void ie::Engine::render(void)
   eye.frameUpdate(frameDelta);
   ie::RenderCameraMessage cameraMsg = eye.sendRenderCameraMessage();
   ie::RenderLightMessage lightMsg = light.sendRenderLightMessage();
+  ie::RenderAssetMessage vtnAssetMsg = am.sendRenderAssetMessage("static", "vtnList");
+  ie::RenderAssetMessage vnAssetMsg = am.sendRenderAssetMessage("static", "vnList");
+  ie::RenderMemoryMessage vtnMemMsg = vram.sendRenderMemoryMessage("vtnPair");
+  ie::RenderMemoryMessage vnMemMsg = vram.sendRenderMemoryMessage("vnPair");
 
   staticRender.receiveMessage(lightMsg);
   staticRender.receiveMessage(cameraMsg);
+
+  staticRender.receiveMessage(vtnAssetMsg);
+  staticRender.receiveMessage(vtnMemMsg);
+  staticRender.render();
+
+  staticRender.receiveMessage(vnAssetMsg);
+  staticRender.receiveMessage(vnMemMsg);
   staticRender.render();
 
   SDL_GL_SwapWindow(mainWindow);

@@ -189,9 +189,21 @@ void ie::VramManager::quit(void)
 ie::RenderMemoryMessage ie::VramManager::sendRenderMemoryMessage(std::string pair)
 {
   ie::RenderMemoryMessage msg;
-  if (pair == "vPair") {msg.vboPair = &(vPair);}
-  else if (pair == "vnPair") {msg.vboPair = &(vnPair);}
-  else if (pair == "vtnPair") {msg.vboPair = &(vtnPair);}
+  if (pair == "vPair")
+  {
+    msg.vboPair = &(vPair);
+    msg.formatType = "V";
+  }
+  else if (pair == "vnPair")
+  {
+    msg.vboPair = &(vnPair);
+    msg.formatType = "VN";
+  }
+  else if (pair == "vtnPair")
+  {
+    msg.vboPair = &(vtnPair);
+    msg.formatType = "VTN";
+  }
   msg.memMap = &(vboMemoryMap);
   return msg;
 }

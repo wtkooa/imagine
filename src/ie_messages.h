@@ -36,6 +36,7 @@ namespace ie
     public:
     std::map<unsigned int, std::vector<VboRenderUnitLocation>>* memMap;
     VboPair* vboPair;    
+    std::string formatType;
   }; 
 
   class RenderCameraMessage

@@ -9,6 +9,7 @@ namespace ie
   extern const int LOCK_TO_LOCAL_FRAMERATE;
   extern const int VEC3_DIM;
   extern const int VEC2_DIM;
+  extern const int STRIDE_VN_BYTES;
   extern const int STRIDE_VTN_BYTES;
   extern const void* OFFSET_VOID;
   extern const void* OFFSET_1VEC3;

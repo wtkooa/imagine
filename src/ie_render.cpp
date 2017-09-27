@@ -41,6 +41,7 @@ void ie::StaticRender::receiveMessage(RenderMemoryMessage msg)
 {
   memMap = msg.memMap;
   vboPair = msg.vboPair;
+  formatType = msg.formatType;
 }
 
 void ie::StaticRender::receiveMessage(RenderCameraMessage msg)
@@ -64,6 +65,8 @@ void ie::StaticRender::receiveMessage(RenderLightMessage msg)
 
 void ie::StaticRender::render(void)
 {
+  if ((*list).size() == 0) {return;}
+
   GLint currentBoundVbo;
   glGetIntegerv(GL_ARRAY_BUFFER_BINDING, &currentBoundVbo);
   GLint requiredVbo = (*vboPair).readVbo;
@@ -79,17 +82,30 @@ void ie::StaticRender::render(void)
   {
     glUseProgram(requiredProg);
   }
+  
+  if (formatType == "VTN")
+  {
+    glEnableVertexAttribArray(0);
+    glEnableVertexAttribArray(1);
+    glEnableVertexAttribArray(2);
 
-  glEnableVertexAttribArray(0);
-  glEnableVertexAttribArray(1);
-  glEnableVertexAttribArray(2);
+    glVertexAttribPointer(0, ie::VEC3_DIM, GL_FLOAT, GL_FALSE,
+                          ie::STRIDE_VTN_BYTES, ie::OFFSET_VOID);
+    glVertexAttribPointer(1, ie::VEC2_DIM, GL_FLOAT, GL_FALSE,
+                          ie::STRIDE_VTN_BYTES, ie::OFFSET_1VEC3);
+    glVertexAttribPointer(2, ie::VEC3_DIM, GL_FLOAT, GL_FALSE,
+                          ie::STRIDE_VTN_BYTES, ie::OFFSET_1VEC3_1VEC2);
+  }
+  else if (formatType == "VN")
+  {
+    glEnableVertexAttribArray(0);
+    glEnableVertexAttribArray(2);
 
-  glVertexAttribPointer(0, ie::VEC3_DIM, GL_FLOAT, GL_FALSE,
-                        ie::STRIDE_VTN_BYTES, ie::OFFSET_VOID);
-  glVertexAttribPointer(1, ie::VEC2_DIM, GL_FLOAT, GL_FALSE,
-                        ie::STRIDE_VTN_BYTES, ie::OFFSET_1VEC3);
-  glVertexAttribPointer(2, ie::VEC3_DIM, GL_FLOAT, GL_FALSE,
-                        ie::STRIDE_VTN_BYTES, ie::OFFSET_1VEC3_1VEC2);
+    glVertexAttribPointer(0, ie::VEC3_DIM, GL_FLOAT, GL_FALSE,
+                          ie::STRIDE_VN_BYTES, ie::OFFSET_VOID);
+    glVertexAttribPointer(2, ie::VEC3_DIM, GL_FLOAT, GL_FALSE,
+                          ie::STRIDE_VN_BYTES, ie::OFFSET_1VEC3);
+  }
 
   glUniform3fv(cameraPosLoc, 1, &cameraPos[0]);
   glUniform3fv(pointLightPosLoc, 1, &pointLightPos[0]); 
@@ -156,7 +172,15 @@ void ie::StaticRender::render(void)
       if (containsTexture) {glBindTexture(GL_TEXTURE_2D, 0);}
     }
   }
-  glDisableVertexAttribArray(0);
-  glDisableVertexAttribArray(1);
-  glDisableVertexAttribArray(2);
+  if (formatType == "VTN")
+  {
+    glDisableVertexAttribArray(0);
+    glDisableVertexAttribArray(1);
+    glDisableVertexAttribArray(2);
+  }
+  else if (formatType == "VN")
+  {
+    glDisableVertexAttribArray(0);
+    glDisableVertexAttribArray(1);
+  }
 }
