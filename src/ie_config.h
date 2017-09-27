@@ -21,4 +21,18 @@ namespace ie
   extern bool WIREFRAME_ON;
   extern bool DEPTHTEST_ON;
   extern bool CULLFACE_ON;
+  
+  class OpenGlContextDependentConfigs
+  {
+    public:
+    void fetchOpenGlConfigs(void);
+
+    std::string LOCAL_GL_VENDOR;
+    std::string LOCAL_GL_RENDERER;
+    std::string LOCAL_GL_VERSION;
+    int LOCAL_GL_VERSION_NUMERIC;
+    std::string LOCAL_GLSL_VERSION;
+    int LOCAL_GLSL_VERSION_NUMERIC;
+  };
+
 }

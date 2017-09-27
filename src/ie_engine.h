@@ -4,6 +4,7 @@
 
 #include "ie_assetmanager.h"
 #include "ie_camera.h"
+#include "ie_config.h"
 #include "ie_lighting.h"
 #include "ie_render.h"
 #include "ie_shader.h"
@@ -19,17 +20,22 @@ namespace ie
     Engine();
     private:
     bool init(void);
-    bool cleanup(void);
-    void render(void);
-    void handleEvents(void);
-    void handleLogic(void);
-    void handleResize(int,int);
+    bool initOpenGl(void);
+    bool initSdl(void);
     bool initCamera(void);
     bool initLighting(void);
     bool initShaders(void);
     bool initRenders(void);
     bool initAssets(void);
+
     bool run(void);
+    void render(void);
+    void handleEvents(void);
+    void handleLogic(void);
+    void handleResize(int,int);
+
+    bool cleanup(void);
+
     SDL_Window * mainWindow;
     SDL_GLContext mainGlContext;
     bool engineOn;
@@ -40,6 +46,8 @@ namespace ie
     ie::Camera eye;
     ie::PointLight light;
     ie::StaticRender staticRender;
+
+    ie::OpenGlContextDependentConfigs openGlConfigs;
   };
 
 }

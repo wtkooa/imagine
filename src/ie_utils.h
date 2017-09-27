@@ -2,5 +2,11 @@
 
 #include <string>
 
-//String Split
-std::string split(std::string, char, size_t);
+namespace ie
+{
+
+  std::string split(std::string, char, size_t);
+
+  std::string removeChar(std::string, char);
+
+}

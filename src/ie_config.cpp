@@ -1,10 +1,16 @@
 #include "ie_config.h"
 
+#include <iostream>
+#include <string>
+#include <sstream>
+
 #define GL_GLEXT_PROTOTYPES //Needs to be define for some GL func to work.
 #include <GL/gl.h>
 #include <GL/glu.h>
 #include <SDL2/SDL.h>
 #include <glm/glm.hpp>
+
+#include "ie_utils.h"
 
 
 char* homePath = SDL_GetBasePath();
@@ -23,3 +29,47 @@ bool ie::WIREFRAME_ON = false;
 bool ie::DEPTHTEST_ON = true;
 bool ie::CULLFACE_ON = true;
 glm::vec4 ie::DEFAULT_CLEAR_COLOR = glm::vec4(0.0, 0.0, 0.0, 1.0);
+
+void ie::OpenGlContextDependentConfigs::fetchOpenGlConfigs(void)
+{
+  const unsigned char* local_gl_vendor = glGetString(GL_VENDOR);
+  std::stringstream ss;
+  ss << local_gl_vendor;
+  LOCAL_GL_VENDOR = ss.str(); 
+
+  ss.str("");
+  ss.clear();
+  const unsigned char* local_gl_renderer = glGetString(GL_RENDERER);
+  ss << local_gl_renderer;
+  LOCAL_GL_RENDERER = ss.str();
+
+  ss.str("");
+  ss.clear();
+  const unsigned char* local_gl_version = glGetString(GL_VERSION);
+  ss << local_gl_version;
+  LOCAL_GL_VERSION = ss.str();
+
+  ss.str("");
+  ss.clear();
+  const unsigned char* local_gl_version_numeric = glGetString(GL_SHADING_LANGUAGE_VERSION);
+  ss << local_gl_version_numeric;
+  std::string gls = ss.str();
+  gls = ie::split(gls, ' ', 0);
+  gls = ie::removeChar(gls, '.');
+  LOCAL_GL_VERSION_NUMERIC = stoi(gls);
+
+  ss.str("");
+  ss.clear();
+  const unsigned char* local_glsl_version = glGetString(GL_SHADING_LANGUAGE_VERSION);
+  ss << local_glsl_version;
+  LOCAL_GLSL_VERSION = ss.str();
+
+  ss.str("");
+  ss.clear();
+  const unsigned char* local_glsl_version_numeric = glGetString(GL_SHADING_LANGUAGE_VERSION);
+  ss << local_glsl_version_numeric;
+  std::string glsls = ss.str();
+  glsls = ie::split(glsls, ' ', 0);
+  glsls = ie::removeChar(glsls, '.');
+  LOCAL_GLSL_VERSION_NUMERIC = stoi(glsls);
+}

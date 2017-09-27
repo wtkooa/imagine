@@ -1,9 +1,10 @@
 #include "ie_utils.h"
 
+#include <algorithm>
 #include <string>
 
 //String Split 
-std::string split(std::string str, char delim, size_t tokenNum)
+std::string ie::split(std::string str, char delim, size_t tokenNum)
 {
   std::string substr; 
   size_t foundtoken = -1;
@@ -18,4 +19,10 @@ std::string split(std::string str, char delim, size_t tokenNum)
   }
   while (foundtoken < tokenNum);
   return substr;
+}
+
+std::string ie::removeChar(std::string str, char c)
+{
+  str.erase(std::remove(str.begin(), str.end(), c), str.end());
+  return str;
 }

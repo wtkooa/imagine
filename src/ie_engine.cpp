@@ -35,6 +35,18 @@ ie::Engine::Engine(void)
 
 bool ie::Engine::init(void)
 {
+  initSdl();
+  initOpenGl();
+  initCamera();
+  initLighting();
+  initShaders();
+  initAssets();
+  initRenders();
+  return true;
+}
+
+bool ie::Engine::initSdl(void)
+{
   SDL_Init(ie::REQUIRED_SDL_MODULES);
   SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
   mainWindow = SDL_CreateWindow(ie::WINDOW_TITLE.c_str(),
@@ -44,6 +56,11 @@ bool ie::Engine::init(void)
                 ie::SDL_MODE);
   mainGlContext = SDL_GL_CreateContext(mainWindow);
   SDL_GL_SetSwapInterval(ie::LOCK_TO_LOCAL_FRAMERATE);
+}
+
+bool ie::Engine::initOpenGl(void)
+{
+  openGlConfigs.fetchOpenGlConfigs(); 
   glViewport(0, 0, ie::WINDOW_WIDTH, ie::WINDOW_HEIGHT);
   if (ie::WIREFRAME_ON) {glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);}
   if (ie::DEPTHTEST_ON) {glEnable(GL_DEPTH_TEST);}
@@ -51,13 +68,8 @@ bool ie::Engine::init(void)
   glClearColor(ie::DEFAULT_CLEAR_COLOR.r, ie::DEFAULT_CLEAR_COLOR.g,
                ie::DEFAULT_CLEAR_COLOR.b, ie::DEFAULT_CLEAR_COLOR.a);
   glClear(ie::ACTIVEBUFFERS);
-  initCamera();
-  initLighting();
-  initShaders();
-  initAssets();
-  initRenders();
-  return true;
 }
+
 
 bool ie::Engine::initCamera(void)
 {
@@ -85,10 +97,21 @@ bool ie::Engine::initLighting(void)
 
 bool ie::Engine::initShaders(void)
 {
+  if (openGlConfigs.LOCAL_GLSL_VERSION_NUMERIC >= GLSL_VERSION_450)
+  {
+
   ie::ShaderProgramPackage statPack = compiler.compile("static",
-                                                       "src/glsl/", "vstaticshader.glsl",
-                                                       "src/glsl/", "fstaticshader.glsl");
+                                                       "src/glsl/", "vstaticshader450.glsl",
+                                                       "src/glsl/", "fstaticshader450.glsl");
   am.unwrapPackage(statPack);
+  }
+  else
+  {
+  ie::ShaderProgramPackage statPack = compiler.compile("static",
+                                                       "src/glsl/", "vstaticshader130.glsl",
+                                                       "src/glsl/", "fstaticshader130.glsl");
+  am.unwrapPackage(statPack);
+  }
   return true;
 }
 
