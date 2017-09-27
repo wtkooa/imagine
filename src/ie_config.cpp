@@ -6,6 +6,9 @@
 #include <SDL2/SDL.h>
 #include <glm/glm.hpp>
 
+
+char* homePath = SDL_GetBasePath();
+std::string ie::HOME_PATH = std::string(homePath); 
 std::string ie::WINDOW_TITLE = "Imagine Engine";
 unsigned short ie::WINDOW_WIDTH = 800;
 unsigned short ie::WINDOW_HEIGHT = 600;

@@ -12,8 +12,8 @@ namespace ie
   {
     public:
     WavefrontMaterialFileReader();
-    WavefrontMaterialFileReader(std::string);
-    WavefrontMaterialFilePackage read(std::string);
+    WavefrontMaterialFileReader(std::string, std::string);
+    WavefrontMaterialFilePackage read(std::string, std::string);
     WavefrontMaterialFilePackage wrapFilePackage(void);
     private:
     bool clear(void);
@@ -24,8 +24,8 @@ namespace ie
   {
     public:
     WavefrontObjectFileReader();
-    WavefrontObjectFileReader(std::string);
-    WavefrontObjectFilePackage read(std::string);
+    WavefrontObjectFileReader(std::string, std::string);
+    WavefrontObjectFilePackage read(std::string, std::string);
     WavefrontObjectFilePackage wrapFilePackage(void);
     private:
     bool hasQuads;

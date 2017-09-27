@@ -30,7 +30,7 @@ namespace ie
     public:
     unsigned int materialId;
     VboDataFormat dataFormat;
-    unsigned int shaderProgramId;
+    std::string shaderProgram;
     unsigned int indexOffset;
     unsigned int vertexAmount;
     bool hidden;
@@ -42,6 +42,7 @@ namespace ie
     unsigned int modelId;
     std::string name;
     std::string filename; 
+    std::string filepath;
     std::vector<RenderUnit> renderUnits;
     glm::mat4 translationMatrix;
     glm::mat4 rotationMatrix;
@@ -58,6 +59,7 @@ namespace ie
     unsigned int materialId; 
     std::string name;
     std::string filename;
+    std::string filepath;
     float shininess;
     glm::vec3 ambient;
     glm::vec3 diffuse;
@@ -81,6 +83,7 @@ namespace ie
     public:
     GLuint textureOpenglId;
     std::string filename;
+    std::string filepath;
     std::string name;
     TextureType textureType; 
     bool tobeVramLoaded;

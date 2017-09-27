@@ -6,6 +6,7 @@
 
 namespace ie
 {
+  extern std::string HOME_PATH;
   extern std::string WINDOW_TITLE;
   extern glm::vec4 DEFAULT_CLEAR_COLOR;
   extern unsigned short WINDOW_WIDTH;

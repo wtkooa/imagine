@@ -143,7 +143,8 @@ void ie::VramManager::loadTexture(ie::TextureAsset textureAsset)
   SDL_Surface* surface;
   GLuint textureId = textureAsset.textureOpenglId;
   int mode;
-  surface = IMG_Load(textureAsset.filename.c_str());
+  surface = IMG_Load((textureAsset.filepath +
+                      textureAsset.filename).c_str());
   if (!surface) {std::cout << "Warning: Texture '" << textureAsset.filename <<
                  "' failed to load..." << std::endl;}
   glBindTexture(GL_TEXTURE_2D, textureId);

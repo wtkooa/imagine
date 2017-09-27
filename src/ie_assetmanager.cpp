@@ -111,6 +111,7 @@ void ie::AssetManager::unwrapPackage(ie::WavefrontObjectFilePackage filePackage)
     asset.modelId = getNewModelAssetId();
     modelNameIdMap[asset.name] = asset.modelId;
     asset.filename = filePackage.filename;
+    asset.filepath = filePackage.filepath;
     asset.translationMatrix = glm::mat4();
     asset.rotationMatrix = glm::mat4();
     asset.copy = false;
@@ -165,7 +166,7 @@ void ie::AssetManager::unwrapPackage(ie::WavefrontObjectFilePackage filePackage)
           renderUnit.dataFormat = VboDataFormat::VTN;
         }
         renderUnit.materialId = materialNameIdMap[usingMaterialName];
-        renderUnit.shaderProgramId = 1;
+        renderUnit.shaderProgram = "static";
         renderUnit.indexOffset = indexOffset + groupIndexBegin;
         renderUnit.vertexAmount = groupVertexAmount;
         renderUnit.hidden = false;
@@ -205,6 +206,7 @@ GLuint ie::AssetManager::unwrapPackage(
   }
   asset.materialId = getNewMaterialAssetId();
   asset.filename = package.filename;
+  asset.filepath = package.filepath;
   asset.shininess = package.shininess;
   asset.ambient = package.ambient;
   asset.diffuse = package.diffuse;
@@ -266,7 +268,7 @@ GLuint ie::AssetManager::unwrapPackage(
   glGenTextures(1, &id);
   asset.textureOpenglId = id;
   asset.filename = package.filename;
-  asset.name = package.filename;
+  asset.filepath = "";
   asset.textureType = package.type;
   asset.tobeVramLoaded = true;
   asset.vramLoaded = false;

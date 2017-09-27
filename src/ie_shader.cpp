@@ -16,9 +16,9 @@
 
 //GLSL Source File Reader
 ie::GlslFileReader::GlslFileReader() {}
-ie::GlslFileReader::GlslFileReader(std::string name)
+ie::GlslFileReader::GlslFileReader(std::string filepath, std::string filename)
 {
-  read(name);
+  read(filepath, filename);
 }
 
 bool ie::GlslFileReader::clear(void)
@@ -26,16 +26,18 @@ bool ie::GlslFileReader::clear(void)
   package.sourceCode.clear();
 }
 
-ie::GlslSourcePackage ie::GlslFileReader::read(std::string filename)
+ie::GlslSourcePackage ie::GlslFileReader::read(std::string filepath, std::string filename)
 {
   std::ifstream glslFile;
-  glslFile.open(filename.c_str());
+  glslFile.open((filepath + filename).c_str());
   if (glslFile.is_open())
   {
     clear();
     std::stringstream buffer;
     buffer << glslFile.rdbuf();
     package.sourceCode = buffer.str();
+    package.filename = filename;
+    package.filepath = filepath;
     glslFile.close();
   } else {
     std::cout << "GLSL file '" << filename << "' failed to open..." << std::endl;
@@ -43,15 +45,16 @@ ie::GlslSourcePackage ie::GlslFileReader::read(std::string filename)
   return package;
 }
 
-
 ie::GlslSourcePackage ie::GlslFileReader::wrapGlslSourcePackage(void) {return package;}
 
 
 //GLSL Compiler
 ie::GlslCompiler::GlslCompiler() {}
-ie::GlslCompiler::GlslCompiler(std::string name, std::string vShader, std::string fShader)
+ie::GlslCompiler::GlslCompiler(std::string name,
+                               std::string vShaderFilepath, std::string vShaderFilename,
+                               std::string fShaderFilepath, std::string fShaderFilename)
 {
-  compile(name, vShader, fShader);
+  compile(name,vShaderFilepath, vShaderFilename, fShaderFilepath, fShaderFilename);
 }
 
 bool ie::GlslCompiler::clear(void)
@@ -60,25 +63,31 @@ bool ie::GlslCompiler::clear(void)
 }
 
 ie::ShaderProgramPackage ie::GlslCompiler::compile(std::string name,
-                                                std::string vShader,
-                                                std::string fShader)
+                         std::string vShaderFilepath, std::string vShaderFilename,
+                         std::string fShaderFilepath, std::string fShaderFilename)
 {
   clear();
   ie::GlslFileReader glslReader;
-  ie:: GlslSourcePackage vSourcePack = glslReader.read(vShader);
-  vertexShaderId = compileShader(vShader, vSourcePack.sourceCode, GL_VERTEX_SHADER);
-  ie::GlslSourcePackage fSourcePack = glslReader.read(fShader);
-  fragmentShaderId = compileShader(fShader, fSourcePack.sourceCode, GL_FRAGMENT_SHADER);
+  ie::GlslSourcePackage vSourcePack = glslReader.read(vShaderFilepath, vShaderFilename);
+  vertexShaderId = compileShader(vShaderFilename, vSourcePack.sourceCode, GL_VERTEX_SHADER);
+  ie::GlslSourcePackage fSourcePack = glslReader.read(fShaderFilepath, fShaderFilename);
+  fragmentShaderId = compileShader(fShaderFilename, fSourcePack.sourceCode, GL_FRAGMENT_SHADER);
   linkShaderProgram();
   package.name = name;
+  package.vShaderFilename = vShaderFilename;
+  package.vShaderFilepath = vShaderFilepath;
+  package.fShaderFilename = fShaderFilename;
+  package.fShaderFilepath = fShaderFilepath;
   package.programId = programId;
   package.vertexShaderId = vertexShaderId;
   package.fragmentShaderId = fragmentShaderId;
 
   std::map<std::string, GlslUniformPackage> vShaderUniforms = findUniforms(programId,
-                                                                           vShader);
+                                                                           vShaderFilepath,
+                                                                           vShaderFilename);
   std::map<std::string, GlslUniformPackage> fShaderUniforms = findUniforms(programId,
-                                                                           fShader);
+                                                                           fShaderFilepath,
+                                                                           fShaderFilename);
   vShaderUniforms.insert(fShaderUniforms.begin(),
                          fShaderUniforms.end());
   package.uniforms = vShaderUniforms; 
@@ -111,10 +120,11 @@ GLuint ie::GlslCompiler::compileShader(std::string filename,
 
 
 std::map<std::string, ie::GlslUniformPackage> ie::GlslCompiler::findUniforms(
-                                              GLuint progId, std::string filename)
+                                              GLuint progId,
+                                              std::string filepath, std::string filename)
 {
   std::ifstream glslFile;
-  glslFile.open(filename.c_str());
+  glslFile.open((filepath + filename).c_str());
   if (glslFile.is_open())
   {
     std::map<std::string, ie::GlslUniformPackage> uniforms;

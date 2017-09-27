@@ -19,17 +19,23 @@ namespace ie
     std::string type;
     GLint location;
   };
-  
+
   class GlslSourcePackage
   {
     public:
+    std::string filename;
+    std::string filepath;
     std::string sourceCode;
   };
-
+  
   class ShaderProgramPackage
   {
     public:
     std::string name;
+    std::string vShaderFilename;
+    std::string vShaderFilepath;
+    std::string fShaderFilename;
+    std::string fShaderFilepath;
     GLuint programId;
     GLuint vertexShaderId;
     GLuint fragmentShaderId;
@@ -51,6 +57,7 @@ namespace ie
     public:
     std::string name;
     std::string filename;
+    std::string filepath;
     float shininess;
     glm::vec3 ambient;
     glm::vec3 diffuse;
@@ -74,6 +81,7 @@ namespace ie
   {
     public:
     std::string filename;
+    std::string filepath;
     std::map<int, std::string> objectGroups;
     std::map<int, std::string> materialGroups;
     std::map<int, int> smoothGroups;

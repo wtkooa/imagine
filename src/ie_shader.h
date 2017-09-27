@@ -14,12 +14,13 @@ namespace ie
   {
     public:
     GlslFileReader();
-    GlslFileReader(std::string);
-    GlslSourcePackage read(std::string);
+    GlslFileReader(std::string, std::string);
+    GlslSourcePackage read(std::string, std::string);
     GlslSourcePackage wrapGlslSourcePackage(void);
     private:
     bool clear(void);
     std::string filename;
+    std::string filepath;
     GlslSourcePackage package;
   };
 
@@ -28,11 +29,11 @@ namespace ie
   {
     public:
     GlslCompiler();
-    GlslCompiler(std::string, std::string, std::string);
-    ShaderProgramPackage compile(std::string, std::string, std::string);
+    GlslCompiler(std::string, std::string, std::string, std::string, std::string);
+    ShaderProgramPackage compile(std::string, std::string, std::string, std::string, std::string);
     ShaderProgramPackage wrapShaderProgramPackage(void);
     private:
-    std::map<std::string, GlslUniformPackage> findUniforms(GLuint, std::string);
+    std::map<std::string, GlslUniformPackage> findUniforms(GLuint, std::string, std::string);
     bool clear(void);
     GLuint compileShader(std::string, std::string, GLenum);
     bool linkShaderProgram(void);
