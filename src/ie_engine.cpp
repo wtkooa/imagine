@@ -101,18 +101,17 @@ bool ie::Engine::initShaders(void)
 {
   if (openGlConfigs.LOCAL_GLSL_VERSION_NUMERIC >= GLSL_VERSION_450)
   {
-
-  ie::ShaderProgramPackage statPack = compiler.compile("static",
+    ie::ShaderProgramPackage statPack = compiler.compile("static",
                                                        "src/glsl/", "vstaticshader450.glsl",
                                                        "src/glsl/", "fstaticshader450.glsl");
-  am.unwrapPackage(statPack);
+    am.unwrapPackage(statPack);
   }
   else
   {
-  ie::ShaderProgramPackage statPack = compiler.compile("static",
+    ie::ShaderProgramPackage statPack = compiler.compile("static",
                                                        "src/glsl/", "vstaticshader130.glsl",
                                                        "src/glsl/", "fstaticshader130.glsl");
-  am.unwrapPackage(statPack);
+    am.unwrapPackage(statPack);
   }
   return true;
 }

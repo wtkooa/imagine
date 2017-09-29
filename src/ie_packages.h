@@ -1,4 +1,5 @@
-#pragma once
+#ifndef IE_PACKAGES_H
+#define IE_PACKAGES_H
 
 #include <map>
 #include <string>
@@ -108,3 +109,5 @@ namespace ie
   };
 
 }
+
+#endif

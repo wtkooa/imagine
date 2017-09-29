@@ -1,4 +1,5 @@
-#pragma once
+#ifndef IE_CONFIG_H
+#define IE_CONFIG_H
 
 #include <string>
 
@@ -36,3 +37,5 @@ namespace ie
   };
 
 }
+
+#endif

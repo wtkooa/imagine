@@ -1,4 +1,5 @@
-#pragma once
+#ifndef IE_RENDER_H
+#define IE_RENDER_H
 
 #include <map>
 #include <string>
@@ -62,3 +63,5 @@ namespace ie
   };
 
 }
+
+#endif

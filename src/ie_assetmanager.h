@@ -1,4 +1,5 @@
-#pragma once
+#ifndef IE_ASSETMANAGER_H
+#define IE_ASSETMANAGER_H
 
 #include <map>
 #include <string>
@@ -70,3 +71,5 @@ namespace ie
   };
 
 }
+
+#endif

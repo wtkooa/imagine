@@ -1,4 +1,5 @@
-#pragma once
+#ifndef IE_LIGHTING_H
+#define IE_LIGHTING_H
 
 #include <glm/glm.hpp>
 
@@ -40,3 +41,5 @@ namespace ie
   };
 
 }
+
+#endif

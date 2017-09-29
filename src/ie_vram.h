@@ -1,4 +1,5 @@
-#pragma once
+#ifndef IE_VRAM_H
+#define IE_VRAM_H
 
 #include <map>
 #include <string>
@@ -37,3 +38,5 @@ namespace ie
   };
 
 }
+
+#endif

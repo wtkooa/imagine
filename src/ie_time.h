@@ -1,4 +1,5 @@
-#pragma once
+#ifndef IE_TIME_H
+#define IE_TIME_H
 
 namespace ie
 {
@@ -31,3 +32,5 @@ namespace ie
   };
 
 }
+
+#endif

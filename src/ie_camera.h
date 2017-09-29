@@ -1,4 +1,5 @@
-#pragma once
+#ifndef IE_CAMERA_H
+#define IE_CAMERA_H
 
 #include <glm/glm.hpp>
 #include <SDL2/SDL.h>
@@ -45,3 +46,5 @@ namespace ie
   };
 
 }
+
+#endif

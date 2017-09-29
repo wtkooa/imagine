@@ -1,4 +1,5 @@
-#pragma once
+#ifndef IE_ASSETS_H
+#define IE_ASSETS_H
 
 #include <string>
 #include <map>
@@ -107,3 +108,5 @@ namespace ie
   };
 
 }
+
+#endif

@@ -1,4 +1,5 @@
-#pragma once
+#ifndef IE_ENGINE_H
+#define IE_ENGINE_H
 
 #include <SDL2/SDL.h>
 
@@ -51,3 +52,5 @@ namespace ie
   };
 
 }
+
+#endif

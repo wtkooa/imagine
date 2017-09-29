@@ -1,4 +1,5 @@
-#pragma once
+#ifndef IE_SHADER_H
+#define IE_SHADER_H
 
 #define GL_GLEXT_PROTOTYPES //Needs to be defined for some GL funcs to work.
 #include <GL/gl.h>
@@ -44,3 +45,5 @@ namespace ie
   };
 
 }
+
+#endif

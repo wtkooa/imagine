@@ -589,7 +589,6 @@ bool ie::AssetManager::releaseTexture(std::string name)
 
 bool ie::AssetManager::releaseTexture(GLuint id)
 {
-  
   glDeleteTextures(1, &id);
 }
 

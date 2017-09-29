@@ -1,4 +1,5 @@
-#pragma once
+#ifndef IE_MESSAGES_H
+#define IE_MESSAGES_H
 
 #include <map>
 #include <vector>
@@ -61,3 +62,5 @@ namespace ie
   };
 
 }
+
+#endif

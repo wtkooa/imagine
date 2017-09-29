@@ -1,4 +1,5 @@
-#pragma once
+#ifndef IE_WAVEFRONT_H
+#define IE_WAVEFRONT_H
 
 #include <string>
 #include <vector>
@@ -35,3 +36,5 @@ namespace ie
   };
 
 }
+
+#endif

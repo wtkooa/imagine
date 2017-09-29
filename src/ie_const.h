@@ -1,4 +1,5 @@
-#pragma once
+#ifndef IE_CONST_H
+#define IE_CONST_H
 
 #include <glm/glm.hpp>
 
@@ -17,3 +18,5 @@ namespace ie
   extern const void* OFFSET_1VEC3_1VEC2;
   extern const glm::vec3 UP_VECTOR;
 }
+
+#endif
