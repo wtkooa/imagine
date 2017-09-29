@@ -1,6 +1,16 @@
 #ifndef IE_PACKAGES_H
 #define IE_PACKAGES_H
 
+//___|"ie_packages.h"|__________________________________________________________
+//
+// Project: Imagine: 3D Environment Engine
+// Version: 0.1.0
+// Author: David Lipps
+// License: MIT License
+//
+// Copyright (c) 2017 David E Lipps
+//______________________________________________________________________________
+
 #include <map>
 #include <string>
 #include <vector>

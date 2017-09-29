@@ -1,3 +1,13 @@
+//___|"ie_engine.cpp"|__________________________________________________________
+//
+// Project: Imagine: 3D Environment Engine
+// Version: 0.1.0
+// Author: David Lipps
+// License: MIT License
+//
+// Copyright (c) 2017 David E Lipps
+//______________________________________________________________________________
+
 #include "ie_engine.h"
 
 #include <iostream>
@@ -102,15 +112,15 @@ bool ie::Engine::initShaders(void)
   if (openGlConfigs.LOCAL_GLSL_VERSION_NUMERIC >= GLSL_VERSION_450)
   {
     ie::ShaderProgramPackage statPack = compiler.compile("static",
-                                                       "src/glsl/", "vstaticshader450.glsl",
-                                                       "src/glsl/", "fstaticshader450.glsl");
+                                                       "src/glsl/", "staticVShader450.glsl",
+                                                       "src/glsl/", "staticFShader450.glsl");
     am.unwrapPackage(statPack);
   }
   else
   {
     ie::ShaderProgramPackage statPack = compiler.compile("static",
-                                                       "src/glsl/", "vstaticshader130.glsl",
-                                                       "src/glsl/", "fstaticshader130.glsl");
+                                                       "src/glsl/", "staticVShader130.glsl",
+                                                       "src/glsl/", "staticFShader130.glsl");
     am.unwrapPackage(statPack);
   }
   return true;

@@ -1,6 +1,16 @@
 #ifndef IE_LIGHTING_H
 #define IE_LIGHTING_H
 
+//___|"ie_lighting.h"|__________________________________________________________
+//
+// Project: Imagine: 3D Environment Engine
+// Version: 0.1.0
+// Author: David Lipps
+// License: MIT License
+//
+// Copyright (c) 2017 David E Lipps
+//______________________________________________________________________________
+
 #include <glm/glm.hpp>
 
 #include "ie_messages.h"

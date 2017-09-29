@@ -1,3 +1,13 @@
+//___|"ie_utils.cpp"|___________________________________________________________
+//
+// Project: Imagine: 3D Environment Engine
+// Version: 0.1.0
+// Author: David Lipps
+// License: MIT License
+//
+// Copyright (c) 2017 David E Lipps
+//______________________________________________________________________________
+
 #include "ie_utils.h"
 
 #include <algorithm>

@@ -1,6 +1,16 @@
 #ifndef IE_ENGINE_H
 #define IE_ENGINE_H
 
+//___|"ie_engine.h"|____________________________________________________________
+//
+// Project: Imagine: 3D Environment Engine
+// Version: 0.1.0
+// Author: David Lipps
+// License: MIT License
+//
+// Copyright (c) 2017 David E Lipps
+//______________________________________________________________________________
+
 #include <SDL2/SDL.h>
 
 #include "ie_assetmanager.h"

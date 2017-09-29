@@ -1,6 +1,16 @@
 #ifndef IE_UTILS_H
 #define IE_UTILS_H
 
+//___|"ie_utils.h"|_____________________________________________________________
+//
+// Project: Imagine: 3D Environment Engine
+// Version: 0.1.0
+// Author: David Lipps
+// License: MIT License
+//
+// Copyright (c) 2017 David E Lipps
+//______________________________________________________________________________
+
 #include <string>
 
 namespace ie

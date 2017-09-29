@@ -1,6 +1,16 @@
 #ifndef IE_ASSETS_H
 #define IE_ASSETS_H
 
+//___|"ie_assets.h"|____________________________________________________________
+//
+// Project: Imagine: 3D Environment Engine
+// Version: 0.1.0
+// Author: David Lipps
+// License: MIT License
+//
+// Copyright (c) 2017 David E Lipps
+//______________________________________________________________________________
+
 #include <string>
 #include <map>
 #include <vector>

@@ -1,6 +1,16 @@
 #ifndef IE_CAMERA_H
 #define IE_CAMERA_H
 
+//___|"ie_camera.h"|____________________________________________________________
+//
+// Project: Imagine: 3D Environment Engine
+// Version: 0.1.0
+// Author: David Lipps
+// License: MIT License
+//
+// Copyright (c) 2017 David E Lipps
+//______________________________________________________________________________
+
 #include <glm/glm.hpp>
 #include <SDL2/SDL.h>
 
