@@ -90,4 +90,20 @@ namespace ie
     bool vramLoaded;
   };
 
+  union handle 
+  {
+    std::map<unsigned int, ModelAsset>* models;
+    std::map<unsigned int, MaterialAsset>* materials;
+    std::map<unsigned int, TextureAsset>* textures;
+    std::map<std::string, ShaderProgramAsset>* shaders;
+
+    ModelAsset* model;
+    MaterialAsset* material;
+    TextureAsset* texture;
+    ShaderProgramAsset* shader;
+    RenderUnit* ru;
+    GlslUniformPackage* uniform;
+
+  };
+
 }

@@ -26,3 +26,21 @@ std::string ie::removeChar(std::string str, char c)
   str.erase(std::remove(str.begin(), str.end(), c), str.end());
   return str;
 }
+
+int ie::countTokens(std::string line, char delim)
+{
+  return std::count(line.begin(), line.end(), delim) + 1;
+}
+
+std::string ie::popFrontToken(std::string line, char delim)
+{
+  return line.substr(line.find(delim) + 1);
+}
+
+std::string ie::popFrontToken(std::string line, char delim, int amount)
+{
+  for (int n = 0; n < amount; n++)
+  {
+    return line.substr(line.find(delim) + 1);
+  }
+}

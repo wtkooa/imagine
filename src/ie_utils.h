@@ -9,4 +9,9 @@ namespace ie
 
   std::string removeChar(std::string, char);
 
+  int countTokens(std::string, char);
+
+  std::string popFrontToken(std::string, char);
+  std::string popFrontToken(std::string, char, int);
+
 }

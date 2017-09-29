@@ -12,6 +12,7 @@
 #include <SDL2/SDL_image.h>
 #include <SDL2/SDL.h>
 
+#include "ie_assets.h"
 #include "ie_assetmanager.h"
 #include "ie_config.h"
 #include "ie_const.h"
@@ -41,7 +42,7 @@ bool ie::Engine::init(void)
   initLighting();
   initShaders();
   initAssets();
-  initRenders();
+  initRenderers();
   return true;
 }
 
@@ -79,6 +80,7 @@ bool ie::Engine::initCamera(void)
   eye.setProjectionMatrix(glm::perspective(ie::FIELD_OF_VIEW,
                                            ie::ASPECT_RATIO,
                                            ie::Z_NEAR, ie::Z_FAR));
+  eye.setPosVector(glm::vec3(1.25f, 0.0f, 0.0f));
   return true;
 }
 
@@ -129,7 +131,7 @@ bool ie::Engine::initAssets(void)
   return true;
 }
 
-bool ie::Engine::initRenders(void)
+bool ie::Engine::initRenderers(void)
 {
 }
 
@@ -147,17 +149,17 @@ bool ie::Engine::run(void)
 
 void ie::Engine::handleLogic(void)
 {
-  unsigned int CubeVTN = am.modelNameIdMap["CubeVTN"];
+  ie::handle cubeVTN = am.getHandle("model/CubeVTN");
+  ie::handle cubeVN = am.getHandle("model/CubeVN");
   glm::mat4 transMatrix = glm::translate(glm::mat4(), glm::vec3(0.0f, 0.0f, -3.0f));
   glm::mat4 rotMatrix = glm::rotate(glm::mat4(), glm::radians(0.5f), glm::vec3(1.0f, 1.0f, 0.0f));
-  am.modelAssets[CubeVTN].translationMatrix = transMatrix; 
-  am.modelAssets[CubeVTN].rotationMatrix *= rotMatrix;
+  (*cubeVTN.model).translationMatrix = transMatrix;
+  (*cubeVTN.model).rotationMatrix *= rotMatrix;
 
-  unsigned int CubeVN = am.modelNameIdMap["CubeVN"];
   transMatrix = glm::translate(glm::mat4(), glm::vec3(2.5f, 0.0f, -3.0f));
   rotMatrix = glm::rotate(glm::mat4(), glm::radians(0.5f), glm::vec3(-1.0f, 1.0f, 0.0f));
-  am.modelAssets[CubeVN].translationMatrix = transMatrix; 
-  am.modelAssets[CubeVN].rotationMatrix *= rotMatrix;
+  (*cubeVN.model).translationMatrix = transMatrix; 
+  (*cubeVN.model).rotationMatrix *= rotMatrix;
 }
 
 void ie::Engine::render(void)

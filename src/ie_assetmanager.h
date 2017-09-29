@@ -37,8 +37,11 @@ namespace ie
     
     void createQuickLists(void);
 
+    handle getHandle(std::string);
+
     bool quit(void);
-    //private:
+
+    private:
     std::map<unsigned int, ModelAsset> modelAssets;
     std::map<std::string, unsigned int> modelNameIdMap;
     std::vector<unsigned int> availableModelIds; 

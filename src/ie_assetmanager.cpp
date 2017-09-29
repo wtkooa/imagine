@@ -1,5 +1,6 @@
 #include "ie_assetmanager.h"
 
+#include <exception>
 #include <iostream>
 #include <map>
 #include <string>
@@ -13,6 +14,7 @@
 #include "ie_definitions.h"
 #include "ie_messages.h"
 #include "ie_packages.h"
+#include "ie_utils.h"
 
 //Asset Manager
 unsigned int ie::AssetManager::getNewModelAssetId(void)
@@ -257,7 +259,11 @@ GLuint ie::AssetManager::unwrapPackage(
 {
   GLuint id;
   ie::TextureAsset asset;
-  asset.name = package.filename;
+  std::string filename = package.filename;
+  int tokenAmount = ie::countTokens(filename, '/') - 1; 
+  std::string name = ie::split(filename, '/', tokenAmount); 
+  name = ie::split(name, '.', 0);
+  asset.name = name; 
   bool textureNameTaken = textureNameIdMap.count(asset.name) == 1;
   if (textureNameTaken)
   {
@@ -362,6 +368,188 @@ void ie::AssetManager::createQuickLists(void)
   quickLists["vnList"] = vnList;
   quickLists["vtnList"] = vtnList;
 }
+
+
+ie::handle ie::AssetManager::getHandle(std::string line)
+{
+  int tokenAmount = ie::countTokens(line, '/');  
+  std::string token = ie::split(line, '/', 0);
+  ie::handle hdl;
+
+  if (token == "models" && tokenAmount == 1)
+  {
+    hdl.models = &modelAssets;
+    return hdl;
+  }
+  else if (token == "materials" && tokenAmount == 1)
+  {
+    hdl.materials = &materialAssets;
+    return hdl;
+  }
+  else if (token == "textures" && tokenAmount == 1)
+  {
+    hdl.textures = &textureAssets;
+    return hdl;
+  }
+  else if (token == "shaders" && tokenAmount == 1)
+  {
+    hdl.shaders = &shaderProgramAssets;
+    return hdl;
+  }
+  else if (token == "model" && tokenAmount > 1)
+  {
+    line = ie::popFrontToken(line, '/');
+    token = ie::split(line, '/', 0);
+    int tokenAmount = ie::countTokens(line, '/');  
+    auto it = modelNameIdMap.find(token);
+    if (it == modelNameIdMap.end())
+    {
+      std::cout << "Warning: Model '" << token << "' doesn't exist"  << std::endl;
+      hdl.model = 0;
+      return hdl;
+    }
+
+    unsigned int id = modelNameIdMap[token];
+    ModelAsset* ma = &modelAssets[id];
+    if (tokenAmount == 1)
+    {
+      hdl.model = ma;  
+      return hdl;
+    }
+    
+    line = ie::popFrontToken(line, '/');
+    token = ie::split(line, '/', 0);
+    tokenAmount = ie::countTokens(line, '/');
+    int ru;
+    if (tokenAmount == 1)
+    {
+      try
+      {
+        ru = std::stoi(token);
+      }
+      catch(...)
+      {
+        std::cout << "Warning: stoi conversion of render unit '" << token << "' failed"  << std::endl;
+        hdl.model = 0; 
+        return hdl;
+      }
+      if (ru > (*ma).renderUnits.size() - 1)
+      {
+        std::cout << "Warning: Render unit '" << ru << "' isn't a member of '" <<
+                                                  (*ma).name << "'"  << std::endl;
+        hdl.model = 0;
+        return hdl;
+      }
+      hdl.ru = &(*ma).renderUnits[ru];
+      return hdl;
+    }
+    else
+    {
+      std::cout << "Warning: Unrecognized model path '" << line << std::endl;
+      hdl.model = 0;
+      return hdl;
+    }
+
+  }
+  else if (token == "material" && tokenAmount > 1)
+  {
+    line = ie::popFrontToken(line, '/');
+    token = ie::split(line, '/', 0);
+    int tokenAmount = ie::countTokens(line, '/');  
+    auto it = materialNameIdMap.find(token);
+    if (it == materialNameIdMap.end())
+    {
+      std::cout << "Warning: Material '" << token << "' doesn't exist"  << std::endl;
+      hdl.material = 0;
+      return hdl;
+    }
+
+    unsigned int id = materialNameIdMap[token];
+    MaterialAsset* ma = &materialAssets[id];
+    if (tokenAmount == 1)
+    {
+      hdl.material = ma;  
+      return hdl;
+    }
+    else
+    {
+      std::cout << "Warning: Unrecognized material path '" << line << std::endl;
+      hdl.material = 0;
+      return hdl;
+    }
+  }
+  else if (token == "texture" && tokenAmount > 1)
+  {
+    line = ie::popFrontToken(line, '/', 2);
+    token = ie::split(line, '/', 0);
+    int tokenAmount = ie::countTokens(line, '/');  
+    auto it = textureNameIdMap.find(token);
+    if (it == textureNameIdMap.end())
+    {
+      std::cout << "Warning: Texture '" << token << "' doesn't exist"  << std::endl;
+      hdl.texture = 0;
+      return hdl;
+    }
+
+    unsigned int id = textureNameIdMap[token];
+    TextureAsset* ta = &textureAssets[id];
+    if (tokenAmount == 1)
+    {
+      hdl.texture = ta;  
+      return hdl;
+    }
+    else
+    {
+      std::cout << "Warning: Unrecognized texture path '" << line << std::endl;
+      hdl.texture = 0;
+      return hdl;
+    }
+  }
+  else if (token == "shader" && tokenAmount > 1)
+  {
+    line = ie::popFrontToken(line, '/');
+    token = ie::split(line, '/', 0);
+    int tokenAmount = ie::countTokens(line, '/');  
+    auto it = shaderProgramAssets.find(token);
+    if (it == shaderProgramAssets.end())
+    {
+      std::cout << "Warning: Shader '" << token << "' doesn't exist"  << std::endl;
+      hdl.shader = 0;
+      return hdl;
+    }
+
+    ShaderProgramAsset* spa = &shaderProgramAssets[token];
+    if (tokenAmount == 1)
+    {
+      hdl.shader = spa;  
+      return hdl;
+    }
+    
+    line = ie::popFrontToken(line, '/');
+    token = ie::split(line, '/', 0);
+    tokenAmount = ie::countTokens(line, '/');
+    if (tokenAmount == 1)
+    {
+      auto it = (*spa).uniforms.find(token);
+      if (it == (*spa).uniforms.end())
+      {
+        std::cout << "Warning: Uniform '" << token <<
+        "' doesn't exist in Shader Program '" << (*spa).name << "'" << std::endl;
+        hdl.uniform = 0;
+        return hdl;
+      }
+      hdl.uniform = &(*spa).uniforms[token];
+      return hdl;
+    }
+    else
+    {
+      std::cout << "Warning: Unrecognized shader path '" << line << std::endl;
+      hdl.model = 0;
+      return hdl;
+    }
+  }
+}
+
 
 bool ie::AssetManager::releaseAllShaderPrograms(void)
 {
