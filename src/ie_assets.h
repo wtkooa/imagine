@@ -18,7 +18,8 @@
 #define GL_GLEXT_PROTOTYPES //Needs to be defined for some GL funcs to work.
 #include <GL/gl.h>
 #include <GL/glu.h>
-#include <glm/glm.hpp>
+#include <glm/mat4x4.hpp>
+#include <glm/vec3.hpp>
 
 #include "ie_definitions.h"
 #include "ie_packages.h"
@@ -36,6 +37,7 @@ namespace ie
     std::map<std::string, GlslUniformPackage> uniforms;
   };
 
+
   class RenderUnit
   {
     public:
@@ -46,6 +48,7 @@ namespace ie
     unsigned int vertexAmount;
     bool hidden;
   };
+
 
   class ModelAsset
   {
@@ -101,6 +104,7 @@ namespace ie
     bool vramLoaded;
   };
 
+
   union handle 
   {
     std::map<unsigned int, ModelAsset>* models;
@@ -114,7 +118,6 @@ namespace ie
     ShaderProgramAsset* shader;
     RenderUnit* ru;
     GlslUniformPackage* uniform;
-
   };
 
 }

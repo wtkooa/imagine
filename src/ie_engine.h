@@ -29,6 +29,7 @@ namespace ie
   {
     public:
     Engine();
+
     private:
     bool init(void);
     bool initOpenGl(void);
@@ -50,6 +51,7 @@ namespace ie
     SDL_Window * mainWindow;
     SDL_GLContext mainGlContext;
     bool engineOn;
+
     ie::AssetManager am;
     ie::VramManager vram;
     ie::GlslCompiler compiler;

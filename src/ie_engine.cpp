@@ -17,8 +17,10 @@
 #define GL_GLEXT_PROTOTYPES //Needs to be defined for some GL funcs to work.
 #include <GL/gl.h>
 #include <GL/glu.h>
-#include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
+#include <glm/mat4x4.hpp>
+#include <glm/trigonometric.hpp>
+#include <glm/vec3.hpp>
 #include <SDL2/SDL_image.h>
 #include <SDL2/SDL.h>
 
@@ -37,12 +39,14 @@
 #include "ie_vram.h"
 #include "ie_wavefront.h"
 
+
 ie::Engine::Engine(void)
 {
   init();
   run();
   cleanup();
 }
+
 
 bool ie::Engine::init(void)
 {
@@ -56,6 +60,7 @@ bool ie::Engine::init(void)
   return true;
 }
 
+
 bool ie::Engine::initSdl(void)
 {
   SDL_Init(ie::REQUIRED_SDL_MODULES);
@@ -68,6 +73,7 @@ bool ie::Engine::initSdl(void)
   mainGlContext = SDL_GL_CreateContext(mainWindow);
   SDL_GL_SetSwapInterval(ie::LOCK_TO_LOCAL_FRAMERATE);
 }
+
 
 bool ie::Engine::initOpenGl(void)
 {
@@ -94,6 +100,7 @@ bool ie::Engine::initCamera(void)
   return true;
 }
 
+
 bool ie::Engine::initLighting(void)
 {
   light.setPosVector(glm::vec3(0.0f, 3.0f, 0.0f));
@@ -107,30 +114,34 @@ bool ie::Engine::initLighting(void)
   return true;
 }
 
+
 bool ie::Engine::initShaders(void)
 {
   if (openGlConfigs.LOCAL_GLSL_VERSION_NUMERIC >= GLSL_VERSION_450)
   {
     ie::ShaderProgramPackage statPack = compiler.compile("static",
-                                                       "src/glsl/", "staticVShader450.glsl",
-                                                       "src/glsl/", "staticFShader450.glsl");
+                             "src/glsl/", "staticVShader450.glsl",
+                             "src/glsl/", "staticFShader450.glsl");
     am.unwrapPackage(statPack);
   }
   else
   {
     ie::ShaderProgramPackage statPack = compiler.compile("static",
-                                                       "src/glsl/", "staticVShader130.glsl",
-                                                       "src/glsl/", "staticFShader130.glsl");
+                             "src/glsl/", "staticVShader130.glsl",
+                             "src/glsl/", "staticFShader130.glsl");
     am.unwrapPackage(statPack);
   }
   return true;
 }
 
+
 bool ie::Engine::initAssets(void)
 {
   ie::WavefrontObjectFileReader objReader;  
-  ie::WavefrontObjectFilePackage packVTN = objReader.read("data/wavefront/", "CubeVTN.obj");
-  ie::WavefrontObjectFilePackage packVN = objReader.read("data/wavefront/", "CubeVN.obj");
+  ie::WavefrontObjectFilePackage packVTN = objReader.read("data/wavefront/",
+                                                          "CubeVTN.obj");
+  ie::WavefrontObjectFilePackage packVN = objReader.read("data/wavefront/",
+                                                         "CubeVN.obj");
   am.unwrapPackage(packVTN);
   am.unwrapPackage(packVN);
 
@@ -140,9 +151,11 @@ bool ie::Engine::initAssets(void)
   return true;
 }
 
+
 bool ie::Engine::initRenderers(void)
 {
 }
+
 
 bool ie::Engine::run(void)
 {
@@ -156,20 +169,29 @@ bool ie::Engine::run(void)
   return true;
 }
 
+
 void ie::Engine::handleLogic(void)
 {
   ie::handle cubeVTN = am.getHandle("model/CubeVTN");
   ie::handle cubeVN = am.getHandle("model/CubeVN");
-  glm::mat4 transMatrix = glm::translate(glm::mat4(), glm::vec3(0.0f, 0.0f, -3.0f));
-  glm::mat4 rotMatrix = glm::rotate(glm::mat4(), glm::radians(0.5f), glm::vec3(1.0f, 1.0f, 0.0f));
+
+  glm::mat4 transMatrix = glm::translate(glm::mat4(),
+                                         glm::vec3(0.0f, 0.0f, -3.0f));
+  glm::mat4 rotMatrix = glm::rotate(glm::mat4(), glm::radians(0.5f),
+                                    glm::vec3(1.0f, 1.0f, 0.0f));
+
   (*cubeVTN.model).translationMatrix = transMatrix;
   (*cubeVTN.model).rotationMatrix *= rotMatrix;
 
-  transMatrix = glm::translate(glm::mat4(), glm::vec3(2.5f, 0.0f, -3.0f));
-  rotMatrix = glm::rotate(glm::mat4(), glm::radians(0.5f), glm::vec3(-1.0f, 1.0f, 0.0f));
+  transMatrix = glm::translate(glm::mat4(),
+                               glm::vec3(2.5f, 0.0f, -3.0f));
+  rotMatrix = glm::rotate(glm::mat4(), glm::radians(0.5f),
+                          glm::vec3(-1.0f, 1.0f, 0.0f));
+
   (*cubeVN.model).translationMatrix = transMatrix; 
   (*cubeVN.model).rotationMatrix *= rotMatrix;
 }
+
 
 void ie::Engine::render(void)
 {
@@ -179,8 +201,10 @@ void ie::Engine::render(void)
   eye.frameUpdate(frameDelta);
   ie::RenderCameraMessage cameraMsg = eye.sendRenderCameraMessage();
   ie::RenderLightMessage lightMsg = light.sendRenderLightMessage();
-  ie::RenderAssetMessage vtnAssetMsg = am.sendRenderAssetMessage("static", "vtnList");
-  ie::RenderAssetMessage vnAssetMsg = am.sendRenderAssetMessage("static", "vnList");
+  ie::RenderAssetMessage vtnAssetMsg = am.sendRenderAssetMessage("static",
+                                                                 "vtnList");
+  ie::RenderAssetMessage vnAssetMsg = am.sendRenderAssetMessage("static",
+                                                                "vnList");
   ie::RenderMemoryMessage vtnMemMsg = vram.sendRenderMemoryMessage("vtnPair");
   ie::RenderMemoryMessage vnMemMsg = vram.sendRenderMemoryMessage("vnPair");
 
@@ -197,6 +221,7 @@ void ie::Engine::render(void)
 
   SDL_GL_SwapWindow(mainWindow);
 }
+
 
 void ie::Engine::handleEvents(void)
 {
@@ -300,6 +325,7 @@ void ie::Engine::handleEvents(void)
   }
 }
 
+
 void ie::Engine::handleResize(int width, int height)
 {
   float aspectRatio = float(width) / float(height);
@@ -309,6 +335,7 @@ void ie::Engine::handleResize(int width, int height)
                                            aspectRatio,
                                            ie::Z_NEAR, ie::Z_FAR));
 }
+
 
 bool ie::Engine::cleanup(void)
 {

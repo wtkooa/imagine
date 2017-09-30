@@ -15,7 +15,8 @@
 #include <string>
 #include <vector>
 
-#include <glm/glm.hpp>
+#include <glm/mat4x4.hpp>
+#include <glm/vec3.hpp>
 
 #include "ie_assets.h"
 #include "ie_definitions.h"
@@ -27,23 +28,32 @@ namespace ie
   class StaticRender
   {
     public:
+    //RECEIVING MESSAGES
     void receiveMessage(RenderAssetMessage);
     void receiveMessage(RenderMemoryMessage);
     void receiveMessage(RenderCameraMessage);
     void receiveMessage(RenderLightMessage);
 
     void render(void);
+
     private:
+    //DATA FROM ASSET MANAGER
     ShaderProgramAsset* shader;
     std::string formatType;
     std::vector<QuickListElement>* list;
     std::map<unsigned int, MaterialAsset>* materials;
     std::map<unsigned int, ModelAsset>* models;
+
+    //DATA FROM VRAM MANAGER
     std::map<unsigned int, std::vector<VboRenderUnitLocation>>* memMap;
     VboPair* vboPair;
+
+    //DATA FROM CAMERA
     glm::mat4 projectionMatrix;
     glm::mat4 viewMatrix;
     glm::vec3 cameraPos;
+
+    //DATA FROM LIGHT SOURCES
     glm::vec3 pointLightPos;
     glm::vec3 globalAmbient;
     glm::vec3 lightAmbient;
@@ -53,6 +63,7 @@ namespace ie
     float linearFalloff;
     float quadraticFalloff; 
 
+    //UNIFORM LOCATIONS
     GLint cameraPosLoc;
     GLint mtwMatrixLoc;
     GLint transformationMatrixLoc;

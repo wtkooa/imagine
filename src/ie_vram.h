@@ -29,22 +29,32 @@ namespace ie
   class VramManager
   {
     public:
+    //RECIEVING MESSAGES
     void receiveMessage(CreateVboMessage); 
 
+    //SENDING MESSAGES
     RenderMemoryMessage sendRenderMemoryMessage(std::string);
 
+    //RELEASING VIDEO HARDWARE MEMORY
     void quit(void);
+
     private:
-    void loadTexture(TextureAsset);
-    void loadVbo(void);
-    std::map<std::string, VboPair> vboIdPairs;
+    //VBO ID PAIRS
     VboPair vPair;
     VboPair vnPair;
     VboPair vtnPair;
-    std::map<unsigned int, std::vector<VboRenderUnitLocation>> vboMemoryMap; 
+
+    //CPU SIDE VBO DATA
     std::vector<VFormat> vboV;
     std::vector<VNFormat> vboVN;
     std::vector<VTNFormat> vboVTN;
+
+    //VBO MEMORY MAPS
+    std::map<unsigned int, std::vector<VboRenderUnitLocation>> vboMemoryMap; 
+
+    //LOADING DATA TO VIDEO HARDWARE
+    void loadTexture(TextureAsset);
+    void loadVbo(void);
   };
 
 }

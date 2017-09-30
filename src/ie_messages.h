@@ -13,7 +13,9 @@
 #include <map>
 #include <vector>
 
-#include <glm/glm.hpp>
+#include <glm/mat4x4.hpp>
+#include <glm/vec3.hpp>
+#include <glm/vec4.hpp>
 
 #include "ie_assets.h"
 #include "ie_definitions.h"

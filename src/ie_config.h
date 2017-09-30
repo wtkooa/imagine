@@ -13,7 +13,7 @@
 
 #include <string>
 
-#include <glm/glm.hpp>
+#include <glm/vec4.hpp>
 
 namespace ie
 {

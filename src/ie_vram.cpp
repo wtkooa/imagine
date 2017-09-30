@@ -18,8 +18,9 @@
 #define GL_GLEXT_PROTOTYPES //Needs to be defined for some GL funcs to work.
 #include <GL/gl.h>
 #include <GL/glu.h>
-#include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
+#include <glm/vec2.hpp>
+#include <glm/vec3.hpp>
 #include <SDL2/SDL_image.h>
 #include <SDL2/SDL.h>
 
@@ -27,22 +28,30 @@
 #include "ie_definitions.h"
 #include "ie_messages.h"
 
+//___|VBO ID PAIR IMPLEMENTATION|_______________________________________________
+
 void ie::VboPair::genBuffers(void)
 {
   glGenBuffers(1, &readVbo);
   glGenBuffers(1, &writeVbo);
 }
 
+
 void ie::VboPair::swap(void)
 {
   std::swap(readVbo, writeVbo);
 }
+
 
 void ie::VboPair::release(void)
 {
   glDeleteBuffers(1, &readVbo);
   glDeleteBuffers(1, &writeVbo);
 }
+
+//______________________________________________________________________________
+
+//___|RECIEVING MESSAGES|_______________________________________________________
 
 void ie::VramManager::receiveMessage(ie::CreateVboMessage msg)
 {
@@ -148,53 +157,9 @@ void ie::VramManager::receiveMessage(ie::CreateVboMessage msg)
   loadVbo();
 }
 
-void ie::VramManager::loadTexture(ie::TextureAsset textureAsset)
-{ 
-  SDL_Surface* surface;
-  GLuint textureId = textureAsset.textureOpenglId;
-  int mode;
-  surface = IMG_Load((textureAsset.filepath +
-                      textureAsset.filename).c_str());
-  if (!surface) {std::cout << "Warning: Texture '" << textureAsset.filename <<
-                 "' failed to load..." << std::endl;}
-  glBindTexture(GL_TEXTURE_2D, textureId);
-  if (surface->format->BytesPerPixel == 4) {mode = GL_RGBA;}
-  else if (surface->format->BytesPerPixel = 3) {mode = GL_RGB;}
-  glTexImage2D(GL_TEXTURE_2D, 0, mode, surface->w, surface->h, 0, mode, GL_UNSIGNED_BYTE, surface->pixels);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-  glBindTexture(GL_TEXTURE_2D, 0);
-  SDL_FreeSurface(surface);
-}
+//______________________________________________________________________________
 
-void ie::VramManager::loadVbo(void)
-{
-  short dataSize = sizeof(VFormat);
-  glBindBuffer(GL_ARRAY_BUFFER, vPair.readVbo);
-  glBufferData(GL_ARRAY_BUFFER, vboV.size() * dataSize, vboV.data(), GL_STATIC_DRAW);
-  glBindBuffer(GL_ARRAY_BUFFER, vPair.writeVbo);
-  glBufferData(GL_ARRAY_BUFFER, vboV.size() * dataSize, vboV.data(), GL_STATIC_DRAW);
-
-  dataSize = sizeof(VNFormat);
-  glBindBuffer(GL_ARRAY_BUFFER, vnPair.readVbo);
-  glBufferData(GL_ARRAY_BUFFER, vboVN.size() * dataSize, vboVN.data(), GL_STATIC_DRAW);
-  glBindBuffer(GL_ARRAY_BUFFER, vnPair.writeVbo);
-  glBufferData(GL_ARRAY_BUFFER, vboVN.size() * dataSize, vboVN.data(), GL_STATIC_DRAW);
-
-  dataSize = sizeof(VTNFormat);
-  glBindBuffer(GL_ARRAY_BUFFER, vtnPair.readVbo);
-  glBufferData(GL_ARRAY_BUFFER, vboVTN.size() * dataSize, vboVTN.data(), GL_STATIC_DRAW);
-  glBindBuffer(GL_ARRAY_BUFFER, vtnPair.writeVbo);
-  glBufferData(GL_ARRAY_BUFFER, vboVTN.size() * dataSize, vboVTN.data(), GL_STATIC_DRAW);
-  glBindBuffer(GL_ARRAY_BUFFER, 0);
-}
-
-void ie::VramManager::quit(void)
-{
-  vPair.release();
-  vnPair.release();
-  vtnPair.release();
-}
+//___|SENDING MESSAGES|_________________________________________________________
 
 ie::RenderMemoryMessage ie::VramManager::sendRenderMemoryMessage(std::string pair)
 {
@@ -217,3 +182,69 @@ ie::RenderMemoryMessage ie::VramManager::sendRenderMemoryMessage(std::string pai
   msg.memMap = &(vboMemoryMap);
   return msg;
 }
+
+//______________________________________________________________________________
+
+//___|LOADING DATA TO VIDEO HARDWARE|___________________________________________
+
+void ie::VramManager::loadTexture(ie::TextureAsset textureAsset)
+{ 
+  SDL_Surface* surface;
+  GLuint textureId = textureAsset.textureOpenglId;
+  int mode;
+  surface = IMG_Load((textureAsset.filepath +
+                      textureAsset.filename).c_str());
+  if (!surface) {std::cout << "Warning: Texture '" << textureAsset.filename <<
+  "' failed to load..." << std::endl;}
+  glBindTexture(GL_TEXTURE_2D, textureId);
+  if (surface->format->BytesPerPixel == 4) {mode = GL_RGBA;}
+  else if (surface->format->BytesPerPixel = 3) {mode = GL_RGB;}
+  glTexImage2D(GL_TEXTURE_2D, 0, mode, surface->w, surface->h,
+               0, mode, GL_UNSIGNED_BYTE, surface->pixels);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+  glBindTexture(GL_TEXTURE_2D, 0);
+  SDL_FreeSurface(surface);
+}
+
+
+void ie::VramManager::loadVbo(void)
+{
+  short dataSize = sizeof(VFormat);
+  glBindBuffer(GL_ARRAY_BUFFER, vPair.readVbo);
+  glBufferData(GL_ARRAY_BUFFER, vboV.size() * dataSize,
+               vboV.data(), GL_STATIC_DRAW);
+  glBindBuffer(GL_ARRAY_BUFFER, vPair.writeVbo);
+  glBufferData(GL_ARRAY_BUFFER, vboV.size() * dataSize,
+               vboV.data(), GL_STATIC_DRAW);
+
+  dataSize = sizeof(VNFormat);
+  glBindBuffer(GL_ARRAY_BUFFER, vnPair.readVbo);
+  glBufferData(GL_ARRAY_BUFFER, vboVN.size() * dataSize,
+               vboVN.data(), GL_STATIC_DRAW);
+  glBindBuffer(GL_ARRAY_BUFFER, vnPair.writeVbo);
+  glBufferData(GL_ARRAY_BUFFER, vboVN.size() * dataSize,
+               vboVN.data(), GL_STATIC_DRAW);
+
+  dataSize = sizeof(VTNFormat);
+  glBindBuffer(GL_ARRAY_BUFFER, vtnPair.readVbo);
+  glBufferData(GL_ARRAY_BUFFER, vboVTN.size() * dataSize,
+               vboVTN.data(), GL_STATIC_DRAW);
+  glBindBuffer(GL_ARRAY_BUFFER, vtnPair.writeVbo);
+  glBufferData(GL_ARRAY_BUFFER, vboVTN.size() * dataSize,
+               vboVTN.data(), GL_STATIC_DRAW);
+  glBindBuffer(GL_ARRAY_BUFFER, 0);
+}
+
+//______________________________________________________________________________
+
+//___|RELEASING VIDEO HARDWARE MEMORY|__________________________________________
+
+void ie::VramManager::quit(void)
+{
+  vPair.release();
+  vnPair.release();
+  vtnPair.release();
+}
+
+//______________________________________________________________________________

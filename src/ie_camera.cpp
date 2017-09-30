@@ -14,15 +14,16 @@
 #include <iostream>
 
 #define GL_GLEXT_PROTOTYPES //Needs to be defined for some GL funcs to work.
-#include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
+#include <glm/mat4x4.hpp>
+#include <glm/vec2.hpp>
+#include <glm/vec3.hpp>
 #include <glm/gtx/vector_angle.hpp>
 #include <SDL2/SDL.h>
 
 #include "ie_const.h"
 #include "ie_messages.h"
 
-//Camera
 ie::Camera::Camera()
 {
   moveSpeed = 1.0; //Meters per Second
@@ -38,11 +39,6 @@ ie::Camera::Camera()
   setGrabMode(SDL_TRUE);
 }
 
-void ie::Camera::setGrabMode(SDL_bool mode)
-{
-  SDL_SetWindowGrab(window, mode);
-  SDL_SetRelativeMouseMode(mode);
-}
 
 void ie::Camera::toggleGrabMode(void)
 {
@@ -57,15 +53,8 @@ void ie::Camera::toggleGrabMode(void)
     setGrabMode(SDL_FALSE);
   } 
 }
-void ie::Camera::setWindow(SDL_Window* win)
-{
-  window = win;
-}
 
-SDL_Window* ie::Camera::getWindow(void)
-{
-  return window;
-}
+//___|UPDATING THE CAMERA FOR THE FRAME|________________________________________
 
 void ie::Camera::frameUpdate(float frameDelta)
 {
@@ -90,7 +79,8 @@ void ie::Camera::frameUpdate(float frameDelta)
     float delta = frameDelta * float(refinedMoveSpeed / ie::MSECS_PER_SEC); 
     
     posVector += translEventVec.z * delta * lookVector;
-    posVector += translEventVec.x * delta * glm::normalize(glm::cross(lookVector, upVector));
+    posVector += translEventVec.x * delta * glm::normalize(glm::cross(lookVector,
+                                                                      upVector));
     posVector += translEventVec.y * delta * ie::UP_VECTOR;
 
     glm::vec3 newXAxisVector = glm::normalize(glm::cross(lookVector, upVector));
@@ -126,6 +116,9 @@ void ie::Camera::frameUpdate(float frameDelta)
   }
 }
 
+//______________________________________________________________________________
+
+//___|SENDING MESSAGES|_________________________________________________________
 ie::RenderCameraMessage ie::Camera::sendRenderCameraMessage(void)
 {
   ie::RenderCameraMessage msg;
@@ -134,6 +127,10 @@ ie::RenderCameraMessage ie::Camera::sendRenderCameraMessage(void)
   msg.viewMatrix = viewMatrix; 
   return msg;
 }
+
+//______________________________________________________________________________
+
+//___|GETTERS AND SETTERS|______________________________________________________
 
 glm::mat4 ie::Camera::getViewMatrix(void) {return viewMatrix;}
 
@@ -154,3 +151,14 @@ void ie::Camera::setLookVector(glm::vec3 look) {lookVector = look;}
 
 glm::mat4 ie::Camera::getProjectionMatrix(void) {return projectionMatrix;}
 void ie::Camera::setProjectionMatrix(glm::mat4 matrix) {projectionMatrix = matrix;}
+
+void ie::Camera::setWindow(SDL_Window* win) {window = win;}
+SDL_Window* ie::Camera::getWindow(void) {return window;}
+
+void ie::Camera::setGrabMode(SDL_bool mode)
+{
+  SDL_SetWindowGrab(window, mode);
+  SDL_SetRelativeMouseMode(mode);
+}
+
+//______________________________________________________________________________

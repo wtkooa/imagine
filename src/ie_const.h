@@ -11,7 +11,7 @@
 // Copyright (c) 2017 David E Lipps
 //______________________________________________________________________________
 
-#include <glm/glm.hpp>
+#include <glm/vec3.hpp>
 
 namespace ie
 {

@@ -10,7 +10,6 @@
 
 #include "ie_assetmanager.h"
 
-#include <exception>
 #include <iostream>
 #include <map>
 #include <string>
@@ -19,6 +18,8 @@
 #define GL_GLEXT_PROTOTYPES //Needs to be defined for some GL funcs to work.
 #include <GL/gl.h>
 #include <GL/glu.h>
+#include <glm/vec3.hpp>
+#include <glm/vec4.hpp>
 
 #include "ie_assets.h"
 #include "ie_definitions.h"
@@ -26,7 +27,8 @@
 #include "ie_packages.h"
 #include "ie_utils.h"
 
-//Asset Manager
+//___|ASSIGNING AND MANAGING ASSET IDS|_________________________________________
+
 unsigned int ie::AssetManager::getNewModelAssetId(void)
 {
   if (availableModelIds.empty())
@@ -40,6 +42,7 @@ unsigned int ie::AssetManager::getNewModelAssetId(void)
     return id; 
   }
 }
+
 
 unsigned int ie::AssetManager::getNewMaterialAssetId(void)
 {
@@ -55,6 +58,10 @@ unsigned int ie::AssetManager::getNewMaterialAssetId(void)
   }
 }
 
+//______________________________________________________________________________
+
+//___|LOADING VERTEX HEAP DATA|_________________________________________________
+
 unsigned int ie::AssetManager::pushVertexData(std::vector<glm::vec4> v)
 {
   unsigned int offset = vertexHeap.size();
@@ -62,12 +69,15 @@ unsigned int ie::AssetManager::pushVertexData(std::vector<glm::vec4> v)
   return offset;
 }
 
+
 unsigned int ie::AssetManager::pushTextureCoordinateData(std::vector<glm::vec3> vt)
 {
   unsigned int offset = textureCoordinateHeap.size();
-  textureCoordinateHeap.insert(textureCoordinateHeap.end(), vt.begin(), vt.end());
+  textureCoordinateHeap.insert(textureCoordinateHeap.end(),
+                               vt.begin(), vt.end());
   return offset;
 }
+
 
 unsigned int ie::AssetManager::pushNormalVectorData(std::vector<glm::vec3> vn)
 {
@@ -76,6 +86,7 @@ unsigned int ie::AssetManager::pushNormalVectorData(std::vector<glm::vec3> vn)
   return offset;
 }
 
+
 unsigned int ie::AssetManager::pushIndexData(std::vector<glm::ivec4> f)
 {
   unsigned int offset = indexHeap.size();
@@ -83,6 +94,11 @@ unsigned int ie::AssetManager::pushIndexData(std::vector<glm::ivec4> f)
   return offset;
 }
 
+//______________________________________________________________________________
+
+//___|UNWRAPPING INCOMING PACKAGES|_____________________________________________
+
+//WAVEFRONT OBJ FILE PACKAGES
 void ie::AssetManager::unwrapPackage(ie::WavefrontObjectFilePackage filePackage)
 {
   unsigned int vertexHeapOffset = pushVertexData(filePackage.v);
@@ -110,14 +126,16 @@ void ie::AssetManager::unwrapPackage(ie::WavefrontObjectFilePackage filePackage)
     unwrapPackage(filePackage.materialFilePackages[nFile]);
   }
 
-  for (auto it = filePackage.objects.begin(); it != filePackage.objects.end(); it++)
+  for (auto it = filePackage.objects.begin();
+       it != filePackage.objects.end(); it++)
   {
     ie::ModelAsset asset;
     asset.name = it->second;
     bool modelNameTaken = modelNameIdMap.count(asset.name) == 1;
     if (modelNameTaken)
     {
-      std::cout << "Warning: Model with name '" << asset.name << "' already exists." << std::endl;
+      std::cout << "Warning: Model with name '" << asset.name <<
+      "' already exists." << std::endl;
       continue;
     }
     asset.modelId = getNewModelAssetId();
@@ -189,10 +207,6 @@ void ie::AssetManager::unwrapPackage(ie::WavefrontObjectFilePackage filePackage)
   } 
 }
 
-GLuint ie::AssetManager::unwrapPackage(
-                       ie::WavefrontObjectPackage package)
-{
-}
 
 void ie::AssetManager::unwrapPackage(
                        ie::WavefrontMaterialFilePackage filePackage)
@@ -204,8 +218,8 @@ void ie::AssetManager::unwrapPackage(
   }
 }
 
-GLuint ie::AssetManager::unwrapPackage(
-                         ie::WavefrontMaterialPackage package)
+
+GLuint ie::AssetManager::unwrapPackage(ie::WavefrontMaterialPackage package)
 {
   MaterialAsset asset;
   asset.name = package.name;
@@ -213,7 +227,7 @@ GLuint ie::AssetManager::unwrapPackage(
   if (materialNameTaken)
   {
     std::cout << "Warning: Material with name '" << asset.name <<
-                 "' already exists. Engine will use original." << std::endl;
+    "' already exists. Engine will use original." << std::endl;
     return 0;
   }
   asset.materialId = getNewMaterialAssetId();
@@ -264,8 +278,8 @@ GLuint ie::AssetManager::unwrapPackage(
   materialAssets[asset.materialId] = asset;
 }
 
-GLuint ie::AssetManager::unwrapPackage(
-                         ie::WavefrontTexturePackage package)
+
+GLuint ie::AssetManager::unwrapPackage(ie::WavefrontTexturePackage package)
 {
   GLuint id;
   ie::TextureAsset asset;
@@ -278,7 +292,7 @@ GLuint ie::AssetManager::unwrapPackage(
   if (textureNameTaken)
   {
     std::cout << "Warning: Texture with name '" << asset.name <<
-                 "' already exists. Engine will use original." << std::endl;
+    "' already exists. Engine will use original." << std::endl;
     return textureNameIdMap[asset.name];
   }
   glGenTextures(1, &id);
@@ -293,6 +307,8 @@ GLuint ie::AssetManager::unwrapPackage(
   return id;
 }
 
+
+//SHADER PACKAGES 
 void ie::AssetManager::unwrapPackage(ie::ShaderProgramPackage package)
 {
   ie::ShaderProgramAsset asset;
@@ -301,7 +317,7 @@ void ie::AssetManager::unwrapPackage(ie::ShaderProgramPackage package)
   if (shaderProgramNameTaken)
   {
     std::cout << "Warning: shader program with name '" << asset.name <<
-                 "' already exists. Engine will use original." << std::endl;
+    "' already exists. Engine will use original." << std::endl;
     return;
   }
   asset.programId = package.programId;
@@ -310,6 +326,10 @@ void ie::AssetManager::unwrapPackage(ie::ShaderProgramPackage package)
   asset.uniforms = package.uniforms;
   shaderProgramAssets[asset.name] = asset;
 }
+
+//______________________________________________________________________________
+
+//___|SENDING MESSAGES|_________________________________________________________
 
 ie::CreateVboMessage ie::AssetManager::sendCreateVboMessage(void)
 {
@@ -323,8 +343,9 @@ ie::CreateVboMessage ie::AssetManager::sendCreateVboMessage(void)
   return msg;
 }
 
+
 ie::RenderAssetMessage ie::AssetManager::sendRenderAssetMessage(std::string prog,
-                                                              std::string list)
+                                                                std::string list)
 {
   ie::RenderAssetMessage msg;
   msg.shaderProgram = &(shaderProgramAssets[prog]);
@@ -333,6 +354,10 @@ ie::RenderAssetMessage ie::AssetManager::sendRenderAssetMessage(std::string prog
   msg.models = &modelAssets;
   return msg;
 }
+
+//______________________________________________________________________________
+
+//___|CREATING AND MANAGING QUICK RENDER LISTS|_________________________________
 
 void ie::AssetManager::createQuickLists(void)
 {
@@ -379,6 +404,9 @@ void ie::AssetManager::createQuickLists(void)
   quickLists["vtnList"] = vtnList;
 }
 
+//______________________________________________________________________________
+
+//___|ACCESSING MANAGED ASSETS|________________________________________________
 
 ie::handle ie::AssetManager::getHandle(std::string line)
 {
@@ -414,7 +442,8 @@ ie::handle ie::AssetManager::getHandle(std::string line)
     auto it = modelNameIdMap.find(token);
     if (it == modelNameIdMap.end())
     {
-      std::cout << "Warning: Model '" << token << "' doesn't exist"  << std::endl;
+      std::cout << "Warning: Model '" << token <<
+      "' doesn't exist"  << std::endl;
       hdl.model = 0;
       return hdl;
     }
@@ -439,14 +468,15 @@ ie::handle ie::AssetManager::getHandle(std::string line)
       }
       catch(...)
       {
-        std::cout << "Warning: stoi conversion of render unit '" << token << "' failed"  << std::endl;
+        std::cout << "Warning: stoi conversion of render unit '" << token <<
+        "' failed"  << std::endl;
         hdl.model = 0; 
         return hdl;
       }
       if (ru > (*ma).renderUnits.size() - 1)
       {
-        std::cout << "Warning: Render unit '" << ru << "' isn't a member of '" <<
-                                                  (*ma).name << "'"  << std::endl;
+        std::cout << "Warning: Render unit '" << ru <<
+        "' isn't a member of '" << (*ma).name << "'"  << std::endl;
         hdl.model = 0;
         return hdl;
       }
@@ -469,7 +499,8 @@ ie::handle ie::AssetManager::getHandle(std::string line)
     auto it = materialNameIdMap.find(token);
     if (it == materialNameIdMap.end())
     {
-      std::cout << "Warning: Material '" << token << "' doesn't exist"  << std::endl;
+      std::cout << "Warning: Material '" << token <<
+                     "' doesn't exist"  << std::endl;
       hdl.material = 0;
       return hdl;
     }
@@ -496,7 +527,8 @@ ie::handle ie::AssetManager::getHandle(std::string line)
     auto it = textureNameIdMap.find(token);
     if (it == textureNameIdMap.end())
     {
-      std::cout << "Warning: Texture '" << token << "' doesn't exist"  << std::endl;
+      std::cout << "Warning: Texture '" << token <<
+                    "' doesn't exist"  << std::endl;
       hdl.texture = 0;
       return hdl;
     }
@@ -523,7 +555,8 @@ ie::handle ie::AssetManager::getHandle(std::string line)
     auto it = shaderProgramAssets.find(token);
     if (it == shaderProgramAssets.end())
     {
-      std::cout << "Warning: Shader '" << token << "' doesn't exist"  << std::endl;
+      std::cout << "Warning: Shader '" << token <<
+                   "' doesn't exist"  << std::endl;
       hdl.shader = 0;
       return hdl;
     }
@@ -544,7 +577,8 @@ ie::handle ie::AssetManager::getHandle(std::string line)
       if (it == (*spa).uniforms.end())
       {
         std::cout << "Warning: Uniform '" << token <<
-        "' doesn't exist in Shader Program '" << (*spa).name << "'" << std::endl;
+        "' doesn't exist in Shader Program '" << (*spa).name <<
+                                               "'" << std::endl;
         hdl.uniform = 0;
         return hdl;
       }
@@ -560,6 +594,9 @@ ie::handle ie::AssetManager::getHandle(std::string line)
   }
 }
 
+//______________________________________________________________________________
+
+//___|RELEASING ASSETS AND CLEARING MEMORY|_____________________________________
 
 bool ie::AssetManager::releaseAllShaderPrograms(void)
 {
@@ -570,6 +607,7 @@ bool ie::AssetManager::releaseAllShaderPrograms(void)
     releaseShaderProgram(asset.name);
   }
 }
+
 
 bool ie::AssetManager::releaseShaderProgram(std::string name)
 {
@@ -582,14 +620,17 @@ bool ie::AssetManager::releaseShaderProgram(std::string name)
   glDeleteProgram(asset.programId);
 }
 
+
 bool ie::AssetManager::releaseAllTextures(void)
 {
-  for (auto texIt = textureAssets.begin(); texIt != textureAssets.end(); texIt++)
+  for (auto texIt = textureAssets.begin();
+       texIt != textureAssets.end(); texIt++)
   {
     ie::TextureAsset asset = texIt->second;
     releaseTexture(asset.textureOpenglId);
   }
 }
+
 
 bool ie::AssetManager::releaseTexture(std::string name)
 {
@@ -597,13 +638,17 @@ bool ie::AssetManager::releaseTexture(std::string name)
   releaseTexture(id);  
 }
 
+
 bool ie::AssetManager::releaseTexture(GLuint id)
 {
   glDeleteTextures(1, &id);
 }
+
 
 bool ie::AssetManager::quit(void)
 {
   releaseAllTextures();
   releaseAllShaderPrograms();
 }
+
+//_____________________________________________________________________________

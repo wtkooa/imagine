@@ -18,7 +18,8 @@
 #include <GL/gl.h>
 #include <GL/glu.h>
 #include <SDL2/SDL.h>
-#include <glm/glm.hpp>
+#include <glm/trigonometric.hpp>
+#include <glm/vec4.hpp>
 
 #include "ie_utils.h"
 
@@ -40,6 +41,8 @@ bool ie::DEPTHTEST_ON = true;
 bool ie::CULLFACE_ON = true;
 glm::vec4 ie::DEFAULT_CLEAR_COLOR = glm::vec4(0.0, 0.0, 0.0, 1.0);
 
+
+//FETCHING LOCAL OPENGL VERSIONING INFO FROM VIDEO HARDWARE
 void ie::OpenGlContextDependentConfigs::fetchOpenGlConfigs(void)
 {
   const unsigned char* local_gl_vendor = glGetString(GL_VENDOR);

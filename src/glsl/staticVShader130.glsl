@@ -23,12 +23,12 @@ out vec3 mtwNormal;
 
 void main()
 {
-    gl_Position = transformationMatrix * vec4(position, 1.0);
+  gl_Position = transformationMatrix * vec4(position, 1.0);
 
-    //PASSING MODEL TO WORLD TRANSFORMED VECTORS TO FRAG SHADER
-    mtwPosition = vec3(mtwMatrix * vec4(position, 1.0));
-    mtwNormal = vec3(mtwMatrix * vec4(normal, 0.0));
+  //PASSING MODEL TO WORLD TRANSFORMED VECTORS TO FRAG SHADER
+  mtwPosition = vec3(mtwMatrix * vec4(position, 1.0));
+  mtwNormal = vec3(mtwMatrix * vec4(normal, 0.0));
 
-    //PASSING TEXTURE COORDS TO FRAG SHADER
-    texturePipe = texture;
+  //PASSING TEXTURE COORDS TO FRAG SHADER
+  texturePipe = texture;
 }

@@ -17,18 +17,22 @@
 #include <string>
 #include <vector>
 
-#include <glm/glm.hpp>
+#include <glm/vec2.hpp>
+#include <glm/vec3.hpp>
+#include <glm/vec4.hpp>
 
 #include "ie_packages.h"
 #include "ie_utils.h"
 
+//___|WAVEFRONT OBJ FILE READER|________________________________________________
 
-//Wavefront Object File Reader
 ie::WavefrontObjectFileReader::WavefrontObjectFileReader(void) {}
-ie::WavefrontObjectFileReader::WavefrontObjectFileReader(std::string filepath, std::string filename)
+ie::WavefrontObjectFileReader::WavefrontObjectFileReader(std::string filepath,
+                                                         std::string filename)
 {
   read(filepath, filename);
 }
+
 
 bool ie::WavefrontObjectFileReader::clear(void)
 {
@@ -45,7 +49,8 @@ bool ie::WavefrontObjectFileReader::clear(void)
 }
 
 
-ie::WavefrontObjectFilePackage ie::WavefrontObjectFileReader::read(std::string filepath, std::string filename)
+ie::WavefrontObjectFilePackage ie::WavefrontObjectFileReader::read(std::string filepath,
+                                                                   std::string filename)
 {
   hasQuads = false;
   std::vector<std::string> mtllib;
@@ -217,7 +222,8 @@ ie::WavefrontObjectFilePackage ie::WavefrontObjectFileReader::read(std::string f
   }
   else
   {
-    std::cout << "File " << filename << " failed to open for reading..." << std::endl;
+    std::cout << "File " << filename <<
+    " failed to open for reading..." << std::endl;
   } 
   objFile.close();
 
@@ -230,17 +236,25 @@ ie::WavefrontObjectFilePackage ie::WavefrontObjectFileReader::read(std::string f
   } 
   if (hasQuads)
   {
-    std::cout << "Warning: This OBJ file contains QUAD faces. These will not be rendered." << std::endl;
+    std::cout << "Warning: This OBJ file contains QUAD faces." <<
+    " These will not be rendered." << std::endl;
   }
   return filePackage;
 }
 
-ie::WavefrontObjectFilePackage ie::WavefrontObjectFileReader::wrapFilePackage(void) {return filePackage;}
 
+ie::WavefrontObjectFilePackage ie::WavefrontObjectFileReader::wrapFilePackage(void)
+{
+  return filePackage;
+}
 
-//Wavefront Material File Reader
+//______________________________________________________________________________
+
+//___|WAVEFRONT MTL FILE READER|________________________________________________
+
 ie::WavefrontMaterialFileReader::WavefrontMaterialFileReader(void) {}
-ie::WavefrontMaterialFileReader::WavefrontMaterialFileReader(std::string filepath, std::string filename)
+ie::WavefrontMaterialFileReader::WavefrontMaterialFileReader(std::string filepath,
+                                                             std::string filename)
 {
   read(filepath, filename);
 }
@@ -250,7 +264,8 @@ bool ie::WavefrontMaterialFileReader::clear(void)
   filePackage.materials.clear();
 }
 
-ie::WavefrontMaterialFilePackage ie::WavefrontMaterialFileReader::read(std::string filepath, std::string filename)
+ie::WavefrontMaterialFilePackage ie::WavefrontMaterialFileReader::read(std::string filepath,
+                                                                       std::string filename)
 {
   std::ifstream mtlFile;
   mtlFile.open((filepath + filename).c_str());
@@ -280,6 +295,7 @@ ie::WavefrontMaterialFilePackage ie::WavefrontMaterialFileReader::read(std::stri
       {
         filePackage.materials[materialOffset].shininess = std::stof(split(line, ' ', 1));
       }
+
       else if (command == "Ka")
       {
         float r = std::stof(split(line, ' ', 1));
@@ -287,6 +303,7 @@ ie::WavefrontMaterialFilePackage ie::WavefrontMaterialFileReader::read(std::stri
         float b = std::stof(split(line, ' ', 3));
         filePackage.materials[materialOffset].ambient = glm::vec3(r,g,b);
       }
+
       else if (command == "Kd")
       {
         float r = std::stof(split(line, ' ', 1));
@@ -294,6 +311,7 @@ ie::WavefrontMaterialFilePackage ie::WavefrontMaterialFileReader::read(std::stri
         float b = std::stof(split(line, ' ', 3));
         filePackage.materials[materialOffset].diffuse = glm::vec3(r,g,b);
       }
+
       else if (command == "Ks")
       {
         float r = std::stof(split(line, ' ', 1));
@@ -301,6 +319,7 @@ ie::WavefrontMaterialFilePackage ie::WavefrontMaterialFileReader::read(std::stri
         float b = std::stof(split(line, ' ', 3));
         filePackage.materials[materialOffset].specular = glm::vec3(r,g,b);
       }
+
       else if (command == "Ke")
       {
         float r = std::stof(split(line, ' ', 1));
@@ -308,20 +327,24 @@ ie::WavefrontMaterialFilePackage ie::WavefrontMaterialFileReader::read(std::stri
         float b = std::stof(split(line, ' ', 3));
         filePackage.materials[materialOffset].emission == glm::vec3(r,g,b);
       }     
+
       else if (command == "Ni")
       {
         filePackage.materials[materialOffset].opticalDensity == std::stof(split(line, ' ', 1));
       }
+
       else if (command == "d")
       {
         filePackage.materials[materialOffset].dissolve = std::stof(split(line, ' ', 1));
       }
+
       else if (command == "Tr")
       {
         float Tr = std::stof(split(line, ' ', 1));
         float d = (Tr - 1) * -1;
         filePackage.materials[materialOffset].dissolve = d;
       }
+
       else if (command == "illum")
       {
         filePackage.materials[materialOffset].illum = std::stoi(split(line, ' ', 1));
@@ -334,6 +357,7 @@ ie::WavefrontMaterialFilePackage ie::WavefrontMaterialFileReader::read(std::stri
         tex.type = ie::TextureType::DIFFUSE_MAP;
         filePackage.materials[materialOffset].texturePackages.push_back(tex);
       }
+
       else if (command == "map_bump")
       {
         ie::WavefrontTexturePackage tex;
@@ -342,6 +366,7 @@ ie::WavefrontMaterialFilePackage ie::WavefrontMaterialFileReader::read(std::stri
         tex.type = ie::TextureType::BUMP_MAP;
         filePackage.materials[materialOffset].texturePackages.push_back(tex);
       }
+
       else if (command == "map_Ka")
       {
         ie::WavefrontTexturePackage tex;
@@ -350,6 +375,7 @@ ie::WavefrontMaterialFilePackage ie::WavefrontMaterialFileReader::read(std::stri
         tex.type = ie::TextureType::AMBIENT_MAP;
         filePackage.materials[materialOffset].texturePackages.push_back(tex);
       }
+
       else if (command == "map_Ks")
       {
         ie::WavefrontTexturePackage tex;
@@ -358,6 +384,7 @@ ie::WavefrontMaterialFilePackage ie::WavefrontMaterialFileReader::read(std::stri
         tex.type = ie::TextureType::SPECULAR_MAP;
         filePackage.materials[materialOffset].texturePackages.push_back(tex);
       }
+
       else if (command == "map_Ns")
       {
         ie::WavefrontTexturePackage tex;
@@ -366,6 +393,7 @@ ie::WavefrontMaterialFilePackage ie::WavefrontMaterialFileReader::read(std::stri
         tex.type = ie::TextureType::HIGHLIGHT_MAP;
         filePackage.materials[materialOffset].texturePackages.push_back(tex);
       }
+
       else if (command == "map_d")
       {
         ie::WavefrontTexturePackage tex;
@@ -374,19 +402,28 @@ ie::WavefrontMaterialFilePackage ie::WavefrontMaterialFileReader::read(std::stri
         tex.type = ie::TextureType::ALPHA_MAP;
         filePackage.materials[materialOffset].texturePackages.push_back(tex);
       }
+
       else
       {
         std::cout << "Warning: Unrecognized command '" << command <<
                "' in MTL file '" << filename << "'." << std::endl;
       }
+
     }
   }
   else
   {
-    std::cout << "File " << filename << " failed to open for reading..." << std::endl;
+    std::cout << "File " << filename <<
+    " failed to open for reading..." << std::endl;
   }
   mtlFile.close();
   return filePackage;
 }
 
-ie::WavefrontMaterialFilePackage ie::WavefrontMaterialFileReader::wrapFilePackage(void) {return filePackage;}
+
+ie::WavefrontMaterialFilePackage ie::WavefrontMaterialFileReader::wrapFilePackage(void)
+{
+  return filePackage;
+}
+
+//______________________________________________________________________________

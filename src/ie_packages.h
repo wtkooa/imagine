@@ -18,7 +18,8 @@
 #define GL_GLEXT_PROTOTYPES //Needs to be define for some GL func to work.
 #include <GL/gl.h>
 #include <GL/glu.h>
-#include <glm/glm.hpp>
+#include <glm/vec3.hpp>
+#include <glm/vec4.hpp>
 
 namespace ie
 {

@@ -16,7 +16,7 @@
 
 #include "ie_const.h"
 
-//FrameClock
+//FRAMECLOCK
 ie::FrameClock::FrameClock(void)
 {
   frameStart = SDL_GetPerformanceCounter();
@@ -28,7 +28,8 @@ ie::FrameClock::FrameClock(void)
 void ie::FrameClock::measure(void)
 {
   frameEnd = SDL_GetPerformanceCounter();
-  frameDelta = ((frameEnd - frameStart) * ie::MSECS_PER_SEC) / SDL_GetPerformanceFrequency();
+  frameDelta = ((frameEnd - frameStart) * ie::MSECS_PER_SEC) /
+                               SDL_GetPerformanceFrequency();
   frameStart = SDL_GetPerformanceCounter();
   fps = ie::MSECS_PER_SEC / frameDelta;
 }
@@ -37,13 +38,14 @@ float ie::FrameClock::getFrameDelta(void) {return frameDelta;}
 float ie::FrameClock::getFps(void) {return fps;}
 
 
-//Stopwatch
+//STOPWATCH
 void ie::Stopwatch::start(void) {startTime = SDL_GetPerformanceCounter();}
 
 void ie::Stopwatch::stop(void)
 {
   stopTime = SDL_GetPerformanceCounter();
-  timeDelta = ((stopTime - startTime) * ie::MSECS_PER_SEC) / SDL_GetPerformanceFrequency();
+  timeDelta = ((stopTime - startTime) * ie::MSECS_PER_SEC) /
+                             SDL_GetPerformanceFrequency();
 }
 
 void ie::Stopwatch::readOut(void)

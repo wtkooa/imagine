@@ -11,7 +11,9 @@
 // Copyright (c) 2017 David E Lipps
 //______________________________________________________________________________
 
-#include <glm/glm.hpp>
+#include <glm/mat4x4.hpp>
+#include <glm/vec2.hpp>
+#include <glm/vec3.hpp>
 #include <SDL2/SDL.h>
 
 #include "ie_messages.h"
@@ -23,8 +25,15 @@ namespace ie
   {
     public:
     Camera();
-    glm::mat4 getViewMatrix(void);
+
     void frameUpdate(float);
+    void toggleGrabMode(void);
+
+    //SEND MESSAGES
+    RenderCameraMessage sendRenderCameraMessage(void);
+
+    //GETTERS AND SETTERS
+    glm::mat4 getViewMatrix(void);
     float getMoveSpeed(void);
     void setMoveSpeed(float);
     float getLookSpeed(void);
@@ -38,12 +47,13 @@ namespace ie
     glm::mat4 getProjectionMatrix(void);
     void setProjectionMatrix(glm::mat4);
     void setGrabMode(SDL_bool);
-    void toggleGrabMode(void);
     void setWindow(SDL_Window*);
-    RenderCameraMessage sendRenderCameraMessage(void);
     SDL_Window* getWindow(void);
+
+    //EVENT VECTORS
     glm::vec3 translEventVec;
     glm::vec2 rotateEventVec;    
+
     private:
     SDL_Window * window;
     float moveSpeed;

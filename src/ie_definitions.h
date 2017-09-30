@@ -14,7 +14,8 @@
 #define GL_GLEXT_PROTOTYPES //Needs to be defined for some GL funcs to work.
 #include <GL/gl.h>
 #include <GL/glu.h>
-#include <glm/glm.hpp>
+#include <glm/vec2.hpp>
+#include <glm/vec3.hpp>
 
 #include "ie_assets.h"
 
@@ -28,11 +29,13 @@ namespace ie
     std::vector<short> renderUnitList;
   };
 
-    class VFormat
-    {
+
+  class VFormat
+  {
     public:
     glm::vec3 vertex;
   };
+
 
   class VNFormat
   {
@@ -41,6 +44,7 @@ namespace ie
     glm::vec3 normal;
   };
 
+
   class VTNFormat
   {
     public:
@@ -48,6 +52,7 @@ namespace ie
     glm::vec2 texture;
     glm::vec3 normal;
   };
+
 
   class VboPair
   {
@@ -59,7 +64,9 @@ namespace ie
     void release(void);
   };
 
+
   enum VboDataFormat {V, VN, VTN};
+
 
   class VboRenderUnitLocation 
   {

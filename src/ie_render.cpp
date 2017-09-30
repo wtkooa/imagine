@@ -15,12 +15,17 @@
 #define GL_GLEXT_PROTOTYPES //Needs to be defined for some GL funcs to work.
 #include <GL/gl.h>
 #include <GL/glu.h>
-#include <glm/glm.hpp>
+#include <glm/mat4x4.hpp>
+#include <glm/vec2.hpp>
+#include <glm/vec3.hpp>
 
 #include "ie_assets.h"
 #include "ie_const.h"
 #include "ie_definitions.h"
 
+//___|RECEIVING MESSAGES|_______________________________________________________
+
+//MESSAGES FOR STATIC RENDERER
 void ie::StaticRender::receiveMessage(RenderAssetMessage msg)
 {
   shader = msg.shaderProgram;
@@ -47,6 +52,7 @@ void ie::StaticRender::receiveMessage(RenderAssetMessage msg)
   usingTextureLoc = (*shader).uniforms["usingTexture"].location;
 }
 
+
 void ie::StaticRender::receiveMessage(RenderMemoryMessage msg)
 {
   memMap = msg.memMap;
@@ -54,12 +60,14 @@ void ie::StaticRender::receiveMessage(RenderMemoryMessage msg)
   formatType = msg.formatType;
 }
 
+
 void ie::StaticRender::receiveMessage(RenderCameraMessage msg)
 {
   projectionMatrix = msg.projectionMatrix;
   viewMatrix = msg.viewMatrix;
   cameraPos = msg.cameraPos;
 }
+
 
 void ie::StaticRender::receiveMessage(RenderLightMessage msg)
 {
@@ -73,6 +81,11 @@ void ie::StaticRender::receiveMessage(RenderLightMessage msg)
   quadraticFalloff = msg.quadraticFalloff;
 }
 
+//______________________________________________________________________________
+
+//___|RENDERERS|________________________________________________________________
+
+//STATIC RENDERER
 void ie::StaticRender::render(void)
 {
   if ((*list).size() == 0) {return;}
@@ -141,7 +154,8 @@ void ie::StaticRender::render(void)
     glm::mat4 transformationMatrix = projectionMatrix *
                                      viewMatrix * mtwMatrix;
     glUniformMatrix4fv(mtwMatrixLoc, 1, GL_FALSE, &mtwMatrix[0][0]);
-    glUniformMatrix4fv(transformationMatrixLoc, 1, GL_FALSE, &transformationMatrix[0][0]);
+    glUniformMatrix4fv(transformationMatrixLoc, 1, GL_FALSE,
+                       &transformationMatrix[0][0]);
 
     for (short nRu = 0; nRu < renderUnitList.size(); nRu++)
     {
@@ -194,3 +208,5 @@ void ie::StaticRender::render(void)
     glDisableVertexAttribArray(1);
   }
 }
+
+//______________________________________________________________________________
