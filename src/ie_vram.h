@@ -20,7 +20,7 @@
 #include <GL/glu.h>
 
 #include "ie_assets.h"
-#include "ie_definitions.h"
+#include "ie_memory.h"
 #include "ie_messages.h"
 
 namespace ie
@@ -29,6 +29,13 @@ namespace ie
   class VramManager
   {
     public:
+    //BUILDING CPU SIDE VBOS
+    void createVbos(void);
+    
+    //SENDING DATA TO VIDEO HARDWARE
+    void loadVbos(void);
+    void createAndLoadVbos(void);
+
     //RECIEVING MESSAGES
     void receiveMessage(CreateVboMessage); 
 
@@ -44,6 +51,14 @@ namespace ie
     VboPair vnPair;
     VboPair vtnPair;
 
+    //DATA FROM ASSET MANAGER
+    std::map<unsigned int, ModelAsset>* models;
+    std::map<unsigned int, TextureAsset>* textures; 
+    std::vector<glm::vec4>* vHeap;
+    std::vector<glm::vec3>* tHeap;
+    std::vector<glm::vec3>* nHeap;
+    std::vector<glm::ivec4>* iHeap;
+
     //CPU SIDE VBO DATA
     std::vector<VFormat> vboV;
     std::vector<VNFormat> vboVN;
@@ -54,7 +69,6 @@ namespace ie
 
     //LOADING DATA TO VIDEO HARDWARE
     void loadTexture(TextureAsset);
-    void loadVbo(void);
   };
 
 }

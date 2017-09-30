@@ -19,7 +19,7 @@
 #include <glm/vec3.hpp>
 
 #include "ie_assets.h"
-#include "ie_definitions.h"
+#include "ie_memory.h"
 #include "ie_messages.h"
 
 namespace ie

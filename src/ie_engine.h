@@ -37,8 +37,9 @@ namespace ie
     bool initCamera(void);
     bool initLighting(void);
     bool initShaders(void);
-    bool initRenderers(void);
     bool initAssets(void);
+    bool initVram(void);
+    bool initRenderers(void);
 
     bool run(void);
     void render(void);

@@ -21,11 +21,19 @@
 #include <glm/mat4x4.hpp>
 #include <glm/vec3.hpp>
 
-#include "ie_definitions.h"
+#include "ie_memory.h"
 #include "ie_packages.h"
 
 namespace ie
 {
+  
+  class QuickListElement
+  {
+    public:
+    unsigned int modelId;
+    std::vector<short> renderUnitList;
+  };
+  
 
   class ShaderProgramAsset
   {

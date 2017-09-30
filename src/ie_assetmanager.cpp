@@ -22,7 +22,7 @@
 #include <glm/vec4.hpp>
 
 #include "ie_assets.h"
-#include "ie_definitions.h"
+#include "ie_memory.h"
 #include "ie_messages.h"
 #include "ie_packages.h"
 #include "ie_utils.h"

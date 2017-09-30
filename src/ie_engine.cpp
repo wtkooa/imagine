@@ -21,7 +21,6 @@
 #include <glm/mat4x4.hpp>
 #include <glm/trigonometric.hpp>
 #include <glm/vec3.hpp>
-#include <SDL2/SDL_image.h>
 #include <SDL2/SDL.h>
 
 #include "ie_assets.h"
@@ -56,6 +55,7 @@ bool ie::Engine::init(void)
   initLighting();
   initShaders();
   initAssets();
+  initVram();
   initRenderers();
   return true;
 }
@@ -145,9 +145,15 @@ bool ie::Engine::initAssets(void)
   am.unwrapPackage(packVTN);
   am.unwrapPackage(packVN);
 
+  am.createQuickLists();
+  return true;
+}
+
+bool ie::Engine::initVram(void)
+{
   ie::CreateVboMessage vboMsg = am.sendCreateVboMessage();
   vram.receiveMessage(vboMsg);
-  am.createQuickLists();
+  vram.createAndLoadVbos();
   return true;
 }
 

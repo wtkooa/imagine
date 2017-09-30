@@ -10,7 +10,6 @@
 
 #include "ie_vram.h"
 
-#include <algorithm>
 #include <iostream>
 #include <map>
 #include <string>
@@ -25,47 +24,57 @@
 #include <SDL2/SDL.h>
 
 #include "ie_assets.h"
-#include "ie_definitions.h"
+#include "ie_memory.h"
 #include "ie_messages.h"
 
-//___|VBO ID PAIR IMPLEMENTATION|_______________________________________________
-
-void ie::VboPair::genBuffers(void)
-{
-  glGenBuffers(1, &readVbo);
-  glGenBuffers(1, &writeVbo);
-}
-
-
-void ie::VboPair::swap(void)
-{
-  std::swap(readVbo, writeVbo);
-}
-
-
-void ie::VboPair::release(void)
-{
-  glDeleteBuffers(1, &readVbo);
-  glDeleteBuffers(1, &writeVbo);
-}
-
-//______________________________________________________________________________
 
 //___|RECIEVING MESSAGES|_______________________________________________________
 
 void ie::VramManager::receiveMessage(ie::CreateVboMessage msg)
 {
+  models = msg.models;
+  textures = msg.textures;
+  vHeap = msg.vHeap;
+  tHeap = msg.tHeap;
+  nHeap = msg.nHeap;
+  iHeap = msg.iHeap;
+}
+
+//______________________________________________________________________________
+
+//___|SENDING MESSAGES|_________________________________________________________
+
+ie::RenderMemoryMessage ie::VramManager::sendRenderMemoryMessage(std::string pair)
+{
+  ie::RenderMemoryMessage msg;
+  if (pair == "vPair")
+  {
+    msg.vboPair = &(vPair);
+    msg.formatType = "V";
+  }
+  else if (pair == "vnPair")
+  {
+    msg.vboPair = &(vnPair);
+    msg.formatType = "VN";
+  }
+  else if (pair == "vtnPair")
+  {
+    msg.vboPair = &(vtnPair);
+    msg.formatType = "VTN";
+  }
+  msg.memMap = &(vboMemoryMap);
+  return msg;
+}
+
+//______________________________________________________________________________
+
+//___|BUILDING AND MANAGING CPU SIDE VBOS|______________________________________
+
+void ie::VramManager::createVbos()
+{
   vPair.genBuffers();
   vnPair.genBuffers();
   vtnPair.genBuffers();
-
-
-  std::map<unsigned int, ModelAsset>* models = msg.models;
-  std::map<unsigned int, TextureAsset>* textures = msg.textures;
-  std::vector<glm::vec4>* vHeap = msg.vHeap;
-  std::vector<glm::vec3>* tHeap = msg.tHeap;
-  std::vector<glm::vec3>* nHeap = msg.nHeap;
-  std::vector<glm::ivec4>* iHeap = msg.iHeap;
 
   for (auto texIt = textures->begin(); texIt != textures->end(); texIt++)
   {
@@ -154,33 +163,6 @@ void ie::VramManager::receiveMessage(ie::CreateVboMessage msg)
     }
     vboMemoryMap[model.modelId] = ruLocations;
   }
-  loadVbo();
-}
-
-//______________________________________________________________________________
-
-//___|SENDING MESSAGES|_________________________________________________________
-
-ie::RenderMemoryMessage ie::VramManager::sendRenderMemoryMessage(std::string pair)
-{
-  ie::RenderMemoryMessage msg;
-  if (pair == "vPair")
-  {
-    msg.vboPair = &(vPair);
-    msg.formatType = "V";
-  }
-  else if (pair == "vnPair")
-  {
-    msg.vboPair = &(vnPair);
-    msg.formatType = "VN";
-  }
-  else if (pair == "vtnPair")
-  {
-    msg.vboPair = &(vtnPair);
-    msg.formatType = "VTN";
-  }
-  msg.memMap = &(vboMemoryMap);
-  return msg;
 }
 
 //______________________________________________________________________________
@@ -208,7 +190,7 @@ void ie::VramManager::loadTexture(ie::TextureAsset textureAsset)
 }
 
 
-void ie::VramManager::loadVbo(void)
+void ie::VramManager::loadVbos(void)
 {
   short dataSize = sizeof(VFormat);
   glBindBuffer(GL_ARRAY_BUFFER, vPair.readVbo);
@@ -234,6 +216,13 @@ void ie::VramManager::loadVbo(void)
   glBufferData(GL_ARRAY_BUFFER, vboVTN.size() * dataSize,
                vboVTN.data(), GL_STATIC_DRAW);
   glBindBuffer(GL_ARRAY_BUFFER, 0);
+}
+
+
+void ie::VramManager::createAndLoadVbos(void)
+{
+  createVbos();
+  loadVbos();
 }
 
 //______________________________________________________________________________

@@ -1,7 +1,7 @@
-#ifndef IE_DEFINITIONS_H
-#define IE_DEFINITIONS_H
+#ifndef IE_MEMORY_H
+#define IE_MEMORY_H
 
-//___|"ie_definitions.h"|_______________________________________________________
+//___|"ie_memory.h"|____________________________________________________________
 //
 // Project: Imagine: 3D Environment Engine
 // Version: 0.1.0
@@ -17,18 +17,8 @@
 #include <glm/vec2.hpp>
 #include <glm/vec3.hpp>
 
-#include "ie_assets.h"
-
 namespace ie
 {
-
-  class QuickListElement
-  {
-    public:
-    unsigned int modelId;
-    std::vector<short> renderUnitList;
-  };
-
 
   class VFormat
   {
