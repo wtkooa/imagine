@@ -58,7 +58,6 @@ namespace ie
     ie::GlslCompiler compiler;
     ie::FrameClock frameClock;
     ie::Camera eye;
-    ie::PointLight light;
     ie::StaticRender staticRender;
 
     ie::OpenGlContextDependentConfigs openGlConfigs;

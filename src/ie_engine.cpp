@@ -33,6 +33,7 @@
 #include "ie_packages.h"
 #include "ie_render.h"
 #include "ie_shader.h"
+#include "ie_terrain.h"
 #include "ie_time.h"
 #include "ie_utils.h"
 #include "ie_vram.h"
@@ -103,6 +104,7 @@ bool ie::Engine::initCamera(void)
 
 bool ie::Engine::initLighting(void)
 {
+  LightGenerator light;
   light.setName("light0");
   light.setPosVector(glm::vec3(0.0f, 3.0f, 0.0f));
   light.setGlobalAmbient(glm::vec3(0.1f, 0.1f, 0.1f));
@@ -147,6 +149,10 @@ bool ie::Engine::initAssets(void)
                                                          "CubeVN.obj");
   am.unwrapPackage(packVTN);
   am.unwrapPackage(packVN);
+
+  ie::TerrainGenerator terrain;
+  terrain.applyPerlin(42.0f, 32.0f, 40.0f);
+  ie::TerrainPackage terPack = terrain.wrapTerrainPackage();
 
   am.createQuickLists();
   return true;

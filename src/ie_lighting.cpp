@@ -16,7 +16,7 @@
 
 #include "ie_packages.h"
 
-ie::PointLight::PointLight()
+ie::LightGenerator::LightGenerator()
 {
   posVector = glm::vec3(0.0f, 0.0f, 0.0f);
   globalAmbient = glm::vec3(0.0f, 0.0f, 0.0f);
@@ -28,17 +28,17 @@ ie::PointLight::PointLight()
   quadraticFalloff = 0.0f;
 }
 
-void ie::PointLight::setName(std::string n) {name = n;} 
-void ie::PointLight::setPosVector(glm::vec3 pos) {posVector = pos;}
-void ie::PointLight::setGlobalAmbient(glm::vec3 gamb) {globalAmbient = gamb;}
-void ie::PointLight::setLightAmbient(glm::vec3 lamb) {lightAmbient = lamb;}
-void ie::PointLight::setLightSpecular(glm::vec3 lspc) {lightSpecular = lspc;}
-void ie::PointLight::setLightDiffuse(glm::vec3 ldif) {lightDiffuse = ldif;}
-void ie::PointLight::setConstantFalloff(float c) {constantFalloff = c;}
-void ie::PointLight::setLinearFalloff(float l) {linearFalloff = l;}
-void ie::PointLight::setQuadraticFalloff(float q) {quadraticFalloff = q;}
+void ie::LightGenerator::setName(std::string n) {name = n;} 
+void ie::LightGenerator::setPosVector(glm::vec3 pos) {posVector = pos;}
+void ie::LightGenerator::setGlobalAmbient(glm::vec3 gamb) {globalAmbient = gamb;}
+void ie::LightGenerator::setLightAmbient(glm::vec3 lamb) {lightAmbient = lamb;}
+void ie::LightGenerator::setLightSpecular(glm::vec3 lspc) {lightSpecular = lspc;}
+void ie::LightGenerator::setLightDiffuse(glm::vec3 ldif) {lightDiffuse = ldif;}
+void ie::LightGenerator::setConstantFalloff(float c) {constantFalloff = c;}
+void ie::LightGenerator::setLinearFalloff(float l) {linearFalloff = l;}
+void ie::LightGenerator::setQuadraticFalloff(float q) {quadraticFalloff = q;}
 
-ie::LightPackage ie::PointLight::wrapLightPackage(void)
+ie::LightPackage ie::LightGenerator::wrapLightPackage(void)
 {
   ie::LightPackage package;
   package.name = name;

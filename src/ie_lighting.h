@@ -20,10 +20,10 @@
 namespace ie
 {
   
-  class PointLight
+  class LightGenerator 
   {
     public:
-    PointLight();
+    LightGenerator();
 
 
     //SETTERS

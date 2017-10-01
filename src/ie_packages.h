@@ -18,12 +18,25 @@
 #define GL_GLEXT_PROTOTYPES //Needs to be define for some GL func to work.
 #include <GL/gl.h>
 #include <GL/glu.h>
+#include <glm/mat4x2.hpp>
 #include <glm/vec3.hpp>
 #include <glm/vec4.hpp>
 
 namespace ie
 {
   
+  class TerrainPackage
+  {
+    public:
+    std::string name;
+    short dim;
+    std::vector<glm::vec3> vertices;
+    std::vector<glm::vec3> colors;
+    std::vector<glm::vec3> normals;
+    std::vector<glm::mat4x2> blends;
+    std::vector<unsigned int> index;
+  };
+
   class LightPackage
   {
     public:
