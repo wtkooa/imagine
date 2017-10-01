@@ -28,17 +28,17 @@ namespace ie
   class StaticRender
   {
     public:
+    void render(void);
+
     //RECEIVING MESSAGES
     void receiveMessage(RenderAssetMessage);
     void receiveMessage(RenderMemoryMessage);
     void receiveMessage(RenderCameraMessage);
-    void receiveMessage(RenderLightMessage);
-
-    void render(void);
 
     private:
     //DATA FROM ASSET MANAGER
     ShaderProgramAsset* shader;
+    LightAsset* light;
     std::string formatType;
     std::vector<QuickListElement>* list;
     std::map<unsigned int, MaterialAsset>* materials;

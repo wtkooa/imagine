@@ -103,6 +103,7 @@ bool ie::Engine::initCamera(void)
 
 bool ie::Engine::initLighting(void)
 {
+  light.setName("light0");
   light.setPosVector(glm::vec3(0.0f, 3.0f, 0.0f));
   light.setGlobalAmbient(glm::vec3(0.1f, 0.1f, 0.1f));
   light.setLightAmbient(glm::vec3(0.2f, 0.2f, 0.2f));
@@ -111,6 +112,8 @@ bool ie::Engine::initLighting(void)
   light.setConstantFalloff(1.0f);
   light.setLinearFalloff(0.1f);
   light.setQuadraticFalloff(0.0f);
+  ie::LightPackage lightPack = light.wrapLightPackage();
+  am.unwrapPackage(lightPack);
   return true;
 }
 
@@ -206,15 +209,15 @@ void ie::Engine::render(void)
   float frameDelta = frameClock.getFrameDelta();
   eye.frameUpdate(frameDelta);
   ie::RenderCameraMessage cameraMsg = eye.sendRenderCameraMessage();
-  ie::RenderLightMessage lightMsg = light.sendRenderLightMessage();
   ie::RenderAssetMessage vtnAssetMsg = am.sendRenderAssetMessage("static",
+                                                                 "light0",
                                                                  "vtnList");
   ie::RenderAssetMessage vnAssetMsg = am.sendRenderAssetMessage("static",
+                                                                "light0",
                                                                 "vnList");
   ie::RenderMemoryMessage vtnMemMsg = vram.sendRenderMemoryMessage("vtnPair");
   ie::RenderMemoryMessage vnMemMsg = vram.sendRenderMemoryMessage("vnPair");
 
-  staticRender.receiveMessage(lightMsg);
   staticRender.receiveMessage(cameraMsg);
 
   staticRender.receiveMessage(vtnAssetMsg);

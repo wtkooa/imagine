@@ -113,12 +113,28 @@ namespace ie
   };
 
 
+  class LightAsset
+  {
+    public:
+    unsigned int lightId;
+    std::string name;
+    glm::vec3 posVector;
+    glm::vec3 globalAmbient;
+    glm::vec3 lightAmbient;
+    glm::vec3 lightSpecular;
+    glm::vec3 lightDiffuse;
+    float constantFalloff;
+    float linearFalloff;
+    float quadraticFalloff;
+  };
+
   union handle 
   {
     std::map<unsigned int, ModelAsset>* models;
     std::map<unsigned int, MaterialAsset>* materials;
     std::map<unsigned int, TextureAsset>* textures;
-    std::map<std::string, ShaderProgramAsset>* shaders;
+    std::map<GLuint, ShaderProgramAsset>* shaders;
+    std::map<unsigned int, LightAsset>* lights;
 
     ModelAsset* model;
     MaterialAsset* material;
@@ -126,6 +142,8 @@ namespace ie
     ShaderProgramAsset* shader;
     RenderUnit* ru;
     GlslUniformPackage* uniform;
+    LightAsset* light;
+    
   };
 
 }

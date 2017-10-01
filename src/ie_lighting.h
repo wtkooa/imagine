@@ -11,9 +11,11 @@
 // Copyright (c) 2017 David E Lipps
 //______________________________________________________________________________
 
+#include <string>
+
 #include <glm/glm.hpp>
 
-#include "ie_messages.h"
+#include "ie_packages.h"
 
 namespace ie
 {
@@ -22,26 +24,26 @@ namespace ie
   {
     public:
     PointLight();
-    glm::vec3 getGlobalAmbient(void);
+
+
+    //SETTERS
+    void setName(std::string);
     void setGlobalAmbient(glm::vec3);
-    glm::vec3 getPosVector(void);
     void setPosVector(glm::vec3);
-    glm::vec3 getLightAmbient(void);
     void setLightAmbient(glm::vec3);
-    glm::vec3 getLightSpecular(void);
     void setLightSpecular(glm::vec3);
-    glm::vec3 getLightDiffuse(void);
     void setLightDiffuse(glm::vec3);
-    float getConstantFalloff(void);
     void setConstantFalloff(float);
-    float getLinearFalloff(void);
     void setLinearFalloff(float);
-    float getQuadraticFalloff(void);
     void setQuadraticFalloff(float);
-    RenderLightMessage sendRenderLightMessage(void);
+    
+    //WRAPPING PACKAGES
+    LightPackage wrapLightPackage(void);
+
     private:
-    static glm::vec3 globalAmbient;
+    std::string name;
     glm::vec3 posVector;
+    glm::vec3 globalAmbient;
     glm::vec3 lightAmbient;
     glm::vec3 lightSpecular;
     glm::vec3 lightDiffuse;

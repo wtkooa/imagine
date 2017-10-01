@@ -34,14 +34,17 @@ namespace ie
     std::vector<glm::ivec4>* iHeap;
   };
 
+
   class RenderAssetMessage 
   {
     public:
     ShaderProgramAsset* shaderProgram;
+    LightAsset* light;
     std::vector<QuickListElement>* quickList;
     std::map<unsigned int, MaterialAsset>* materials;
     std::map<unsigned int, ModelAsset>* models;
   };
+
 
   class RenderMemoryMessage
   {
@@ -51,25 +54,13 @@ namespace ie
     std::string formatType;
   }; 
 
+
   class RenderCameraMessage
   {
     public:
     glm::vec3 cameraPos;
     glm::mat4 projectionMatrix;
     glm::mat4 viewMatrix;
-  };
-
-  class RenderLightMessage
-  {
-    public:
-    glm::vec3 globalAmbient;
-    glm::vec3 posVector;
-    glm::vec3 lightAmbient;
-    glm::vec3 lightSpecular;
-    glm::vec3 lightDiffuse;
-    float constantFalloff;
-    float linearFalloff;
-    float quadraticFalloff;
   };
 
 }

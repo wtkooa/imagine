@@ -33,6 +33,7 @@ namespace ie
   extern bool DEPTHTEST_ON;
   extern bool CULLFACE_ON;
   
+
   class OpenGlContextDependentConfigs
   {
     public:

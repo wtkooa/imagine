@@ -8,9 +8,9 @@
 // Copyright (c) 2017 David E Lipps
 //______________________________________________________________________________
 
-#include <algorithm>
-
 #include "ie_memory.h"
+
+#include <algorithm>
 
 //___|VBO ID PAIR IMPLEMENTATION|_______________________________________________
 

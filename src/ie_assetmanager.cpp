@@ -58,6 +58,21 @@ unsigned int ie::AssetManager::getNewMaterialAssetId(void)
   }
 }
 
+
+unsigned int ie::AssetManager::getNewLightAssetId(void)
+{
+  if (availableLightIds.empty())
+  {
+    return lightAssets.size();  
+  }
+  else
+  {
+    unsigned int id = availableLightIds[0];
+    availableLightIds.erase(availableLightIds.begin());
+    return id; 
+  }
+}
+
 //______________________________________________________________________________
 
 //___|LOADING VERTEX HEAP DATA|_________________________________________________
@@ -313,7 +328,7 @@ void ie::AssetManager::unwrapPackage(ie::ShaderProgramPackage package)
 {
   ie::ShaderProgramAsset asset;
   asset.name = package.name;
-  bool shaderProgramNameTaken = shaderProgramAssets.count(asset.name) == 1;
+  bool shaderProgramNameTaken = shaderProgramAssets.count(package.programId) == 1;
   if (shaderProgramNameTaken)
   {
     std::cout << "Warning: shader program with name '" << asset.name <<
@@ -324,7 +339,26 @@ void ie::AssetManager::unwrapPackage(ie::ShaderProgramPackage package)
   asset.vertexShaderId = package.vertexShaderId;
   asset.fragmentShaderId = package.fragmentShaderId;
   asset.uniforms = package.uniforms;
-  shaderProgramAssets[asset.name] = asset;
+  shaderProgramAssets[asset.programId] = asset;
+  shaderNameIdMap[asset.name] = asset.programId;
+}
+
+//LIGHT PACKAGES
+void ie::AssetManager::unwrapPackage(ie::LightPackage package)
+{
+  ie::LightAsset asset;
+  asset.lightId = getNewLightAssetId();
+  asset.name = package.name;
+  asset.posVector = package.posVector;
+  asset.globalAmbient = package.globalAmbient;
+  asset.lightAmbient = package.lightAmbient;
+  asset.lightSpecular = package.lightSpecular;
+  asset.lightDiffuse = package.lightDiffuse;
+  asset.constantFalloff = package.constantFalloff;
+  asset.linearFalloff = package.linearFalloff;
+  asset.quadraticFalloff = package.quadraticFalloff;
+  lightNameIdMap[asset.name] = asset.lightId;
+  lightAssets[asset.lightId] = asset;
 }
 
 //______________________________________________________________________________
@@ -345,10 +379,14 @@ ie::CreateVboMessage ie::AssetManager::sendCreateVboMessage(void)
 
 
 ie::RenderAssetMessage ie::AssetManager::sendRenderAssetMessage(std::string prog,
+                                                                std::string light,
                                                                 std::string list)
 {
   ie::RenderAssetMessage msg;
-  msg.shaderProgram = &(shaderProgramAssets[prog]);
+  ie::handle staticHdl = getHandle("shader/" + prog);
+  msg.shaderProgram = staticHdl.shader;
+  ie::handle light0Hdl = getHandle("light/" + light);
+  msg.light = light0Hdl.light;
   msg.quickList = &(quickLists[list]);
   msg.materials = &materialAssets;
   msg.models = &modelAssets;
@@ -410,6 +448,7 @@ void ie::AssetManager::createQuickLists(void)
 
 ie::handle ie::AssetManager::getHandle(std::string line)
 {
+  //RETURN POINTER TO ENTIRE GROUP OF ONE ASSET TYPE
   int tokenAmount = ie::countTokens(line, '/');  
   std::string token = ie::split(line, '/', 0);
   ie::handle hdl;
@@ -434,6 +473,13 @@ ie::handle ie::AssetManager::getHandle(std::string line)
     hdl.shaders = &shaderProgramAssets;
     return hdl;
   }
+  else if (token == "lights" && tokenAmount == 1)
+  {
+    hdl.lights == &lightAssets;
+    return hdl;
+  }
+
+  //RETURN POINTER TO A MODEL
   else if (token == "model" && tokenAmount > 1)
   {
     line = ie::popFrontToken(line, '/');
@@ -491,6 +537,8 @@ ie::handle ie::AssetManager::getHandle(std::string line)
     }
 
   }
+
+  //RETURN POINTER TO A MATERIAL
   else if (token == "material" && tokenAmount > 1)
   {
     line = ie::popFrontToken(line, '/');
@@ -519,6 +567,8 @@ ie::handle ie::AssetManager::getHandle(std::string line)
       return hdl;
     }
   }
+
+  //RETURN POINTER TO A TEXTURE
   else if (token == "texture" && tokenAmount > 1)
   {
     line = ie::popFrontToken(line, '/', 2);
@@ -547,13 +597,15 @@ ie::handle ie::AssetManager::getHandle(std::string line)
       return hdl;
     }
   }
+
+  //RETURN POINTER TO A SHADER
   else if (token == "shader" && tokenAmount > 1)
   {
     line = ie::popFrontToken(line, '/');
     token = ie::split(line, '/', 0);
     int tokenAmount = ie::countTokens(line, '/');  
-    auto it = shaderProgramAssets.find(token);
-    if (it == shaderProgramAssets.end())
+    auto it = shaderNameIdMap.find(token);
+    if (it == shaderNameIdMap.end())
     {
       std::cout << "Warning: Shader '" << token <<
                    "' doesn't exist"  << std::endl;
@@ -561,7 +613,8 @@ ie::handle ie::AssetManager::getHandle(std::string line)
       return hdl;
     }
 
-    ShaderProgramAsset* spa = &shaderProgramAssets[token];
+    GLuint id = shaderNameIdMap[token];
+    ShaderProgramAsset* spa = &shaderProgramAssets[id];
     if (tokenAmount == 1)
     {
       hdl.shader = spa;  
@@ -585,10 +638,41 @@ ie::handle ie::AssetManager::getHandle(std::string line)
       hdl.uniform = &(*spa).uniforms[token];
       return hdl;
     }
+
     else
     {
       std::cout << "Warning: Unrecognized shader path '" << line << std::endl;
       hdl.model = 0;
+      return hdl;
+    }
+  }  
+
+  //RETURN POINTER TO A LIGHT
+  else if (token == "light" && tokenAmount > 1)
+  {
+    line = ie::popFrontToken(line, '/');
+    token = ie::split(line, '/', 0);
+    int tokenAmount = ie::countTokens(line, '/');  
+    auto it = lightNameIdMap.find(token);
+    if (it == lightNameIdMap.end())
+    {
+      std::cout << "Warning: Light '" << token <<
+                     "' doesn't exist"  << std::endl;
+      hdl.light = 0;
+      return hdl;
+    }
+
+    unsigned int id = lightNameIdMap[token];
+    LightAsset* la = &lightAssets[id];
+    if (tokenAmount == 1)
+    {
+      hdl.light = la;  
+      return hdl;
+    }
+    else
+    {
+      std::cout << "Warning: Unrecognized light path '" << line << std::endl;
+      hdl.material = 0;
       return hdl;
     }
   }
@@ -611,7 +695,8 @@ bool ie::AssetManager::releaseAllShaderPrograms(void)
 
 bool ie::AssetManager::releaseShaderProgram(std::string name)
 {
-  ShaderProgramAsset asset = shaderProgramAssets[name];
+  GLuint shaderId = shaderNameIdMap[name];
+  ShaderProgramAsset asset = shaderProgramAssets[shaderId];
   glDetachShader(asset.programId, asset.vertexShaderId);
   glDetachShader(asset.programId, asset.fragmentShaderId);
   glDeleteShader(asset.vertexShaderId);

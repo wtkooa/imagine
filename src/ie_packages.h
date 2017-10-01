@@ -24,6 +24,21 @@
 namespace ie
 {
   
+  class LightPackage
+  {
+    public:
+    std::string name;
+    glm::vec3 posVector;
+    glm::vec3 globalAmbient;
+    glm::vec3 lightAmbient;
+    glm::vec3 lightSpecular;
+    glm::vec3 lightDiffuse;
+    float constantFalloff;
+    float linearFalloff;
+    float quadraticFalloff;
+  };
+
+
   class GlslUniformPackage
   {
     public:
@@ -31,6 +46,7 @@ namespace ie
     std::string type;
     GLint location;
   };
+
 
   class GlslSourcePackage
   {
@@ -40,6 +56,7 @@ namespace ie
     std::string sourceCode;
   };
   
+
   class ShaderProgramPackage
   {
     public:
@@ -54,8 +71,10 @@ namespace ie
     std::map<std::string, GlslUniformPackage> uniforms;
   };
 
+
   enum TextureType {DIFFUSE_MAP, BUMP_MAP, ALPHA_MAP,
                     AMBIENT_MAP, SPECULAR_MAP, HIGHLIGHT_MAP};
+
 
   class WavefrontTexturePackage
   {
@@ -63,6 +82,7 @@ namespace ie
     std::string filename;
     TextureType type;
   };
+
 
   class WavefrontMaterialPackage
   {

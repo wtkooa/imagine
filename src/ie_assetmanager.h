@@ -37,10 +37,13 @@ namespace ie
     GLuint unwrapPackage(ie::WavefrontMaterialPackage);
     GLuint unwrapPackage(ie::WavefrontTexturePackage);
     void unwrapPackage(ie::ShaderProgramPackage);
+    void unwrapPackage(ie::LightPackage);
 
     //SENDING MESSAGES
     CreateVboMessage sendCreateVboMessage(void); 
-    RenderAssetMessage sendRenderAssetMessage(std::string, std::string);
+    RenderAssetMessage sendRenderAssetMessage(std::string,
+                                              std::string,
+                                              std::string);
     
     //CREATING QUICK RENDER LISTS
     void createQuickLists(void);
@@ -74,7 +77,14 @@ namespace ie
     std::map<std::string, GLuint> textureNameIdMap;
 
     //SHADERS
-    std::map<std::string, ShaderProgramAsset> shaderProgramAssets;
+    std::map<GLuint, ShaderProgramAsset> shaderProgramAssets;
+    std::map<std::string, GLuint> shaderNameIdMap;
+
+    //LIGHTS
+    std::map<unsigned int, LightAsset> lightAssets;
+    std::map<std::string, unsigned int> lightNameIdMap;
+    std::vector<unsigned int> availableLightIds;
+    unsigned int getNewLightAssetId(void);
 
     //VERTEX DATA HEAP
     std::vector<glm::vec4> vertexHeap;

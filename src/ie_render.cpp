@@ -32,6 +32,16 @@ void ie::StaticRender::receiveMessage(RenderAssetMessage msg)
   list = msg.quickList;
   materials = msg.materials;
   models = msg.models;
+  light = msg.light;
+  
+  pointLightPos = (*light).posVector; 
+  globalAmbient = (*light).globalAmbient;
+  lightAmbient = (*light).lightAmbient;
+  lightSpecular = (*light).lightSpecular;
+  lightDiffuse = (*light).lightDiffuse;
+  constantFalloff = (*light).constantFalloff;
+  linearFalloff = (*light).linearFalloff;
+  quadraticFalloff = (*light).quadraticFalloff;
 
   cameraPosLoc = (*shader).uniforms["cameraPos"].location;
   mtwMatrixLoc = (*shader).uniforms["mtwMatrix"].location;
@@ -66,19 +76,6 @@ void ie::StaticRender::receiveMessage(RenderCameraMessage msg)
   projectionMatrix = msg.projectionMatrix;
   viewMatrix = msg.viewMatrix;
   cameraPos = msg.cameraPos;
-}
-
-
-void ie::StaticRender::receiveMessage(RenderLightMessage msg)
-{
-  pointLightPos = msg.posVector; 
-  globalAmbient = msg.globalAmbient;
-  lightAmbient = msg.lightAmbient;
-  lightSpecular = msg.lightSpecular;
-  lightDiffuse = msg.lightDiffuse;
-  constantFalloff = msg.constantFalloff;
-  linearFalloff = msg.linearFalloff;
-  quadraticFalloff = msg.quadraticFalloff;
 }
 
 //______________________________________________________________________________
