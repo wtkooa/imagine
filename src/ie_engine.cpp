@@ -122,7 +122,7 @@ bool ie::Engine::initLighting(void)
 
 bool ie::Engine::initShaders(void)
 {
-  if (openGlConfigs.LOCAL_GLSL_VERSION_NUMERIC >= GLSL_VERSION_450)
+  if (openGlConfigs.LOCAL_GLSL_VERSION_NUMERIC >= ie::GLSL_VERSION_450)
   {
     ie::ShaderProgramPackage statPack = compiler.compile("static",
                              "src/glsl/", "staticVShader450.glsl",

@@ -18,6 +18,7 @@
 #define GL_GLEXT_PROTOTYPES //Needs to be defined for some GL funcs to work.
 #include <GL/gl.h>
 #include <GL/glu.h>
+#include <glm/vec2.hpp>
 #include <glm/vec3.hpp>
 #include <glm/vec4.hpp>
 
@@ -35,9 +36,10 @@ namespace ie
     void unwrapPackage(ie::WavefrontObjectFilePackage);
     void unwrapPackage(ie::WavefrontMaterialFilePackage);
     GLuint unwrapPackage(ie::WavefrontMaterialPackage);
-    GLuint unwrapPackage(ie::WavefrontTexturePackage);
+    GLuint unwrapPackage(ie::TexturePackage);
     void unwrapPackage(ie::ShaderProgramPackage);
     void unwrapPackage(ie::LightPackage);
+    void unwrapPackage(ie::TerrainPackage);
 
     //SENDING MESSAGES
     CreateVboMessage sendCreateVboMessage(void); 
@@ -95,14 +97,24 @@ namespace ie
     std::vector<unsigned int> availableLightIds;
     unsigned int getNewLightAssetId(void);
 
+    //TERRAIN
+    std::map<unsigned int, TerrainAsset> terrainAssets;
+    std::map<std::string, unsigned int> terrainNameIdMap;
+    std::vector<unsigned int> availableTerrainIds; 
+    unsigned int getNewTerrainAssetId(void);
+
     //VERTEX DATA HEAP
     std::vector<glm::vec4> vertexHeap;
     std::vector<glm::vec3> textureCoordinateHeap;
     std::vector<glm::vec3> normalVectorHeap;
+    std::vector<glm::vec3> colorHeap;
+    std::vector<glm::vec2> blendHeap;
     std::vector<glm::ivec4> indexHeap;
     unsigned int pushVertexData(std::vector<glm::vec4>);
     unsigned int pushTextureCoordinateData(std::vector<glm::vec3>);
     unsigned int pushNormalVectorData(std::vector<glm::vec3>);
+    unsigned int pushColorData(std::vector<glm::vec3>);
+    unsigned int pushBlendData(std::vector<glm::uvec2>);
     unsigned int pushIndexData(std::vector<glm::ivec4>);
 
     //QUICK LISTS

@@ -19,6 +19,7 @@
 #include <GL/gl.h>
 #include <GL/glu.h>
 #include <glm/mat4x4.hpp>
+#include <glm/vec2.hpp>
 #include <glm/vec3.hpp>
 #include <glm/vec4.hpp>
 
@@ -88,6 +89,21 @@ unsigned int ie::AssetManager::getNewLightAssetId(void)
   }
 }
 
+
+unsigned int ie::AssetManager::getNewTerrainAssetId(void)
+{
+  if (availableTerrainIds.empty())
+  {
+    return terrainAssets.size();  
+  }
+  else
+  {
+    unsigned int id = availableTerrainIds[0];
+    availableTerrainIds.erase(availableTerrainIds.begin());
+    return id; 
+  }
+}
+
 //______________________________________________________________________________
 
 //___|LOADING VERTEX HEAP DATA|_________________________________________________
@@ -124,11 +140,27 @@ unsigned int ie::AssetManager::pushIndexData(std::vector<glm::ivec4> f)
   return offset;
 }
 
+
+unsigned int ie::AssetManager::pushColorData(std::vector<glm::vec3> c)
+{
+  unsigned int offset = colorHeap.size();
+  colorHeap.insert(colorHeap.end(), c.begin(), c.end());
+  return offset;
+}
+
+
+unsigned int ie::AssetManager::pushBlendData(std::vector<glm::uvec2> b)
+{
+  unsigned int offset = blendHeap.size();
+  blendHeap.insert(blendHeap.end(), b.begin(), b.end());
+  return offset;
+}
+
 //______________________________________________________________________________
 
 //___|UNWRAPPING INCOMING PACKAGES|_____________________________________________
 
-//WAVEFRONT OBJ FILE PACKAGES
+//UNWRAP WAVEFRONT OBJ FILE PACKAGES
 void ie::AssetManager::unwrapPackage(ie::WavefrontObjectFilePackage filePackage)
 {
   unsigned int vertexHeapOffset = pushVertexData(filePackage.v);
@@ -234,6 +266,7 @@ void ie::AssetManager::unwrapPackage(ie::WavefrontObjectFilePackage filePackage)
 }
 
 
+//UNWRAP WAVEFRONT MTL FILE PACKAGES
 void ie::AssetManager::unwrapPackage(
                        ie::WavefrontMaterialFilePackage filePackage)
 {
@@ -278,7 +311,7 @@ GLuint ie::AssetManager::unwrapPackage(ie::WavefrontMaterialPackage package)
   }
   for (int ntex = 0; ntex < texturePackageAmount; ntex++)
   {
-    WavefrontTexturePackage tex = package.texturePackages[ntex];
+    TexturePackage tex = package.texturePackages[ntex];
     switch (tex.type)
     {
       case DIFFUSE_MAP:
@@ -305,7 +338,8 @@ GLuint ie::AssetManager::unwrapPackage(ie::WavefrontMaterialPackage package)
 }
 
 
-GLuint ie::AssetManager::unwrapPackage(ie::WavefrontTexturePackage package)
+//UNWRAP TEXTURE PACKAGES
+GLuint ie::AssetManager::unwrapPackage(ie::TexturePackage package)
 {
   GLuint id;
   ie::TextureAsset asset;
@@ -334,7 +368,7 @@ GLuint ie::AssetManager::unwrapPackage(ie::WavefrontTexturePackage package)
 }
 
 
-//SHADER PACKAGES 
+//UNWRAP SHADER PACKAGES 
 void ie::AssetManager::unwrapPackage(ie::ShaderProgramPackage package)
 {
   ie::ShaderProgramAsset asset;
@@ -354,7 +388,8 @@ void ie::AssetManager::unwrapPackage(ie::ShaderProgramPackage package)
   shaderNameIdMap[asset.name] = asset.programId;
 }
 
-//LIGHT PACKAGES
+
+//UNWRAP LIGHT PACKAGES
 void ie::AssetManager::unwrapPackage(ie::LightPackage package)
 {
   ie::LightAsset asset;
@@ -377,6 +412,36 @@ void ie::AssetManager::unwrapPackage(ie::LightPackage package)
   asset.quadraticFalloff = package.quadraticFalloff;
   lightNameIdMap[asset.name] = asset.lightId;
   lightAssets[asset.lightId] = asset;
+}
+
+//UNWRAP TERRAIN PACKAGES
+void ie::AssetManager::unwrapPackage(ie::TerrainPackage package)
+{
+  TerrainAsset asset;  
+  asset.name = package.name;
+  bool terrainNameTaken = terrainNameIdMap.count(package.name) == 1;
+  if (terrainNameTaken)
+  {
+    std::cout << "Warning: terrain with name '" << asset.name <<
+    "' already exists. Engine will use original." << std::endl;
+    return;
+  }
+
+  for (short nTex = 0; nTex < package.textures.size(); nTex++)
+  {
+    asset.textureIds.push_back(unwrapPackage(package.textures[nTex])); 
+  }
+
+  asset.id = getNewTerrainAssetId();
+  asset.dim = package.dim;
+  asset.vertexHeapOffset = pushVertexData(package.vertices);
+  asset.colorHeapOffset = pushColorData(package.colors);
+  asset.blendHeapOffset = pushBlendData(package.blends);
+  asset.indexHeapOffset = pushIndexData(package.indices);
+  asset.vertexHeapAmount = package.vertices.size();
+  asset.indexHeapAmount = package.indices.size();
+  terrainNameIdMap[asset.name] = asset.id;
+  terrainAssets[asset.id] = asset;
 }
 
 //______________________________________________________________________________
@@ -417,7 +482,7 @@ ie::RenderAssetMessage ie::AssetManager::sendRenderAssetMessage(std::string prog
 //___|CREATING AND MANAGING ENTITIES|___________________________________________
 
 void ie::AssetManager::createEntity(std::string name,
-                                    std::string model,
+                                    std::string mesh,
                                     EntityType type)
 {
   ie::Entity entity;
@@ -431,7 +496,14 @@ void ie::AssetManager::createEntity(std::string name,
   }
   entity.id = getNewEntityId(); 
   entity.type = type;
-  entity.modelId = modelNameIdMap[model];
+  if (type == STATIC)
+  {
+    entity.modelId = modelNameIdMap[mesh];
+  }
+  else if (type == TERRAIN)
+  {
+    entity.terrainId = terrainNameIdMap[mesh];
+  }
   entity.hidden = false;
   entity.translationMatrix = glm::mat4();
   entity.rotationMatrix = glm::mat4();
@@ -449,10 +521,11 @@ void ie::AssetManager::createQuickLists(void)
   std::vector<QuickListElement> vList;
   std::vector<QuickListElement> vnList;
   std::vector<QuickListElement> vtnList;
+  std::vector<QuickListElement> terrainList;
   for (auto entIt = entities.begin(); entIt != entities.end(); entIt++)
   {
     Entity entity = entIt->second;
-    if (entity.hidden == false)
+    if (entity.hidden == false && entity.type == STATIC)
     {
       QuickListElement vElement;
       QuickListElement vnElement;
@@ -485,10 +558,17 @@ void ie::AssetManager::createQuickLists(void)
       if (vnElement.renderUnitList.size() > 0) {vnList.push_back(vnElement);}
       if (vtnElement.renderUnitList.size() > 0) {vtnList.push_back(vtnElement);}
     }
+    else if (entity.hidden == false && entity.type == TERRAIN)
+    {
+      QuickListElement tElement;
+      tElement.entityId = entity.id;
+      terrainList.push_back(tElement); 
+    }
   }
   quickLists["vList"] = vList;
   quickLists["vnList"] = vnList;
   quickLists["vtnList"] = vtnList;
+  quickLists["terrainList"] = terrainList;
 }
 
 //______________________________________________________________________________
@@ -530,6 +610,11 @@ ie::handle ie::AssetManager::getHandle(std::string line)
   else if (token == "lights" && tokenAmount == 1)
   {
     hdl.lights == &lightAssets;
+    return hdl;
+  }
+  else if (token == "terrains" && tokenAmount == 1)
+  {
+    hdl.terrains == &terrainAssets;
     return hdl;
   }
 
@@ -727,6 +812,36 @@ ie::handle ie::AssetManager::getHandle(std::string line)
     {
       std::cout << "Warning: Unrecognized light path '" << line << std::endl;
       hdl.light = 0;
+      return hdl;
+    }
+  }
+
+  //RETURN POINTER TO A TERRAIN 
+  else if (token == "terrain" && tokenAmount > 1)
+  {
+    line = ie::popFrontToken(line, '/');
+    token = ie::split(line, '/', 0);
+    int tokenAmount = ie::countTokens(line, '/');  
+    auto it = terrainNameIdMap.find(token);
+    if (it == terrainNameIdMap.end())
+    {
+      std::cout << "Warning: Terrian '" << token <<
+                     "' doesn't exist"  << std::endl;
+      hdl.terrain = 0;
+      return hdl;
+    }
+
+    unsigned int id = terrainNameIdMap[token];
+    TerrainAsset* ta = &terrainAssets[id];
+    if (tokenAmount == 1)
+    {
+      hdl.terrain = ta;  
+      return hdl;
+    }
+    else
+    {
+      std::cout << "Warning: Unrecognized terrain path '" << line << std::endl;
+      hdl.terrain = 0;
       return hdl;
     }
   }

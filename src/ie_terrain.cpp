@@ -16,6 +16,7 @@
 #include <glm/mat4x2.hpp>
 #include <glm/vec3.hpp>
 
+#include "ie_const.h"
 #include "ie_packages.h"
 
 ie::TerrainGenerator::TerrainGenerator(void)
@@ -33,11 +34,13 @@ ie::TerrainGenerator::TerrainGenerator(short d)
 
 void ie::TerrainGenerator::clear(void)
 {
+  name = "Terrain";
   dim = 100;
   vertices.clear();
   colors.clear();
   blends.clear();
-  index.clear();
+  indices.clear();
+  textures.clear();
 }
 
 
@@ -50,10 +53,10 @@ void ie::TerrainGenerator::generateTerrain(short d)
   {
     for (short x = 0; x < dim; x++)
     {
-      glm::vec3 vert(float(x), 0.0f, float(z));
+      glm::vec4 vert(float(x), 0.0f, float(z), 1.0f);
       glm::vec3 color(0.6f, 0.6f, 0.6f);
       glm::vec3 normal(0.0f, 1.0f, 0.0f);
-      glm::uvec2 blend(99000000, 0);
+      glm::uvec2 blend(0, 0);
       vertices.push_back(vert);
       colors.push_back(color);
       normals.push_back(normal);
@@ -66,12 +69,12 @@ void ie::TerrainGenerator::generateTerrain(short d)
     for (short x = 0; x < (dim - 1); x++)
     {
       unsigned int n = (z * dim) + x;
-      index.push_back(n);
-      index.push_back(n + dim);
-      index.push_back(n + dim + 1);
-      index.push_back(n + dim + 1);
-      index.push_back(n + 1);
-      index.push_back(n);
+      unsigned int v1 = n;
+      unsigned int v2 = (n + dim);
+      unsigned int v3 = (n + dim + 1);
+      unsigned int v4 = (n + 1);
+      indices.push_back(glm::ivec4(v1, v2, v3, 0));
+      indices.push_back(glm::ivec4(v3, v4, v1, 0));
     }
   }
 }
@@ -94,6 +97,24 @@ void ie::TerrainGenerator::applyPerlin(float seed, float res, float range)
   }
 }
 
+void ie::TerrainGenerator::addTexture(std::string filepath,
+                                      std::string filename)
+{
+  if (textures.size() < ie::MAX_TERRAIN_TEXTURES)
+  {
+    TexturePackage texture;
+    texture.filepath = filepath;
+    texture.filename = filename;
+    texture.type = BUMP_MAP;
+    textures.push_back(texture);
+  }
+  else
+  {
+    std::cout << "Warning: Max terrian texture capacity (" <<
+    ie::MAX_TERRAIN_TEXTURES << ") already reached." << std::endl;
+  }
+}
+
 
 ie::TerrainPackage ie::TerrainGenerator::wrapTerrainPackage(void)
 {
@@ -103,7 +124,8 @@ ie::TerrainPackage ie::TerrainGenerator::wrapTerrainPackage(void)
   package.vertices = vertices;
   package.colors = colors;
   package.blends = blends;
-  package.index = index;
+  package.indices = indices;
+  package.textures = textures;
   return package;
 }
 

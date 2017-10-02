@@ -16,6 +16,7 @@
 
 #include <glm/vec2.hpp>
 #include <glm/vec3.hpp>
+#include <glm/vec3.hpp>
 
 #include "ie_packages.h"
 
@@ -33,6 +34,8 @@ namespace ie
 
     void applyPerlin(float, float, float);
 
+    void addTexture(std::string, std::string); 
+
     ie::TerrainPackage wrapTerrainPackage(void);
 
     void setName(std::string);
@@ -43,11 +46,12 @@ namespace ie
 
     std::string name;
     short dim;
-    std::vector<glm::vec3> vertices;
+    std::vector<glm::vec4> vertices;
     std::vector<glm::vec3> colors;
     std::vector<glm::vec3> normals;
     std::vector<glm::uvec2> blends;
-    std::vector<unsigned int> index;
+    std::vector<glm::ivec4> indices;
+    std::vector<TexturePackage> textures;
   };
 
 }

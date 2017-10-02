@@ -351,7 +351,7 @@ ie::WavefrontMaterialFilePackage ie::WavefrontMaterialFileReader::read(std::stri
       }
       else if (command == "map_Kd")
       {
-        ie::WavefrontTexturePackage tex;
+        ie::TexturePackage tex;
         size_t start = line.find(" ") + 1;
         tex.filename = line.substr(start);
         tex.type = ie::TextureType::DIFFUSE_MAP;
@@ -360,7 +360,7 @@ ie::WavefrontMaterialFilePackage ie::WavefrontMaterialFileReader::read(std::stri
 
       else if (command == "map_bump")
       {
-        ie::WavefrontTexturePackage tex;
+        ie::TexturePackage tex;
         size_t start = line.find(" ") + 1;
         tex.filename = line.substr(start);
         tex.type = ie::TextureType::BUMP_MAP;
@@ -369,7 +369,7 @@ ie::WavefrontMaterialFilePackage ie::WavefrontMaterialFileReader::read(std::stri
 
       else if (command == "map_Ka")
       {
-        ie::WavefrontTexturePackage tex;
+        ie::TexturePackage tex;
         size_t start = line.find(" ") + 1;
         tex.filename = line.substr(start);
         tex.type = ie::TextureType::AMBIENT_MAP;
@@ -378,7 +378,7 @@ ie::WavefrontMaterialFilePackage ie::WavefrontMaterialFileReader::read(std::stri
 
       else if (command == "map_Ks")
       {
-        ie::WavefrontTexturePackage tex;
+        ie::TexturePackage tex;
         size_t start = line.find(" ") + 1;
         tex.filename = line.substr(start);
         tex.type = ie::TextureType::SPECULAR_MAP;
@@ -387,7 +387,7 @@ ie::WavefrontMaterialFilePackage ie::WavefrontMaterialFileReader::read(std::stri
 
       else if (command == "map_Ns")
       {
-        ie::WavefrontTexturePackage tex;
+        ie::TexturePackage tex;
         size_t start = line.find(" ") + 1;
         tex.filename = line.substr(start);
         tex.type = ie::TextureType::HIGHLIGHT_MAP;
@@ -396,7 +396,7 @@ ie::WavefrontMaterialFilePackage ie::WavefrontMaterialFileReader::read(std::stri
 
       else if (command == "map_d")
       {
-        ie::WavefrontTexturePackage tex;
+        ie::TexturePackage tex;
         size_t start = line.find(" ") + 1;
         tex.filename = line.substr(start);
         tex.type = ie::TextureType::ALPHA_MAP;

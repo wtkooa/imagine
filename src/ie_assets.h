@@ -37,6 +37,7 @@ namespace ie
     std::string name;
     EntityType type;
     unsigned int modelId;
+    unsigned int terrainId;
     bool hidden;
     glm::mat4 translationMatrix;
     glm::mat4 rotationMatrix;
@@ -140,6 +141,22 @@ namespace ie
     float quadraticFalloff;
   };
 
+  class TerrainAsset
+  {
+    public:
+    unsigned int id;
+    std::string name;
+    short dim;
+    std::vector<GLuint> textureIds;
+    unsigned int vertexHeapOffset;
+    unsigned int normalHeapOffset;
+    unsigned int colorHeapOffset;
+    unsigned int blendHeapOffset;
+    unsigned int indexHeapOffset;
+    unsigned int vertexHeapAmount;
+    unsigned int indexHeapAmount;
+  };
+
   union handle 
   {
     std::map<unsigned int, Entity>* entities;
@@ -148,6 +165,7 @@ namespace ie
     std::map<unsigned int, TextureAsset>* textures;
     std::map<GLuint, ShaderProgramAsset>* shaders;
     std::map<unsigned int, LightAsset>* lights;
+    std::map<unsigned int, TerrainAsset>* terrains;
 
     Entity* entity;
     ModelAsset* model;
@@ -157,6 +175,7 @@ namespace ie
     RenderUnit* ru;
     GlslUniformPackage* uniform;
     LightAsset* light;
+    TerrainAsset* terrain;
   };
 
 }

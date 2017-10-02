@@ -27,6 +27,7 @@ namespace ie
   extern const void* OFFSET_1VEC3;
   extern const void* OFFSET_1VEC3_1VEC2;
   extern const glm::vec3 UP_VECTOR;
+  extern const short MAX_TERRAIN_TEXTURES;
 }
 
 #endif
