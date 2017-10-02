@@ -26,11 +26,27 @@
 
 namespace ie
 {
+
+
+  enum EntityType{STATIC, TERRAIN, WATER};
   
+  class Entity
+  {
+    public:
+    unsigned int id;
+    std::string name;
+    EntityType type;
+    unsigned int modelId;
+    bool hidden;
+    glm::mat4 translationMatrix;
+    glm::mat4 rotationMatrix;
+    glm::mat4 scaleMatrix;
+  };
+
   class QuickListElement
   {
     public:
-    unsigned int modelId;
+    unsigned int entityId;
     std::vector<short> renderUnitList;
   };
   
@@ -66,10 +82,6 @@ namespace ie
     std::string filename; 
     std::string filepath;
     std::vector<RenderUnit> renderUnits;
-    glm::mat4 translationMatrix;
-    glm::mat4 rotationMatrix;
-    bool copy;
-    bool hidden;
     bool tobeVramLoaded;
     bool vramLoaded;
   };
@@ -130,12 +142,14 @@ namespace ie
 
   union handle 
   {
+    std::map<unsigned int, Entity>* entities;
     std::map<unsigned int, ModelAsset>* models;
     std::map<unsigned int, MaterialAsset>* materials;
     std::map<unsigned int, TextureAsset>* textures;
     std::map<GLuint, ShaderProgramAsset>* shaders;
     std::map<unsigned int, LightAsset>* lights;
 
+    Entity* entity;
     ModelAsset* model;
     MaterialAsset* material;
     TextureAsset* texture;
@@ -143,7 +157,6 @@ namespace ie
     RenderUnit* ru;
     GlslUniformPackage* uniform;
     LightAsset* light;
-    
   };
 
 }

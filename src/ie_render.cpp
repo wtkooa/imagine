@@ -28,6 +28,7 @@
 //MESSAGES FOR STATIC RENDERER
 void ie::StaticRender::receiveMessage(RenderAssetMessage msg)
 {
+  entities = msg.entities;
   shader = msg.shaderProgram;
   list = msg.quickList;
   materials = msg.materials;
@@ -137,14 +138,16 @@ void ie::StaticRender::render(void)
   glUniform1f(lightLinearLoc, linearFalloff);
   glUniform1f(lightQuadraticLoc, quadraticFalloff);
 
-  for (unsigned int nModel = 0; nModel < (*list).size(); nModel++)
+  for (unsigned int nEntity = 0; nEntity < (*list).size(); nEntity++)
   {
-    ie::QuickListElement listElement = (*list)[nModel];
-    unsigned int modelId = listElement.modelId;
+    ie::QuickListElement listElement = (*list)[nEntity];
+    unsigned int entityId = listElement.entityId;
     std::vector<short> renderUnitList = listElement.renderUnitList;
-    ie::ModelAsset* modelAsset = &((*models)[modelId]); 
-    glm::mat4 translationMatrix = (*modelAsset).translationMatrix; 
-    glm::mat4 rotationMatrix = (*modelAsset).rotationMatrix;
+    ie::Entity* entity = &((*entities)[entityId]); 
+    glm::mat4 translationMatrix = (*entity).translationMatrix; 
+    glm::mat4 rotationMatrix = (*entity).rotationMatrix;
+    ie::ModelAsset* modelAsset = &((*models)[(*entity).modelId]);
+    unsigned int modelId = (*modelAsset).modelId;
     std::vector<RenderUnit>* renderUnits = &((*modelAsset).renderUnits); 
 
     glm::mat4 mtwMatrix = translationMatrix * rotationMatrix;

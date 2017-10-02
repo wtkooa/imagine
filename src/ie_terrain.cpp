@@ -53,8 +53,7 @@ void ie::TerrainGenerator::generateTerrain(short d)
       glm::vec3 vert(float(x), 0.0f, float(z));
       glm::vec3 color(0.6f, 0.6f, 0.6f);
       glm::vec3 normal(0.0f, 1.0f, 0.0f);
-      glm::mat4x2 blend(1.0f, 0.0f, 0.0f, 0.0f,
-                        0.0f, 0.0f, 0.0f, 0.0f);
+      glm::uvec2 blend(99000000, 0);
       vertices.push_back(vert);
       colors.push_back(color);
       normals.push_back(normal);

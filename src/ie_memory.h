@@ -43,6 +43,15 @@ namespace ie
     glm::vec3 normal;
   };
 
+  class VTNCBFormat
+  {
+    glm::vec3 vertex;
+    glm::vec2 texture;
+    glm::vec3 normal;
+    glm::vec3 color;
+    glm::uvec2 blend;
+  };
+
 
   class VboPair
   {
@@ -55,7 +64,7 @@ namespace ie
   };
 
 
-  enum VboDataFormat {V, VN, VTN};
+  enum VboDataFormat {V, VN, VTN, VTNCB};
 
 
   class VboRenderUnitLocation 

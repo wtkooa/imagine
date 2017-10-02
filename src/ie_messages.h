@@ -38,6 +38,7 @@ namespace ie
   class RenderAssetMessage 
   {
     public:
+    std::map<unsigned int, Entity>* entities;
     ShaderProgramAsset* shaderProgram;
     LightAsset* light;
     std::vector<QuickListElement>* quickList;

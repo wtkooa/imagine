@@ -41,6 +41,7 @@ namespace ie
     LightAsset* light;
     std::string formatType;
     std::vector<QuickListElement>* list;
+    std::map<unsigned int, Entity>* entities;
     std::map<unsigned int, MaterialAsset>* materials;
     std::map<unsigned int, ModelAsset>* models;
 

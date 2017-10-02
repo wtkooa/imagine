@@ -97,7 +97,7 @@ bool ie::Engine::initCamera(void)
   eye.setProjectionMatrix(glm::perspective(ie::FIELD_OF_VIEW,
                                            ie::ASPECT_RATIO,
                                            ie::Z_NEAR, ie::Z_FAR));
-  eye.setPosVector(glm::vec3(1.25f, 0.0f, 0.0f));
+  eye.setPosVector(glm::vec3(0.0f, 0.0f, 0.0f));
   return true;
 }
 
@@ -150,6 +150,10 @@ bool ie::Engine::initAssets(void)
   am.unwrapPackage(packVTN);
   am.unwrapPackage(packVN);
 
+  am.createEntity("TexturedCube", "CubeVTN", STATIC);
+  am.createEntity("NewCube", "CubeVTN", STATIC);
+  am.createEntity("MaterialedCube", "CubeVN", STATIC);
+
   ie::TerrainGenerator terrain;
   terrain.applyPerlin(42.0f, 32.0f, 40.0f);
   ie::TerrainPackage terPack = terrain.wrapTerrainPackage();
@@ -187,24 +191,30 @@ bool ie::Engine::run(void)
 
 void ie::Engine::handleLogic(void)
 {
-  ie::handle cubeVTN = am.getHandle("model/CubeVTN");
-  ie::handle cubeVN = am.getHandle("model/CubeVN");
+  ie::handle TexturedCube = am.getHandle("entity/TexturedCube");
+  ie::handle MaterialedCube = am.getHandle("entity/MaterialedCube");
+  ie::handle NewCube = am.getHandle("entity/NewCube");
 
   glm::mat4 transMatrix = glm::translate(glm::mat4(),
                                          glm::vec3(0.0f, 0.0f, -3.0f));
   glm::mat4 rotMatrix = glm::rotate(glm::mat4(), glm::radians(0.5f),
                                     glm::vec3(1.0f, 1.0f, 0.0f));
 
-  (*cubeVTN.model).translationMatrix = transMatrix;
-  (*cubeVTN.model).rotationMatrix *= rotMatrix;
+  (*TexturedCube.entity).translationMatrix = transMatrix;
+  (*TexturedCube.entity).rotationMatrix *= rotMatrix;
 
   transMatrix = glm::translate(glm::mat4(),
                                glm::vec3(2.5f, 0.0f, -3.0f));
   rotMatrix = glm::rotate(glm::mat4(), glm::radians(0.5f),
                           glm::vec3(-1.0f, 1.0f, 0.0f));
 
-  (*cubeVN.model).translationMatrix = transMatrix; 
-  (*cubeVN.model).rotationMatrix *= rotMatrix;
+  (*MaterialedCube.entity).translationMatrix = transMatrix; 
+  (*MaterialedCube.entity).rotationMatrix *= rotMatrix;
+
+  transMatrix = glm::translate(glm::mat4(), glm::vec3(-2.5f, 0.0f, -3.0f));
+  (*NewCube.entity).translationMatrix = transMatrix;
+  (*NewCube.entity).rotationMatrix *= rotMatrix;
+  
 }
 
 

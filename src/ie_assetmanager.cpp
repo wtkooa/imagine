@@ -18,6 +18,7 @@
 #define GL_GLEXT_PROTOTYPES //Needs to be defined for some GL funcs to work.
 #include <GL/gl.h>
 #include <GL/glu.h>
+#include <glm/mat4x4.hpp>
 #include <glm/vec3.hpp>
 #include <glm/vec4.hpp>
 
@@ -28,6 +29,20 @@
 #include "ie_utils.h"
 
 //___|ASSIGNING AND MANAGING ASSET IDS|_________________________________________
+
+unsigned int ie::AssetManager::getNewEntityId(void)
+{
+  if (availableEntityIds.empty())
+  {
+    return entities.size();  
+  }
+  else
+  {
+    unsigned int id = availableEntityIds[0];
+    availableEntityIds.erase(availableEntityIds.begin());
+    return id; 
+  }
+}
 
 unsigned int ie::AssetManager::getNewModelAssetId(void)
 {
@@ -157,10 +172,6 @@ void ie::AssetManager::unwrapPackage(ie::WavefrontObjectFilePackage filePackage)
     modelNameIdMap[asset.name] = asset.modelId;
     asset.filename = filePackage.filename;
     asset.filepath = filePackage.filepath;
-    asset.translationMatrix = glm::mat4();
-    asset.rotationMatrix = glm::mat4();
-    asset.copy = false;
-    asset.hidden = false;
     asset.tobeVramLoaded = true;
     asset.vramLoaded = false;
     unsigned int objectIndexBegin = it->first;
@@ -328,7 +339,7 @@ void ie::AssetManager::unwrapPackage(ie::ShaderProgramPackage package)
 {
   ie::ShaderProgramAsset asset;
   asset.name = package.name;
-  bool shaderProgramNameTaken = shaderProgramAssets.count(package.programId) == 1;
+  bool shaderProgramNameTaken = shaderNameIdMap.count(package.name) == 1;
   if (shaderProgramNameTaken)
   {
     std::cout << "Warning: shader program with name '" << asset.name <<
@@ -347,8 +358,15 @@ void ie::AssetManager::unwrapPackage(ie::ShaderProgramPackage package)
 void ie::AssetManager::unwrapPackage(ie::LightPackage package)
 {
   ie::LightAsset asset;
-  asset.lightId = getNewLightAssetId();
   asset.name = package.name;
+  bool lightNameTaken = lightNameIdMap.count(package.name) == 1;
+  if (lightNameTaken)
+  {
+    std::cout << "Warning: light with name '" << asset.name <<
+    "' already exists. Engine will use original." << std::endl;
+    return;
+  }
+  asset.lightId = getNewLightAssetId();
   asset.posVector = package.posVector;
   asset.globalAmbient = package.globalAmbient;
   asset.lightAmbient = package.lightAmbient;
@@ -383,6 +401,7 @@ ie::RenderAssetMessage ie::AssetManager::sendRenderAssetMessage(std::string prog
                                                                 std::string list)
 {
   ie::RenderAssetMessage msg;
+  msg.entities = &entities;
   ie::handle staticHdl = getHandle("shader/" + prog);
   msg.shaderProgram = staticHdl.shader;
   ie::handle light0Hdl = getHandle("light/" + light);
@@ -395,6 +414,34 @@ ie::RenderAssetMessage ie::AssetManager::sendRenderAssetMessage(std::string prog
 
 //______________________________________________________________________________
 
+//___|CREATING AND MANAGING ENTITIES|___________________________________________
+
+void ie::AssetManager::createEntity(std::string name,
+                                    std::string model,
+                                    EntityType type)
+{
+  ie::Entity entity;
+  entity.name = name;
+  bool entityNameTaken = entityNameIdMap.count(entity.name) == 1;
+  if (entityNameTaken)
+  {
+    std::cout << "Warning: entity with name '" << entity.name <<
+    "' already exists. Engine will use original." << std::endl;
+    return;
+  }
+  entity.id = getNewEntityId(); 
+  entity.type = type;
+  entity.modelId = modelNameIdMap[model];
+  entity.hidden = false;
+  entity.translationMatrix = glm::mat4();
+  entity.rotationMatrix = glm::mat4();
+  entityNameIdMap[entity.name] = entity.id;
+  entities[entity.id] = entity;
+  
+}
+
+//______________________________________________________________________________
+
 //___|CREATING AND MANAGING QUICK RENDER LISTS|_________________________________
 
 void ie::AssetManager::createQuickLists(void)
@@ -402,17 +449,19 @@ void ie::AssetManager::createQuickLists(void)
   std::vector<QuickListElement> vList;
   std::vector<QuickListElement> vnList;
   std::vector<QuickListElement> vtnList;
-  for (auto modIt = modelAssets.begin(); modIt != modelAssets.end(); modIt++)
+  for (auto entIt = entities.begin(); entIt != entities.end(); entIt++)
   {
-    ModelAsset model = modIt->second;
-    if (model.hidden == false)
+    Entity entity = entIt->second;
+    if (entity.hidden == false)
     {
       QuickListElement vElement;
       QuickListElement vnElement;
       QuickListElement vtnElement;
-      vElement.modelId = model.modelId;
-      vnElement.modelId = model.modelId;
-      vtnElement.modelId = model.modelId;
+      vElement.entityId = entity.id;
+      vnElement.entityId = entity.id;
+      vtnElement.entityId = entity.id;
+
+      ModelAsset model = modelAssets[entity.modelId];
       for (int nUnit = 0; nUnit < model.renderUnits.size(); nUnit++)
       {
         RenderUnit ru = model.renderUnits[nUnit];
@@ -453,7 +502,12 @@ ie::handle ie::AssetManager::getHandle(std::string line)
   std::string token = ie::split(line, '/', 0);
   ie::handle hdl;
 
-  if (token == "models" && tokenAmount == 1)
+  if (token == "entities" && tokenAmount == 1)
+  {
+    hdl.entities = &entities;
+    return hdl;
+  }
+  else if (token == "models" && tokenAmount == 1)
   {
     hdl.models = &modelAssets;
     return hdl;
@@ -642,7 +696,7 @@ ie::handle ie::AssetManager::getHandle(std::string line)
     else
     {
       std::cout << "Warning: Unrecognized shader path '" << line << std::endl;
-      hdl.model = 0;
+      hdl.shader = 0;
       return hdl;
     }
   }  
@@ -672,7 +726,37 @@ ie::handle ie::AssetManager::getHandle(std::string line)
     else
     {
       std::cout << "Warning: Unrecognized light path '" << line << std::endl;
-      hdl.material = 0;
+      hdl.light = 0;
+      return hdl;
+    }
+  }
+
+  //RETURN POINTER TO AN ENTITY
+  else if (token == "entity" && tokenAmount > 1)
+  {
+    line = ie::popFrontToken(line, '/');
+    token = ie::split(line, '/', 0);
+    int tokenAmount = ie::countTokens(line, '/');  
+    auto it = entityNameIdMap.find(token);
+    if (it == entityNameIdMap.end())
+    {
+      std::cout << "Warning: Entity '" << token <<
+                     "' doesn't exist"  << std::endl;
+      hdl.entity = 0;
+      return hdl;
+    }
+
+    unsigned int id = entityNameIdMap[token];
+    Entity* e = &entities[id];
+    if (tokenAmount == 1)
+    {
+      hdl.entity = e;  
+      return hdl;
+    }
+    else
+    {
+      std::cout << "Warning: Unrecognized entity path '" << line << std::endl;
+      hdl.entity = 0;
       return hdl;
     }
   }

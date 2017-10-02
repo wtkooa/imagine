@@ -14,7 +14,7 @@
 #include <string>
 #include <vector>
 
-#include <glm/mat4x2.hpp>
+#include <glm/vec2.hpp>
 #include <glm/vec3.hpp>
 
 #include "ie_packages.h"
@@ -46,7 +46,7 @@ namespace ie
     std::vector<glm::vec3> vertices;
     std::vector<glm::vec3> colors;
     std::vector<glm::vec3> normals;
-    std::vector<glm::mat4x2> blends;
+    std::vector<glm::uvec2> blends;
     std::vector<unsigned int> index;
   };
 

@@ -45,6 +45,9 @@ namespace ie
                                               std::string,
                                               std::string);
     
+    //CREATING ENTITIES
+    void createEntity(std::string, std::string, EntityType);
+
     //CREATING QUICK RENDER LISTS
     void createQuickLists(void);
 
@@ -60,6 +63,12 @@ namespace ie
     bool quit(void);
 
     private:
+    //Entities
+    std::map<unsigned int, Entity> entities;
+    std::map<std::string, unsigned int> entityNameIdMap;
+    std::vector<unsigned int> availableEntityIds; 
+    unsigned int getNewEntityId(void);
+
     //MODELS
     std::map<unsigned int, ModelAsset> modelAssets;
     std::map<std::string, unsigned int> modelNameIdMap;
