@@ -215,7 +215,9 @@ void ie::Engine::handleLogic(void)
   (*MaterialedCube.entity).translationMatrix = transMatrix; 
   (*MaterialedCube.entity).rotationMatrix *= rotMatrix;
 
-  transMatrix = glm::translate(glm::mat4(), glm::vec3(-2.5f, 0.0f, -3.0f));
+  transMatrix = glm::translate(glm::mat4(), glm::vec3(-3.0f, 0.0f, -3.0f));
+  glm::mat4 scaleMatrix = glm::scale(glm::mat4(), glm::vec3(2.0f, 2.0f, 2.0f));
+  (*NewCube.entity).scaleMatrix = scaleMatrix;
   (*NewCube.entity).translationMatrix = transMatrix;
   (*NewCube.entity).rotationMatrix *= rotMatrix;
   

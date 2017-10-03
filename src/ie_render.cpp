@@ -147,11 +147,13 @@ void ie::RenderManager::renderMaterialedEntities(void)
     ie::Entity* entity = &((*entities)[entityId]); 
     glm::mat4 translationMatrix = (*entity).translationMatrix; 
     glm::mat4 rotationMatrix = (*entity).rotationMatrix;
+    glm::mat4 scaleMatrix = (*entity).scaleMatrix;
     ie::ModelAsset* modelAsset = &((*models)[(*entity).modelId]);
     unsigned int modelId = (*modelAsset).modelId;
     std::vector<RenderUnit>* renderUnits = &((*modelAsset).renderUnits); 
 
-    glm::mat4 mtwMatrix = translationMatrix * rotationMatrix;
+    glm::mat4 mtwMatrix = translationMatrix * rotationMatrix *
+                          scaleMatrix;
     glm::mat4 transformationMatrix = projectionMatrix *
                                      viewMatrix * mtwMatrix;
     glUniformMatrix4fv(mtwMatrixLoc, 1, GL_FALSE, &mtwMatrix[0][0]);
@@ -270,11 +272,13 @@ void ie::RenderManager::renderTexturedEntities(void)
     ie::Entity* entity = &((*entities)[entityId]); 
     glm::mat4 translationMatrix = (*entity).translationMatrix; 
     glm::mat4 rotationMatrix = (*entity).rotationMatrix;
+    glm::mat4 scaleMatrix = (*entity).scaleMatrix;
     ie::ModelAsset* modelAsset = &((*models)[(*entity).modelId]);
     unsigned int modelId = (*modelAsset).modelId;
     std::vector<RenderUnit>* renderUnits = &((*modelAsset).renderUnits); 
 
-    glm::mat4 mtwMatrix = translationMatrix * rotationMatrix;
+    glm::mat4 mtwMatrix = translationMatrix * rotationMatrix *
+                          scaleMatrix;
     glm::mat4 transformationMatrix = projectionMatrix *
                                      viewMatrix * mtwMatrix;
     glUniformMatrix4fv(mtwMatrixLoc, 1, GL_FALSE, &mtwMatrix[0][0]);

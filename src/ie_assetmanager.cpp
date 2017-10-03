@@ -511,6 +511,7 @@ void ie::AssetManager::createEntity(std::string name,
   entity.hidden = false;
   entity.translationMatrix = glm::mat4();
   entity.rotationMatrix = glm::mat4();
+  entity.scaleMatrix = glm::mat4();
   entityNameIdMap[entity.name] = entity.id;
   entities[entity.id] = entity;
   
