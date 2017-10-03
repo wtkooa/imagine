@@ -11,6 +11,8 @@
 // Copyright (c) 2017 David E Lipps
 //______________________________________________________________________________
 
+#include "ie_messages.h"
+
 namespace ie
 {
 
@@ -21,6 +23,7 @@ namespace ie
     void measure(void);
     float getFrameDelta(void);
     float getFps(void);
+    ie::TimeStatusToCameraMessage sendTimeStatusToCameraMessage(void);
     private:
     unsigned long frameStart;
     unsigned long frameEnd;

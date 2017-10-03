@@ -26,11 +26,14 @@ namespace ie
     public:
     Camera();
 
-    void frameUpdate(float);
+    void frameUpdate(void);
     void toggleGrabMode(void);
 
-    //SEND MESSAGES
-    RenderCameraMessage sendRenderCameraMessage(void);
+    //SENDING MESSAGES
+    CameraStatusToRenderMessage sendCameraStatusToRenderMessage(void);
+
+    //RECEIVING MESSAGES
+    void receiveMessage(ie::TimeStatusToCameraMessage);
 
     //GETTERS AND SETTERS
     glm::mat4 getViewMatrix(void);
@@ -58,6 +61,7 @@ namespace ie
     SDL_Window * window;
     float moveSpeed;
     float lookSpeed;
+    float frameDelta;
     glm::vec3 upVector;
     glm::vec3 posVector;
     glm::vec3 lookVector;

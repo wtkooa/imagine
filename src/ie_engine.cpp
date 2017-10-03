@@ -156,7 +156,9 @@ bool ie::Engine::initAssets(void)
 
   ie::TerrainGenerator terrain;
   terrain.applyPerlin(42.0f, 32.0f, 40.0f);
+  terrain.addTexture("data/textures/", "grass.jpg");
   ie::TerrainPackage terPack = terrain.wrapTerrainPackage();
+  am.unwrapPackage(terPack);
 
   am.createQuickLists();
   return true;
@@ -164,8 +166,8 @@ bool ie::Engine::initAssets(void)
 
 bool ie::Engine::initVram(void)
 {
-  ie::CreateVboMessage vboMsg = am.sendCreateVboMessage();
-  vram.receiveMessage(vboMsg);
+  ie::AssetStatusToVramMessage statusMsg = am.sendAssetStatusToVramMessage();
+  vram.receiveMessage(statusMsg);
   vram.createAndLoadVbos();
   return true;
 }
@@ -181,8 +183,10 @@ bool ie::Engine::run(void)
   engineOn = true;
   while (engineOn) {
     frameClock.measure();
+    handleMessages();
     handleEvents();
     handleLogic();
+    eye.frameUpdate();
     render();
   } 
   return true;
@@ -218,31 +222,30 @@ void ie::Engine::handleLogic(void)
 }
 
 
+void ie::Engine::handleMessages(void)
+{
+  ie::AssetStatusToVramMessage toVramMsg = am.sendAssetStatusToVramMessage();
+  vram.receiveMessage(toVramMsg);
+
+  ie::TimeStatusToCameraMessage toCameraMsg = frameClock.sendTimeStatusToCameraMessage();
+  eye.receiveMessage(toCameraMsg);
+
+  ie::CameraStatusToRenderMessage cameraToRenderMsg = eye.sendCameraStatusToRenderMessage();
+  rm.receiveMessage(cameraToRenderMsg);
+
+  ie::AssetStatusToRenderMessage assetToRenderMsg = am.sendAssetStatusToRenderMessage();
+  rm.receiveMessage(assetToRenderMsg);
+
+  ie::VramStatusToRenderMessage vramToRenderMsg  = vram.sendVramStatusToRenderMessage();
+  rm.receiveMessage(vramToRenderMsg);
+}
+
+
 void ie::Engine::render(void)
 {
   glClear(ACTIVEBUFFERS);
 
-  float frameDelta = frameClock.getFrameDelta();
-  eye.frameUpdate(frameDelta);
-  ie::RenderCameraMessage cameraMsg = eye.sendRenderCameraMessage();
-  ie::RenderAssetMessage vtnAssetMsg = am.sendRenderAssetMessage("static",
-                                                                 "light0",
-                                                                 "vtnList");
-  ie::RenderAssetMessage vnAssetMsg = am.sendRenderAssetMessage("static",
-                                                                "light0",
-                                                                "vnList");
-  ie::RenderMemoryMessage vtnMemMsg = vram.sendRenderMemoryMessage("vtnPair");
-  ie::RenderMemoryMessage vnMemMsg = vram.sendRenderMemoryMessage("vnPair");
-
-  staticRender.receiveMessage(cameraMsg);
-
-  staticRender.receiveMessage(vtnAssetMsg);
-  staticRender.receiveMessage(vtnMemMsg);
-  staticRender.render();
-
-  staticRender.receiveMessage(vnAssetMsg);
-  staticRender.receiveMessage(vnMemMsg);
-  staticRender.render();
+  rm.render();
 
   SDL_GL_SwapWindow(mainWindow);
 }

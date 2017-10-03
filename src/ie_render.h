@@ -25,63 +25,46 @@
 namespace ie
 {
 
-  class StaticRender
+  class RenderManager
   {
     public:
+    //RENDERING
     void render(void);
+    void renderMaterialedEntities(void);
+    void renderTexturedEntities(void);
 
     //RECEIVING MESSAGES
-    void receiveMessage(RenderAssetMessage);
-    void receiveMessage(RenderMemoryMessage);
-    void receiveMessage(RenderCameraMessage);
+    void receiveMessage(AssetStatusToRenderMessage);
+    void receiveMessage(VramStatusToRenderMessage);
+    void receiveMessage(CameraStatusToRenderMessage);
 
     private:
     //DATA FROM ASSET MANAGER
-    ShaderProgramAsset* shader;
-    LightAsset* light;
-    std::string formatType;
-    std::vector<QuickListElement>* list;
     std::map<unsigned int, Entity>* entities;
     std::map<unsigned int, MaterialAsset>* materials;
     std::map<unsigned int, ModelAsset>* models;
+    std::map<GLuint, ShaderProgramAsset>* shaders;
+    std::map<std::string, GLuint>* shaderNameIdMap;
+    std::map<unsigned int, LightAsset>* lights;
+    std::map<std::string, unsigned int>* lightNameIdMap;
+    std::vector<StaticQuickListElement>* staticVList;
+    std::vector<StaticQuickListElement>* staticVNList;
+    std::vector<StaticQuickListElement>* staticVTNList;
+
 
     //DATA FROM VRAM MANAGER
     std::map<unsigned int, std::vector<VboRenderUnitLocation>>* memMap;
-    VboPair* vboPair;
+    VboPair* vPair;
+    VboPair* vnPair;
+    VboPair* vtnPair;
+    VboPair* vtncbPair;
+    VboPair* terrainIndexPair;
 
     //DATA FROM CAMERA
     glm::mat4 projectionMatrix;
     glm::mat4 viewMatrix;
     glm::vec3 cameraPos;
 
-    //DATA FROM LIGHT SOURCES
-    glm::vec3 pointLightPos;
-    glm::vec3 globalAmbient;
-    glm::vec3 lightAmbient;
-    glm::vec3 lightSpecular;
-    glm::vec3 lightDiffuse;
-    float constantFalloff;
-    float linearFalloff;
-    float quadraticFalloff; 
-
-    //UNIFORM LOCATIONS
-    GLint cameraPosLoc;
-    GLint mtwMatrixLoc;
-    GLint transformationMatrixLoc;
-    GLint pointLightPosLoc;
-    GLint globalAmbientLoc;
-    GLint lightAmbientLoc;
-    GLint lightSpecularLoc;
-    GLint lightDiffuseLoc;
-    GLint lightConstantLoc;
-    GLint lightLinearLoc;
-    GLint lightQuadraticLoc; 
-    GLint materialSpecularLoc; 
-    GLint materialShininessLoc;
-    GLint materialDiffuseLoc;
-    GLint materialAmbientLoc;
-    GLint materialEmissionLoc; 
-    GLint usingTextureLoc;
   };
 
 }

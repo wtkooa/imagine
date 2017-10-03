@@ -18,6 +18,9 @@
 #define GL_GLEXT_PROTOTYPES // Needs to be defined for some GL funcs to work.
 #include <GL/gl.h>
 #include <GL/glu.h>
+#include <glm/vec2.hpp>
+#include <glm/vec3.hpp>
+#include <glm/vec4.hpp>
 
 #include "ie_assets.h"
 #include "ie_memory.h"
@@ -31,16 +34,18 @@ namespace ie
     public:
     //BUILDING CPU SIDE VBOS
     void createVbos(void);
+    void createStaticVbos(void);
+    void createTerrainVbos(void);
     
     //SENDING DATA TO VIDEO HARDWARE
     void loadVbos(void);
     void createAndLoadVbos(void);
 
     //RECIEVING MESSAGES
-    void receiveMessage(CreateVboMessage); 
+    void receiveMessage(AssetStatusToVramMessage); 
 
     //SENDING MESSAGES
-    RenderMemoryMessage sendRenderMemoryMessage(std::string);
+    VramStatusToRenderMessage sendVramStatusToRenderMessage();
 
     //RELEASING VIDEO HARDWARE MEMORY
     void quit(void);
@@ -50,19 +55,25 @@ namespace ie
     VboPair vPair;
     VboPair vnPair;
     VboPair vtnPair;
+    VboPair vtncbPair;
+    VboPair terrainIndexPair;
 
     //DATA FROM ASSET MANAGER
     std::map<unsigned int, ModelAsset>* models;
     std::map<unsigned int, TextureAsset>* textures; 
+    std::map<unsigned int, MaterialAsset>* materials;
     std::vector<glm::vec4>* vHeap;
     std::vector<glm::vec3>* tHeap;
     std::vector<glm::vec3>* nHeap;
+    std::vector<glm::vec3>* cHeap;
+    std::vector<glm::vec2>* bHeap;
     std::vector<glm::ivec4>* iHeap;
 
     //CPU SIDE VBO DATA
     std::vector<VFormat> vboV;
     std::vector<VNFormat> vboVN;
     std::vector<VTNFormat> vboVTN;
+    std::vector<VTNCBFormat> vboVTNCB;
 
     //VBO MEMORY MAPS
     std::map<unsigned int, std::vector<VboRenderUnitLocation>> vboMemoryMap; 

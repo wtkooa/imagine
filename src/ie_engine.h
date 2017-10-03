@@ -45,6 +45,7 @@ namespace ie
     void render(void);
     void handleEvents(void);
     void handleLogic(void);
+    void handleMessages(void);
     void handleResize(int,int);
 
     bool cleanup(void);
@@ -58,7 +59,7 @@ namespace ie
     ie::GlslCompiler compiler;
     ie::FrameClock frameClock;
     ie::Camera eye;
-    ie::StaticRender staticRender;
+    ie::RenderManager rm;
 
     ie::OpenGlContextDependentConfigs openGlConfigs;
   };

@@ -23,45 +23,62 @@
 namespace ie
 {
 
-  class CreateVboMessage
+  class AssetStatusToVramMessage
   {
     public:
     std::map<unsigned int, ModelAsset>* models;
     std::map<unsigned int, TextureAsset>* textures; 
+    std::map<unsigned int, MaterialAsset>* materials;
     std::vector<glm::vec4>* vHeap;
     std::vector<glm::vec3>* tHeap;
     std::vector<glm::vec3>* nHeap;
+    std::vector<glm::vec3>* cHeap;
+    std::vector<glm::vec2>* bHeap;
     std::vector<glm::ivec4>* iHeap;
   };
 
 
-  class RenderAssetMessage 
+  class AssetStatusToRenderMessage 
   {
     public:
     std::map<unsigned int, Entity>* entities;
-    ShaderProgramAsset* shaderProgram;
-    LightAsset* light;
-    std::vector<QuickListElement>* quickList;
     std::map<unsigned int, MaterialAsset>* materials;
     std::map<unsigned int, ModelAsset>* models;
+    std::map<GLuint, ShaderProgramAsset>* shaders;
+    std::map<std::string, GLuint>* shaderNameIdMap;
+    std::map<unsigned int, LightAsset>* lights;
+    std::map<std::string, unsigned int>* lightNameIdMap;
+    std::vector<StaticQuickListElement>* staticVList;
+    std::vector<StaticQuickListElement>* staticVNList;
+    std::vector<StaticQuickListElement>* staticVTNList;
   };
 
 
-  class RenderMemoryMessage
+  class VramStatusToRenderMessage
   {
     public:
     std::map<unsigned int, std::vector<VboRenderUnitLocation>>* memMap;
-    VboPair* vboPair;    
-    std::string formatType;
+    VboPair* vPair;
+    VboPair* vnPair;
+    VboPair* vtnPair;
+    VboPair* vtncbPair;
+    VboPair* terrainIndexPair;
   }; 
 
 
-  class RenderCameraMessage
+  class CameraStatusToRenderMessage
   {
     public:
     glm::vec3 cameraPos;
     glm::mat4 projectionMatrix;
     glm::mat4 viewMatrix;
+  };
+
+
+  class TimeStatusToCameraMessage
+  {
+    public:
+    float frameDelta;
   };
 
 }

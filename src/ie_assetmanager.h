@@ -42,16 +42,16 @@ namespace ie
     void unwrapPackage(ie::TerrainPackage);
 
     //SENDING MESSAGES
-    CreateVboMessage sendCreateVboMessage(void); 
-    RenderAssetMessage sendRenderAssetMessage(std::string,
-                                              std::string,
-                                              std::string);
+    AssetStatusToVramMessage sendAssetStatusToVramMessage(void); 
+    AssetStatusToRenderMessage sendAssetStatusToRenderMessage();
     
     //CREATING ENTITIES
     void createEntity(std::string, std::string, EntityType);
 
     //CREATING QUICK RENDER LISTS
     void createQuickLists(void);
+    void createStaticQuickLists(void);
+    void createTerrainQuickLists(void);
 
     //ACCESSING MANANGED ASSETS
     handle getHandle(std::string);
@@ -118,7 +118,9 @@ namespace ie
     unsigned int pushIndexData(std::vector<glm::ivec4>);
 
     //QUICK LISTS
-    std::map<std::string, std::vector<QuickListElement>> quickLists; 
+    std::vector<StaticQuickListElement> staticVList;
+    std::vector<StaticQuickListElement> staticVNList;
+    std::vector<StaticQuickListElement> staticVTNList;
   };
 
 }

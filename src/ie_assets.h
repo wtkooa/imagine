@@ -44,7 +44,7 @@ namespace ie
     glm::mat4 scaleMatrix;
   };
 
-  class QuickListElement
+  class StaticQuickListElement
   {
     public:
     unsigned int entityId;

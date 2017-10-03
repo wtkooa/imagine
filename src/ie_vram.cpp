@@ -28,15 +28,18 @@
 #include "ie_messages.h"
 
 
-//___|RECIEVING MESSAGES|_______________________________________________________
+//___|RECEIVING MESSAGES|_______________________________________________________
 
-void ie::VramManager::receiveMessage(ie::CreateVboMessage msg)
+void ie::VramManager::receiveMessage(ie::AssetStatusToVramMessage msg)
 {
   models = msg.models;
   textures = msg.textures;
+  materials = msg.materials;
   vHeap = msg.vHeap;
   tHeap = msg.tHeap;
   nHeap = msg.nHeap;
+  cHeap = msg.cHeap;
+  bHeap = msg.bHeap;
   iHeap = msg.iHeap;
 }
 
@@ -44,24 +47,14 @@ void ie::VramManager::receiveMessage(ie::CreateVboMessage msg)
 
 //___|SENDING MESSAGES|_________________________________________________________
 
-ie::RenderMemoryMessage ie::VramManager::sendRenderMemoryMessage(std::string pair)
+ie::VramStatusToRenderMessage ie::VramManager::sendVramStatusToRenderMessage()
 {
-  ie::RenderMemoryMessage msg;
-  if (pair == "vPair")
-  {
-    msg.vboPair = &(vPair);
-    msg.formatType = "V";
-  }
-  else if (pair == "vnPair")
-  {
-    msg.vboPair = &(vnPair);
-    msg.formatType = "VN";
-  }
-  else if (pair == "vtnPair")
-  {
-    msg.vboPair = &(vtnPair);
-    msg.formatType = "VTN";
-  }
+  ie::VramStatusToRenderMessage msg;
+  msg.vPair = &vPair;
+  msg.vnPair = &vnPair;
+  msg.vtnPair = &vtnPair;
+  msg.vtncbPair = &vtncbPair;
+  msg.terrainIndexPair = &terrainIndexPair;
   msg.memMap = &(vboMemoryMap);
   return msg;
 }
@@ -70,21 +63,17 @@ ie::RenderMemoryMessage ie::VramManager::sendRenderMemoryMessage(std::string pai
 
 //___|BUILDING AND MANAGING CPU SIDE VBOS|______________________________________
 
-void ie::VramManager::createVbos()
+void ie::VramManager::createVbos(void)
+{
+  createStaticVbos();
+  createTerrainVbos();
+}
+
+void ie::VramManager::createStaticVbos()
 {
   vPair.genBuffers();
   vnPair.genBuffers();
   vtnPair.genBuffers();
-
-  for (auto texIt = textures->begin(); texIt != textures->end(); texIt++)
-  {
-    if ((texIt->second).tobeVramLoaded == true)
-    {
-      loadTexture(texIt->second);
-      (texIt->second).tobeVramLoaded = false;
-      (texIt->second).vramLoaded = true;
-    }
-  }
 
   for (auto modIt = models->begin(); modIt != models->end(); modIt++)
   {
@@ -98,6 +87,10 @@ void ie::VramManager::createVbos()
     for (short ru = 0; ru < renderUnitAmount; ru++)
     {
       ie::VboDataFormat dataFormat = model.renderUnits[ru].dataFormat;
+      unsigned int materialId = model.renderUnits[ru].materialId;
+      MaterialAsset* material = &(*materials)[materialId];
+      GLuint textureId = (*material).diffuseMapId;
+      TextureAsset* textureAsset = &(*textures)[textureId];
       VboRenderUnitLocation ruLocation;
       ruLocation.renderUnit = ru;
       ruLocation.format = dataFormat;
@@ -157,12 +150,24 @@ void ie::VramManager::createVbos()
             vboDataUnit.texture = glm::vec2(texture.x, texture.y);
             vboDataUnit.normal = glm::vec3(normal.x, normal.y, normal.z);
             vboVTN.push_back(vboDataUnit);
+            if ((*textureAsset).tobeVramLoaded == true)
+            {
+              loadTexture((*textureAsset));
+              (*textureAsset).tobeVramLoaded = false;
+              (*textureAsset).vramLoaded = true;
+            }
           }
         break;
       }
     }
     vboMemoryMap[model.modelId] = ruLocations;
   }
+}
+
+void ie::VramManager::createTerrainVbos(void)
+{
+  vtncbPair.genBuffers();
+  terrainIndexPair.genBuffers();
 }
 
 //______________________________________________________________________________
@@ -177,7 +182,7 @@ void ie::VramManager::loadTexture(ie::TextureAsset textureAsset)
   surface = IMG_Load((textureAsset.filepath +
                       textureAsset.filename).c_str());
   if (!surface) {std::cout << "Warning: Texture '" << textureAsset.filename <<
-  "' failed to load..." << std::endl;}
+  "' failed to load to VRAM..." << std::endl;}
   glBindTexture(GL_TEXTURE_2D, textureId);
   if (surface->format->BytesPerPixel == 4) {mode = GL_RGBA;}
   else if (surface->format->BytesPerPixel = 3) {mode = GL_RGB;}
@@ -234,6 +239,8 @@ void ie::VramManager::quit(void)
   vPair.release();
   vnPair.release();
   vtnPair.release();
+  vtncbPair.release();
+  terrainIndexPair.release();
 }
 
 //______________________________________________________________________________

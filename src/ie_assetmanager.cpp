@@ -358,7 +358,7 @@ GLuint ie::AssetManager::unwrapPackage(ie::TexturePackage package)
   glGenTextures(1, &id);
   asset.textureOpenglId = id;
   asset.filename = package.filename;
-  asset.filepath = "";
+  asset.filepath = package.filepath;
   asset.textureType = package.type;
   asset.tobeVramLoaded = true;
   asset.vramLoaded = false;
@@ -435,6 +435,7 @@ void ie::AssetManager::unwrapPackage(ie::TerrainPackage package)
   asset.id = getNewTerrainAssetId();
   asset.dim = package.dim;
   asset.vertexHeapOffset = pushVertexData(package.vertices);
+  asset.normalHeapOffset = pushNormalVectorData(package.normals);
   asset.colorHeapOffset = pushColorData(package.colors);
   asset.blendHeapOffset = pushBlendData(package.blends);
   asset.indexHeapOffset = pushIndexData(package.indices);
@@ -448,32 +449,35 @@ void ie::AssetManager::unwrapPackage(ie::TerrainPackage package)
 
 //___|SENDING MESSAGES|_________________________________________________________
 
-ie::CreateVboMessage ie::AssetManager::sendCreateVboMessage(void)
+ie::AssetStatusToVramMessage ie::AssetManager::sendAssetStatusToVramMessage(void)
 {
-  ie::CreateVboMessage msg;
+  ie::AssetStatusToVramMessage msg;
   msg.models = &modelAssets;
   msg.textures = &textureAssets;
+  msg.materials = &materialAssets;
   msg.vHeap = &vertexHeap;
   msg.tHeap = &textureCoordinateHeap;
   msg.nHeap = &normalVectorHeap;
+  msg.cHeap = &colorHeap;
+  msg.bHeap = &blendHeap;
   msg.iHeap = &indexHeap;
   return msg;
 }
 
 
-ie::RenderAssetMessage ie::AssetManager::sendRenderAssetMessage(std::string prog,
-                                                                std::string light,
-                                                                std::string list)
+ie::AssetStatusToRenderMessage ie::AssetManager::sendAssetStatusToRenderMessage()
 {
-  ie::RenderAssetMessage msg;
+  ie::AssetStatusToRenderMessage msg;
   msg.entities = &entities;
-  ie::handle staticHdl = getHandle("shader/" + prog);
-  msg.shaderProgram = staticHdl.shader;
-  ie::handle light0Hdl = getHandle("light/" + light);
-  msg.light = light0Hdl.light;
-  msg.quickList = &(quickLists[list]);
   msg.materials = &materialAssets;
   msg.models = &modelAssets;
+  msg.shaders = &shaderProgramAssets;
+  msg.shaderNameIdMap = &shaderNameIdMap;
+  msg.lights = &lightAssets;
+  msg.lightNameIdMap = &lightNameIdMap;
+  msg.staticVList = &staticVList;
+  msg.staticVNList = &staticVNList;
+  msg.staticVTNList = &staticVTNList;
   return msg;
 }
 
@@ -518,18 +522,19 @@ void ie::AssetManager::createEntity(std::string name,
 
 void ie::AssetManager::createQuickLists(void)
 {
-  std::vector<QuickListElement> vList;
-  std::vector<QuickListElement> vnList;
-  std::vector<QuickListElement> vtnList;
-  std::vector<QuickListElement> terrainList;
+  createStaticQuickLists();
+}
+
+void ie::AssetManager::createStaticQuickLists(void)
+{
   for (auto entIt = entities.begin(); entIt != entities.end(); entIt++)
   {
     Entity entity = entIt->second;
     if (entity.hidden == false && entity.type == STATIC)
     {
-      QuickListElement vElement;
-      QuickListElement vnElement;
-      QuickListElement vtnElement;
+      StaticQuickListElement vElement;
+      StaticQuickListElement vnElement;
+      StaticQuickListElement vtnElement;
       vElement.entityId = entity.id;
       vnElement.entityId = entity.id;
       vtnElement.entityId = entity.id;
@@ -554,21 +559,11 @@ void ie::AssetManager::createQuickLists(void)
           }
         }
       }
-      if (vElement.renderUnitList.size() > 0) {vList.push_back(vElement);}
-      if (vnElement.renderUnitList.size() > 0) {vnList.push_back(vnElement);}
-      if (vtnElement.renderUnitList.size() > 0) {vtnList.push_back(vtnElement);}
-    }
-    else if (entity.hidden == false && entity.type == TERRAIN)
-    {
-      QuickListElement tElement;
-      tElement.entityId = entity.id;
-      terrainList.push_back(tElement); 
+      if (vElement.renderUnitList.size() > 0) {staticVList.push_back(vElement);}
+      if (vnElement.renderUnitList.size() > 0) {staticVNList.push_back(vnElement);}
+      if (vtnElement.renderUnitList.size() > 0) {staticVTNList.push_back(vtnElement);}
     }
   }
-  quickLists["vList"] = vList;
-  quickLists["vnList"] = vnList;
-  quickLists["vtnList"] = vtnList;
-  quickLists["terrainList"] = terrainList;
 }
 
 //______________________________________________________________________________
@@ -609,12 +604,12 @@ ie::handle ie::AssetManager::getHandle(std::string line)
   }
   else if (token == "lights" && tokenAmount == 1)
   {
-    hdl.lights == &lightAssets;
+    hdl.lights = &lightAssets;
     return hdl;
   }
   else if (token == "terrains" && tokenAmount == 1)
   {
-    hdl.terrains == &terrainAssets;
+    hdl.terrains = &terrainAssets;
     return hdl;
   }
 

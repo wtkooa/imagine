@@ -56,7 +56,7 @@ void ie::Camera::toggleGrabMode(void)
 
 //___|UPDATING THE CAMERA FOR THE FRAME|________________________________________
 
-void ie::Camera::frameUpdate(float frameDelta)
+void ie::Camera::frameUpdate()
 {
   float refinedMoveSpeed = 0;
   if (SDL_GetWindowGrab(window) == SDL_TRUE)
@@ -119,13 +119,23 @@ void ie::Camera::frameUpdate(float frameDelta)
 //______________________________________________________________________________
 
 //___|SENDING MESSAGES|_________________________________________________________
-ie::RenderCameraMessage ie::Camera::sendRenderCameraMessage(void)
+
+ie::CameraStatusToRenderMessage ie::Camera::sendCameraStatusToRenderMessage(void)
 {
-  ie::RenderCameraMessage msg;
+  ie::CameraStatusToRenderMessage msg;
   msg.cameraPos = posVector;
   msg.projectionMatrix = projectionMatrix;
   msg.viewMatrix = viewMatrix; 
   return msg;
+}
+
+//______________________________________________________________________________
+
+//___|RECEIVING MESSAGES|_________________________________________________________
+
+void ie::Camera::receiveMessage(ie::TimeStatusToCameraMessage msg)
+{
+  frameDelta = msg.frameDelta;
 }
 
 //______________________________________________________________________________
