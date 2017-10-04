@@ -50,7 +50,7 @@ namespace ie
     unsigned int entityId;
     std::vector<short> renderUnitList;
   };
-  
+
 
   class ShaderProgramAsset
   {
@@ -147,14 +147,16 @@ namespace ie
     unsigned int id;
     std::string name;
     short dim;
+    float unitSize;
     std::vector<GLuint> textureIds;
     unsigned int vertexHeapOffset;
     unsigned int normalHeapOffset;
     unsigned int colorHeapOffset;
     unsigned int blendHeapOffset;
     unsigned int indexHeapOffset;
-    unsigned int vertexHeapAmount;
     unsigned int indexHeapAmount;
+    bool tobeVramLoaded;
+    bool vramLoaded;
   };
 
   union handle 

@@ -40,6 +40,7 @@ namespace ie
     //SENDING DATA TO VIDEO HARDWARE
     void loadVbos(void);
     void createAndLoadVbos(void);
+    void loadTexture(TextureAsset);
 
     //RECIEVING MESSAGES
     void receiveMessage(AssetStatusToVramMessage); 
@@ -62,6 +63,7 @@ namespace ie
     std::map<unsigned int, ModelAsset>* models;
     std::map<unsigned int, TextureAsset>* textures; 
     std::map<unsigned int, MaterialAsset>* materials;
+    std::map<unsigned int, TerrainAsset>* terrains;
     std::vector<glm::vec4>* vHeap;
     std::vector<glm::vec3>* tHeap;
     std::vector<glm::vec3>* nHeap;
@@ -74,12 +76,12 @@ namespace ie
     std::vector<VNFormat> vboVN;
     std::vector<VTNFormat> vboVTN;
     std::vector<VTNCBFormat> vboVTNCB;
+    std::vector<unsigned int> vboTerrainIndex;
 
     //VBO MEMORY MAPS
-    std::map<unsigned int, std::vector<VboRenderUnitLocation>> vboMemoryMap; 
-
-    //LOADING DATA TO VIDEO HARDWARE
-    void loadTexture(TextureAsset);
+    std::map<unsigned int, std::vector<VboRenderUnitLocation>> staticMemoryMap; 
+    std::map<unsigned int, unsigned int> terrainMemoryMap;
+    std::map<unsigned int, unsigned int> terrainIndexMemoryMap;
   };
 
 }

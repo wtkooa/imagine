@@ -121,6 +121,7 @@ namespace ie
     std::vector<StaticQuickListElement> staticVList;
     std::vector<StaticQuickListElement> staticVNList;
     std::vector<StaticQuickListElement> staticVTNList;
+    std::vector<unsigned int> terrainVTNCBList;
   };
 
 }

@@ -43,6 +43,7 @@ namespace ie
     public:
     std::string name;
     short dim;
+    float unitSize;
     std::vector<glm::vec4> vertices;
     std::vector<glm::vec3> colors;
     std::vector<glm::vec3> normals;

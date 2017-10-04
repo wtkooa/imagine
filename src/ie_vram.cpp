@@ -20,6 +20,7 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/vec2.hpp>
 #include <glm/vec3.hpp>
+#include <glm/vec4.hpp>
 #include <SDL2/SDL_image.h>
 #include <SDL2/SDL.h>
 
@@ -35,6 +36,7 @@ void ie::VramManager::receiveMessage(ie::AssetStatusToVramMessage msg)
   models = msg.models;
   textures = msg.textures;
   materials = msg.materials;
+  terrains = msg.terrains;
   vHeap = msg.vHeap;
   tHeap = msg.tHeap;
   nHeap = msg.nHeap;
@@ -55,7 +57,8 @@ ie::VramStatusToRenderMessage ie::VramManager::sendVramStatusToRenderMessage()
   msg.vtnPair = &vtnPair;
   msg.vtncbPair = &vtncbPair;
   msg.terrainIndexPair = &terrainIndexPair;
-  msg.memMap = &(vboMemoryMap);
+  msg.staticMemoryMap = &(staticMemoryMap);
+  msg.terrainIndexMemoryMap = &terrainIndexMemoryMap;
   return msg;
 }
 
@@ -69,6 +72,8 @@ void ie::VramManager::createVbos(void)
   createTerrainVbos();
 }
 
+
+//CREATING STATIC VBOS AND MEMORY MAPS
 void ie::VramManager::createStaticVbos()
 {
   vPair.genBuffers();
@@ -160,14 +165,64 @@ void ie::VramManager::createStaticVbos()
         break;
       }
     }
-    vboMemoryMap[model.modelId] = ruLocations;
+    staticMemoryMap[model.modelId] = ruLocations;
   }
 }
 
+
+//CREATING TERRAIN VBOS AND MEMORY MAPS
 void ie::VramManager::createTerrainVbos(void)
 {
   vtncbPair.genBuffers();
   terrainIndexPair.genBuffers();
+
+  for (auto terIt = terrains->begin(); terIt != terrains->end(); terIt++)
+  {
+    TerrainAsset* terrain = &terIt->second; 
+    short dim = (*terrain).dim;
+    float unitSize = (*terrain).unitSize;
+    unsigned int vHeapA = dim * dim;
+    unsigned int vHeapO = (*terrain).vertexHeapOffset;
+    unsigned int nHeapO = (*terrain).normalHeapOffset;
+    unsigned int cHeapO = (*terrain).colorHeapOffset;
+    unsigned int bHeapO = (*terrain).blendHeapOffset;
+    unsigned int iHeapO = (*terrain).indexHeapOffset;
+    unsigned int iHeapA = (*terrain).indexHeapAmount;
+    terrain->tobeVramLoaded = false;
+    terrain->vramLoaded = true;
+    terrainMemoryMap[(*terrain).id] = vboVTNCB.size();
+    terrainIndexMemoryMap[(*terrain).id] = vboTerrainIndex.size();
+
+    std::vector<glm::vec2> tCoords;
+    for (short z = 0; z < dim; z++)
+    {
+      for (short x = 0; x < dim; x++)
+      {
+        glm::vec2 coords(x, z);
+        tCoords.push_back(coords);
+      }
+    }
+
+    for (unsigned int n = 0; n < vHeapA; n++)
+    {
+      ie::VTNCBFormat vboDataUnit;
+      glm::vec4 vertex4 = (*vHeap)[vHeapO + n];
+      vboDataUnit.vertex = glm::vec3(vertex4.x, vertex4.y, vertex4.z);
+      vboDataUnit.texture = tCoords[n];
+      vboDataUnit.normal = (*nHeap)[nHeapO + n];
+      vboDataUnit.color = (*cHeap)[cHeapO + n];
+      vboDataUnit.blend = (*bHeap)[bHeapO + n];
+      vboVTNCB.push_back(vboDataUnit);
+    }
+
+    for (unsigned int n = 0; n < iHeapA; n++)
+    {
+      glm::ivec4 index4 = (*iHeap)[iHeapO + n];
+      vboTerrainIndex.push_back(index4.x);
+      vboTerrainIndex.push_back(index4.y);
+      vboTerrainIndex.push_back(index4.z);
+    }
+  }
 }
 
 //______________________________________________________________________________
@@ -221,6 +276,22 @@ void ie::VramManager::loadVbos(void)
   glBufferData(GL_ARRAY_BUFFER, vboVTN.size() * dataSize,
                vboVTN.data(), GL_STATIC_DRAW);
   glBindBuffer(GL_ARRAY_BUFFER, 0);
+
+  dataSize = sizeof(VTNCBFormat);
+  glBindBuffer(GL_ARRAY_BUFFER, vtncbPair.readVbo);
+  glBufferData(GL_ARRAY_BUFFER, vboVTNCB.size() * dataSize,
+               vboVTNCB.data(), GL_STATIC_DRAW);
+  glBindBuffer(GL_ARRAY_BUFFER, vtncbPair.writeVbo);
+  glBufferData(GL_ARRAY_BUFFER, vboVTNCB.size() * dataSize,
+               vboVTNCB.data(), GL_STATIC_DRAW);
+
+  dataSize = sizeof(unsigned int);
+  glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, terrainIndexPair.readVbo);
+  glBufferData(GL_ELEMENT_ARRAY_BUFFER, vboTerrainIndex.size() * dataSize,
+               vboTerrainIndex.data(), GL_STATIC_DRAW);
+  glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, terrainIndexPair.writeVbo);
+  glBufferData(GL_ELEMENT_ARRAY_BUFFER, vboTerrainIndex.size() * dataSize,
+               vboTerrainIndex.data(), GL_STATIC_DRAW);
 }
 
 

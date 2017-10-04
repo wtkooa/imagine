@@ -125,17 +125,22 @@ bool ie::Engine::initShaders(void)
   if (openGlConfigs.LOCAL_GLSL_VERSION_NUMERIC >= ie::GLSL_VERSION_450)
   {
     ie::ShaderProgramPackage statPack = compiler.compile("static",
-                             "src/glsl/", "staticVShader450.glsl",
-                             "src/glsl/", "staticFShader450.glsl");
+                             "src/glsl/", "ie_staticVShader450.glsl",
+                             "src/glsl/", "ie_staticFShader450.glsl");
     am.unwrapPackage(statPack);
   }
   else
   {
     ie::ShaderProgramPackage statPack = compiler.compile("static",
-                             "src/glsl/", "staticVShader130.glsl",
-                             "src/glsl/", "staticFShader130.glsl");
+                             "src/glsl/", "ie_staticVShader130.glsl",
+                             "src/glsl/", "ie_staticFShader130.glsl");
     am.unwrapPackage(statPack);
   }
+
+  ie::ShaderProgramPackage terrainPack = compiler.compile("terrain",
+                           "src/glsl/", "ie_terrainVShader450.glsl",
+                           "src/glsl/", "ie_terrainFShader450.glsl");
+  am.unwrapPackage(terrainPack);
   return true;
 }
 
@@ -153,6 +158,7 @@ bool ie::Engine::initAssets(void)
   am.createEntity("TexturedCube", "CubeVTN", STATIC);
   am.createEntity("NewCube", "CubeVTN", STATIC);
   am.createEntity("MaterialedCube", "CubeVN", STATIC);
+  am.createEntity("AnotherCube", "CubeVN", STATIC);
 
   ie::TerrainGenerator terrain;
   terrain.applyPerlin(42.0f, 32.0f, 40.0f);
@@ -198,14 +204,24 @@ void ie::Engine::handleLogic(void)
   ie::handle TexturedCube = am.getHandle("entity/TexturedCube");
   ie::handle MaterialedCube = am.getHandle("entity/MaterialedCube");
   ie::handle NewCube = am.getHandle("entity/NewCube");
+  ie::handle AnotherCube = am.getHandle("entity/AnotherCube");
 
   glm::mat4 transMatrix = glm::translate(glm::mat4(),
                                          glm::vec3(0.0f, 0.0f, -3.0f));
   glm::mat4 rotMatrix = glm::rotate(glm::mat4(), glm::radians(0.5f),
                                     glm::vec3(1.0f, 1.0f, 0.0f));
 
+  glm::mat4 scaleMatrix = glm::scale(glm::mat4(), glm::vec3(0.5f, 0.5f, 0.5f));
+  (*AnotherCube.entity).rotationMatrix *= rotMatrix;
+  (*AnotherCube.entity).scaleMatrix = scaleMatrix;
+
   (*TexturedCube.entity).translationMatrix = transMatrix;
   (*TexturedCube.entity).rotationMatrix *= rotMatrix;
+
+  transMatrix = glm::translate(glm::mat4(),
+                               glm::vec3(4.0f, 0.0f, -3.0f));
+
+  (*AnotherCube.entity).translationMatrix = transMatrix; 
 
   transMatrix = glm::translate(glm::mat4(),
                                glm::vec3(2.5f, 0.0f, -3.0f));
@@ -216,7 +232,7 @@ void ie::Engine::handleLogic(void)
   (*MaterialedCube.entity).rotationMatrix *= rotMatrix;
 
   transMatrix = glm::translate(glm::mat4(), glm::vec3(-3.0f, 0.0f, -3.0f));
-  glm::mat4 scaleMatrix = glm::scale(glm::mat4(), glm::vec3(2.0f, 2.0f, 2.0f));
+  scaleMatrix = glm::scale(glm::mat4(), glm::vec3(2.0f, 2.0f, 2.0f));
   (*NewCube.entity).scaleMatrix = scaleMatrix;
   (*NewCube.entity).translationMatrix = transMatrix;
   (*NewCube.entity).rotationMatrix *= rotMatrix;

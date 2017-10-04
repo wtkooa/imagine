@@ -29,6 +29,7 @@ namespace ie
     std::map<unsigned int, ModelAsset>* models;
     std::map<unsigned int, TextureAsset>* textures; 
     std::map<unsigned int, MaterialAsset>* materials;
+    std::map<unsigned int, TerrainAsset>* terrains;
     std::vector<glm::vec4>* vHeap;
     std::vector<glm::vec3>* tHeap;
     std::vector<glm::vec3>* nHeap;
@@ -44,6 +45,7 @@ namespace ie
     std::map<unsigned int, Entity>* entities;
     std::map<unsigned int, MaterialAsset>* materials;
     std::map<unsigned int, ModelAsset>* models;
+    std::map<unsigned int, TerrainAsset>* terrains;
     std::map<GLuint, ShaderProgramAsset>* shaders;
     std::map<std::string, GLuint>* shaderNameIdMap;
     std::map<unsigned int, LightAsset>* lights;
@@ -51,13 +53,15 @@ namespace ie
     std::vector<StaticQuickListElement>* staticVList;
     std::vector<StaticQuickListElement>* staticVNList;
     std::vector<StaticQuickListElement>* staticVTNList;
+    std::vector<unsigned int>* terrainVTNCBList;
   };
 
 
   class VramStatusToRenderMessage
   {
     public:
-    std::map<unsigned int, std::vector<VboRenderUnitLocation>>* memMap;
+    std::map<unsigned int, std::vector<VboRenderUnitLocation>>* staticMemoryMap;
+    std::map<unsigned int, unsigned int>* terrainIndexMemoryMap;
     VboPair* vPair;
     VboPair* vnPair;
     VboPair* vtnPair;

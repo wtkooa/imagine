@@ -23,12 +23,19 @@ ie::TerrainGenerator::TerrainGenerator(void)
 {
   name = "Terrain";
   dim = 100;
+  unitSize = 1;
   generateTerrain();
 }
 ie::TerrainGenerator::TerrainGenerator(short d)
 {
   name = "Terrain";
-  generateTerrain(d);
+  unitSize = 1;
+  generateTerrain(d, unitSize);
+}
+ie::TerrainGenerator::TerrainGenerator(short d, float u)
+{
+  name = "Terrain";
+  generateTerrain(d, u);
 }
 
 
@@ -36,6 +43,7 @@ void ie::TerrainGenerator::clear(void)
 {
   name = "Terrain";
   dim = 100;
+  unitSize = 1;
   vertices.clear();
   colors.clear();
   blends.clear();
@@ -44,16 +52,17 @@ void ie::TerrainGenerator::clear(void)
 }
 
 
-void ie::TerrainGenerator::generateTerrain() {generateTerrain(dim);}
-void ie::TerrainGenerator::generateTerrain(short d)
+void ie::TerrainGenerator::generateTerrain() {generateTerrain(dim, unitSize);}
+void ie::TerrainGenerator::generateTerrain(short d, float u)
 {
   clear();
   dim = d;
+  unitSize = u;
   for (short z = 0; z < dim; z++)
   {
     for (short x = 0; x < dim; x++)
     {
-      glm::vec4 vert(float(x), 0.0f, float(z), 1.0f);
+      glm::vec4 vert(float(x) * unitSize, 0.0f, float(z) * unitSize, 1.0f);
       glm::vec3 color(0.6f, 0.6f, 0.6f);
       glm::vec3 normal(0.0f, 1.0f, 0.0f);
       glm::uvec2 blend(0, 0);
@@ -121,6 +130,7 @@ ie::TerrainPackage ie::TerrainGenerator::wrapTerrainPackage(void)
   ie::TerrainPackage package;
   package.name = name;
   package.dim = dim;
+  package.unitSize = unitSize;
   package.vertices = vertices;
   package.colors = colors;
   package.blends = blends;

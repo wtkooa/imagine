@@ -28,9 +28,10 @@ namespace ie
     public:
     TerrainGenerator();
     TerrainGenerator(short);
+    TerrainGenerator(short, float);
 
     void generateTerrain(void);
-    void generateTerrain(short);
+    void generateTerrain(short, float);
 
     void applyPerlin(float, float, float);
 
@@ -46,6 +47,7 @@ namespace ie
 
     std::string name;
     short dim;
+    float unitSize;
     std::vector<glm::vec4> vertices;
     std::vector<glm::vec3> colors;
     std::vector<glm::vec3> normals;

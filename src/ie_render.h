@@ -50,10 +50,12 @@ namespace ie
     std::vector<StaticQuickListElement>* staticVList;
     std::vector<StaticQuickListElement>* staticVNList;
     std::vector<StaticQuickListElement>* staticVTNList;
+    std::vector<unsigned int>* terrainVTNCBList;
 
 
     //DATA FROM VRAM MANAGER
-    std::map<unsigned int, std::vector<VboRenderUnitLocation>>* memMap;
+    std::map<unsigned int, std::vector<VboRenderUnitLocation>>* staticMemoryMap;
+    std::map<unsigned int, unsigned int>* terrainIndexMemoryMap;
     VboPair* vPair;
     VboPair* vnPair;
     VboPair* vtnPair;

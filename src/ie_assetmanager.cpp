@@ -434,13 +434,15 @@ void ie::AssetManager::unwrapPackage(ie::TerrainPackage package)
 
   asset.id = getNewTerrainAssetId();
   asset.dim = package.dim;
+  asset.unitSize = package.unitSize;
   asset.vertexHeapOffset = pushVertexData(package.vertices);
   asset.normalHeapOffset = pushNormalVectorData(package.normals);
   asset.colorHeapOffset = pushColorData(package.colors);
   asset.blendHeapOffset = pushBlendData(package.blends);
   asset.indexHeapOffset = pushIndexData(package.indices);
-  asset.vertexHeapAmount = package.vertices.size();
   asset.indexHeapAmount = package.indices.size();
+  asset.tobeVramLoaded = true;
+  asset.vramLoaded = false;
   terrainNameIdMap[asset.name] = asset.id;
   terrainAssets[asset.id] = asset;
 }
@@ -455,6 +457,7 @@ ie::AssetStatusToVramMessage ie::AssetManager::sendAssetStatusToVramMessage(void
   msg.models = &modelAssets;
   msg.textures = &textureAssets;
   msg.materials = &materialAssets;
+  msg.terrains = &terrainAssets;
   msg.vHeap = &vertexHeap;
   msg.tHeap = &textureCoordinateHeap;
   msg.nHeap = &normalVectorHeap;
@@ -478,6 +481,7 @@ ie::AssetStatusToRenderMessage ie::AssetManager::sendAssetStatusToRenderMessage(
   msg.staticVList = &staticVList;
   msg.staticVNList = &staticVNList;
   msg.staticVTNList = &staticVTNList;
+  msg.terrainVTNCBList = &terrainVTNCBList;
   return msg;
 }
 
@@ -524,29 +528,30 @@ void ie::AssetManager::createEntity(std::string name,
 void ie::AssetManager::createQuickLists(void)
 {
   createStaticQuickLists();
+  createTerrainQuickLists();
 }
 
 void ie::AssetManager::createStaticQuickLists(void)
 {
   for (auto entIt = entities.begin(); entIt != entities.end(); entIt++)
   {
-    Entity entity = entIt->second;
-    if (entity.hidden == false && entity.type == STATIC)
+    Entity* entity = &entIt->second;
+    if ((*entity).hidden == false && (*entity).type == STATIC)
     {
       StaticQuickListElement vElement;
       StaticQuickListElement vnElement;
       StaticQuickListElement vtnElement;
-      vElement.entityId = entity.id;
-      vnElement.entityId = entity.id;
-      vtnElement.entityId = entity.id;
+      vElement.entityId = (*entity).id;
+      vnElement.entityId = (*entity).id;
+      vtnElement.entityId = (*entity).id;
 
-      ModelAsset model = modelAssets[entity.modelId];
-      for (int nUnit = 0; nUnit < model.renderUnits.size(); nUnit++)
+      ModelAsset* model = &modelAssets[(*entity).modelId];
+      for (int nUnit = 0; nUnit < (*model).renderUnits.size(); nUnit++)
       {
-        RenderUnit ru = model.renderUnits[nUnit];
-        if (ru.hidden == false)
+        RenderUnit* ru = &(*model).renderUnits[nUnit];
+        if ((*ru).hidden == false)
         {
-          switch (ru.dataFormat)
+          switch ((*ru).dataFormat)
           {
             case V:
               vElement.renderUnitList.push_back(nUnit);
@@ -563,6 +568,18 @@ void ie::AssetManager::createStaticQuickLists(void)
       if (vElement.renderUnitList.size() > 0) {staticVList.push_back(vElement);}
       if (vnElement.renderUnitList.size() > 0) {staticVNList.push_back(vnElement);}
       if (vtnElement.renderUnitList.size() > 0) {staticVTNList.push_back(vtnElement);}
+    }
+  }
+}
+
+void ie::AssetManager::createTerrainQuickLists(void)
+{
+  for (auto entIt = entities.begin(); entIt != entities.end(); entIt++)
+  {
+    Entity* entity = &entIt->second;
+    if ((*entity).hidden == false && (*entity).type == TERRAIN)
+    {
+      terrainVTNCBList.push_back((*entity).id);
     }
   }
 }

@@ -43,7 +43,8 @@ void ie::RenderManager::receiveMessage(AssetStatusToRenderMessage msg)
 
 void ie::RenderManager::receiveMessage(VramStatusToRenderMessage msg)
 {
-  memMap = msg.memMap;
+  staticMemoryMap = msg.staticMemoryMap;
+  terrainIndexMemoryMap = msg.terrainIndexMemoryMap;
   vPair = msg.vPair;
   vnPair = msg.vnPair;
   vtnPair = msg.vtnPair;
@@ -179,7 +180,7 @@ void ie::RenderManager::renderMaterialedEntities(void)
       glUniform3fv(materialDiffuseLoc, 1, &materialDiffuse[0]);
       glUniform3fv(materialEmissionLoc, 1, &materialEmission[0]);
 
-      std::vector<ie::VboRenderUnitLocation>* renderUnitLocations = &((*memMap)[modelId]);
+      std::vector<ie::VboRenderUnitLocation>* renderUnitLocations = &((*staticMemoryMap)[modelId]);
       ie::VboRenderUnitLocation* renderUnitLocation = &((*renderUnitLocations)[renderUnitId]); 
       unsigned int location = (*renderUnitLocation).location;
       unsigned int indexAmount = (*renderUnitLocation).indexAmount;
@@ -304,7 +305,7 @@ void ie::RenderManager::renderTexturedEntities(void)
       glUniform3fv(materialDiffuseLoc, 1, &materialDiffuse[0]);
       glUniform3fv(materialEmissionLoc, 1, &materialEmission[0]);
 
-      std::vector<ie::VboRenderUnitLocation>* renderUnitLocations = &((*memMap)[modelId]);
+      std::vector<ie::VboRenderUnitLocation>* renderUnitLocations = &((*staticMemoryMap)[modelId]);
       ie::VboRenderUnitLocation* renderUnitLocation = &((*renderUnitLocations)[renderUnitId]); 
       unsigned int location = (*renderUnitLocation).location;
       unsigned int indexAmount = (*renderUnitLocation).indexAmount;
