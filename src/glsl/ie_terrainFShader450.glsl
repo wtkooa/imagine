@@ -25,9 +25,41 @@ uniform float lightConstantFalloff;
 uniform float lightLinearFalloff;
 uniform float lightQuadraticFalloff;
 
+uniform float materialShininess;
+uniform vec3 materialSpecular;
+uniform vec3 materialDiffuse;
+uniform vec3 materialAmbient;
+uniform vec3 materialEmission;
+
 out vec4 fragmentColor;
 
 void main()
 {
-  fragmentColor = vec4(0.6, 0.6, 0.6, 1.0);
+
+  //CALCULATING DIFFUSE LIGHT TERM
+  vec3 L = normalize(pointLightPos - mtwPosition);
+  float diffuseCos = clamp(dot(L, normalize(mtwNormal)), 0, 1);
+  vec4 diffuseCalc = vec4(diffuseCos, diffuseCos, diffuseCos, 1.0);
+
+  //CALCULATING SPECULAR LIGHT TERM
+  vec3 P = normalize(cameraPos - mtwPosition);
+  vec3 S = normalize(P + L);
+  float shine = pow(clamp(dot(S, normalize(mtwNormal)), 0, 1), materialShininess);
+  vec4 specular = shine * vec4(lightSpecular, 1.0) * vec4(materialSpecular, 1.0);
+
+  //CALCULATING FALLOFF
+  float distance = length(pointLightPos - mtwPosition);
+  float falloff = 1 / (lightConstantFalloff +
+                      (lightLinearFalloff * distance) +
+                      (lightQuadraticFalloff * distance * distance));
+
+  //CALCULATING REMAINING PHONG SHADING TERMS
+  vec4 emission = vec4(materialEmission, 1.0);    
+  vec4 globalAmbient = vec4(globalAmbient, 1.0) * vec4(materialAmbient, 1.0);
+  vec4 lightAmbient = vec4(lightAmbient, 1.0) * vec4(materialAmbient, 1.0);
+  vec4 diffuse = diffuseCalc * vec4(lightDiffuse, 1.0) *
+                               vec4(materialDiffuse, 1.0);
+
+  fragmentColor = (emission + globalAmbient + falloff) *
+                  (lightAmbient + diffuse + specular);
 }

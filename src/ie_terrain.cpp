@@ -21,20 +21,16 @@
 
 ie::TerrainGenerator::TerrainGenerator(void)
 {
-  name = "Terrain";
-  dim = 100;
-  unitSize = 1;
+  clear();
   generateTerrain();
 }
 ie::TerrainGenerator::TerrainGenerator(short d)
 {
-  name = "Terrain";
-  unitSize = 1;
+  clear();
   generateTerrain(d, unitSize);
 }
 ie::TerrainGenerator::TerrainGenerator(short d, float u)
 {
-  name = "Terrain";
   generateTerrain(d, u);
 }
 
@@ -49,6 +45,11 @@ void ie::TerrainGenerator::clear(void)
   blends.clear();
   indices.clear();
   textures.clear();
+  shininess = 0;
+  ambient = glm::vec3(1.0f, 1.0f, 1.0f);
+  diffuse = glm::vec3(0.6f, 0.6f, 0.6f);
+  specular = glm::vec3(0.5f, 0.5f, 0.5f);
+  emission = glm::vec3(0.2f, 0.2f, 0.2f);
 }
 
 
@@ -62,7 +63,9 @@ void ie::TerrainGenerator::generateTerrain(short d, float u)
   {
     for (short x = 0; x < dim; x++)
     {
-      glm::vec4 vert(float(x) * unitSize, 0.0f, float(z) * unitSize, 1.0f);
+      float xv = x - (float(dim) / 2.0);
+      float zv = z - (float(dim) / 2.0);
+      glm::vec4 vert(xv * unitSize, 0.0f, zv * unitSize, 1.0f);
       glm::vec3 color(0.6f, 0.6f, 0.6f);
       glm::vec3 normal(0.0f, 1.0f, 0.0f);
       glm::uvec2 blend(0, 0);
@@ -132,13 +135,23 @@ ie::TerrainPackage ie::TerrainGenerator::wrapTerrainPackage(void)
   package.dim = dim;
   package.unitSize = unitSize;
   package.vertices = vertices;
+  package.normals = normals;
   package.colors = colors;
   package.blends = blends;
   package.indices = indices;
   package.textures = textures;
+  package.shininess = shininess;
+  package.ambient = ambient;
+  package.diffuse = diffuse;
+  package.emission = emission;
   return package;
 }
 
 
 void ie::TerrainGenerator::setName(std::string n) {name = n;}
 void ie::TerrainGenerator::setDim(short d) {dim = d;}
+void ie::TerrainGenerator::setShininess(float s) {shininess = s;}
+void ie::TerrainGenerator::setAmbient(glm::vec3 a) {ambient = a;}
+void ie::TerrainGenerator::setDiffuse(glm::vec3 d) {diffuse = d;}
+void ie::TerrainGenerator::setSpecular(glm::vec3 s) {specular = s;}
+void ie::TerrainGenerator::setEmission(glm::vec3 e) {emission = e;}

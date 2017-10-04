@@ -88,7 +88,7 @@ void ie::VramManager::createStaticVbos()
     (modIt->second).vramLoaded = true;
     (modIt->second).tobeVramLoaded = false;
     short renderUnitAmount = model.renderUnits.size();
-    std::vector<VboRenderUnitLocation> ruLocations;
+    std::vector<StaticRenderUnitLocation> ruLocations;
     for (short ru = 0; ru < renderUnitAmount; ru++)
     {
       ie::VboDataFormat dataFormat = model.renderUnits[ru].dataFormat;
@@ -96,7 +96,7 @@ void ie::VramManager::createStaticVbos()
       MaterialAsset* material = &(*materials)[materialId];
       GLuint textureId = (*material).diffuseMapId;
       TextureAsset* textureAsset = &(*textures)[textureId];
-      VboRenderUnitLocation ruLocation;
+      StaticRenderUnitLocation ruLocation;
       ruLocation.renderUnit = ru;
       ruLocation.format = dataFormat;
       unsigned int indexAmount = model.renderUnits[ru].vertexAmount;
@@ -190,8 +190,17 @@ void ie::VramManager::createTerrainVbos(void)
     unsigned int iHeapA = (*terrain).indexHeapAmount;
     terrain->tobeVramLoaded = false;
     terrain->vramLoaded = true;
-    terrainMemoryMap[(*terrain).id] = vboVTNCB.size();
-    terrainIndexMemoryMap[(*terrain).id] = vboTerrainIndex.size();
+
+    unsigned int vboVTNCBOffset = vboVTNCB.size();
+    unsigned int indexOffset = vboTerrainIndex.size();
+    ie::TerrainRenderUnitLocation vboVTNCBMapUnit;
+    ie::TerrainRenderUnitLocation indexMapUnit;
+    vboVTNCBMapUnit.location = vboVTNCBOffset;
+    vboVTNCBMapUnit.indexAmount = vHeapA;
+    indexMapUnit.location = indexOffset;
+    indexMapUnit.indexAmount = iHeapA * 3;
+    terrainMemoryMap[(*terrain).id] = vboVTNCBMapUnit;
+    terrainIndexMemoryMap[(*terrain).id] = indexMapUnit;
 
     std::vector<glm::vec2> tCoords;
     for (short z = 0; z < dim; z++)

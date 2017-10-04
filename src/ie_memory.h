@@ -68,11 +68,18 @@ namespace ie
   enum VboDataFormat {V, VN, VTN, VTNCB};
 
 
-  class VboRenderUnitLocation 
+  class StaticRenderUnitLocation 
   {
     public:
     short renderUnit;
     VboDataFormat format;
+    unsigned int location;
+    unsigned int indexAmount;
+  };
+
+  class TerrainRenderUnitLocation
+  {
+    public:
     unsigned int location;
     unsigned int indexAmount;
   };

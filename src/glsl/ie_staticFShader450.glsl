@@ -25,8 +25,8 @@ uniform float lightConstantFalloff;
 uniform float lightLinearFalloff;
 uniform float lightQuadraticFalloff;
 
-uniform vec3 materialSpecular;
 uniform float materialShininess;
+uniform vec3 materialSpecular;
 uniform vec3 materialDiffuse;
 uniform vec3 materialAmbient;
 uniform vec3 materialEmission;

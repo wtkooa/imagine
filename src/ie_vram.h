@@ -79,9 +79,9 @@ namespace ie
     std::vector<unsigned int> vboTerrainIndex;
 
     //VBO MEMORY MAPS
-    std::map<unsigned int, std::vector<VboRenderUnitLocation>> staticMemoryMap; 
-    std::map<unsigned int, unsigned int> terrainMemoryMap;
-    std::map<unsigned int, unsigned int> terrainIndexMemoryMap;
+    std::map<unsigned int, std::vector<StaticRenderUnitLocation>> staticMemoryMap; 
+    std::map<unsigned int, TerrainRenderUnitLocation> terrainMemoryMap;
+    std::map<unsigned int, TerrainRenderUnitLocation> terrainIndexMemoryMap;
   };
 
 }

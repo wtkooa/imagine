@@ -50,6 +50,11 @@ namespace ie
     std::vector<glm::uvec2> blends;
     std::vector<glm::ivec4> indices;
     std::vector<TexturePackage> textures;
+    float shininess;
+    glm::vec3 ambient;
+    glm::vec3 diffuse;
+    glm::vec3 specular;
+    glm::vec3 emission;
   };
 
   class LightPackage

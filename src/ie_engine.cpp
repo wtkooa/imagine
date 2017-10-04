@@ -106,12 +106,12 @@ bool ie::Engine::initLighting(void)
 {
   LightGenerator light;
   light.setName("light0");
-  light.setPosVector(glm::vec3(0.0f, 3.0f, 0.0f));
+  light.setPosVector(glm::vec3(0.0f, 20.0f, 0.0f));
   light.setGlobalAmbient(glm::vec3(0.1f, 0.1f, 0.1f));
   light.setLightAmbient(glm::vec3(0.2f, 0.2f, 0.2f));
   light.setLightSpecular(glm::vec3(0.4f, 0.4f, 0.4f));
   light.setLightDiffuse(glm::vec3(0.8f, 0.8f, 0.8f));
-  light.setConstantFalloff(1.0f);
+  light.setConstantFalloff(0.5f);
   light.setLinearFalloff(0.1f);
   light.setQuadraticFalloff(0.0f);
   ie::LightPackage lightPack = light.wrapLightPackage();
@@ -165,6 +165,7 @@ bool ie::Engine::initAssets(void)
   terrain.addTexture("data/textures/", "grass.jpg");
   ie::TerrainPackage terPack = terrain.wrapTerrainPackage();
   am.unwrapPackage(terPack);
+  am.createEntity("Terrain", "Terrain", TERRAIN);
 
   am.createQuickLists();
   return true;
@@ -205,9 +206,10 @@ void ie::Engine::handleLogic(void)
   ie::handle MaterialedCube = am.getHandle("entity/MaterialedCube");
   ie::handle NewCube = am.getHandle("entity/NewCube");
   ie::handle AnotherCube = am.getHandle("entity/AnotherCube");
+  ie::handle Terrain = am.getHandle("entity/Terrain");
 
   glm::mat4 transMatrix = glm::translate(glm::mat4(),
-                                         glm::vec3(0.0f, 0.0f, -3.0f));
+                                         glm::vec3(0.0f, 15.0f, -3.0f));
   glm::mat4 rotMatrix = glm::rotate(glm::mat4(), glm::radians(0.5f),
                                     glm::vec3(1.0f, 1.0f, 0.0f));
 
@@ -219,23 +221,27 @@ void ie::Engine::handleLogic(void)
   (*TexturedCube.entity).rotationMatrix *= rotMatrix;
 
   transMatrix = glm::translate(glm::mat4(),
-                               glm::vec3(4.0f, 0.0f, -3.0f));
+                               glm::vec3(4.0f, 15.0f, -3.0f));
 
   (*AnotherCube.entity).translationMatrix = transMatrix; 
 
   transMatrix = glm::translate(glm::mat4(),
-                               glm::vec3(2.5f, 0.0f, -3.0f));
+                               glm::vec3(2.5f, 15.0f, -3.0f));
   rotMatrix = glm::rotate(glm::mat4(), glm::radians(0.5f),
                           glm::vec3(-1.0f, 1.0f, 0.0f));
 
   (*MaterialedCube.entity).translationMatrix = transMatrix; 
   (*MaterialedCube.entity).rotationMatrix *= rotMatrix;
 
-  transMatrix = glm::translate(glm::mat4(), glm::vec3(-3.0f, 0.0f, -3.0f));
+  transMatrix = glm::translate(glm::mat4(), glm::vec3(-3.0f, 15.0f, -3.0f));
   scaleMatrix = glm::scale(glm::mat4(), glm::vec3(2.0f, 2.0f, 2.0f));
   (*NewCube.entity).scaleMatrix = scaleMatrix;
   (*NewCube.entity).translationMatrix = transMatrix;
   (*NewCube.entity).rotationMatrix *= rotMatrix;
+
+  rotMatrix = glm::rotate(glm::mat4(), glm::radians(0.05f),
+                          glm::vec3(0.0f, 1.0f, 0.0f));
+  //(*Terrain.entity).rotationMatrix *= rotMatrix;
   
 }
 

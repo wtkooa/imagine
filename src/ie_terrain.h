@@ -42,6 +42,12 @@ namespace ie
     void setName(std::string);
     void setDim(short);
 
+    void setShininess(float);
+    void setAmbient(glm::vec3);
+    void setDiffuse(glm::vec3); 
+    void setSpecular(glm::vec3);
+    void setEmission(glm::vec3);
+
     private:
     void clear(void);
 
@@ -54,6 +60,12 @@ namespace ie
     std::vector<glm::uvec2> blends;
     std::vector<glm::ivec4> indices;
     std::vector<TexturePackage> textures;
+
+    float shininess;
+    glm::vec3 ambient;
+    glm::vec3 diffuse;
+    glm::vec3 specular;
+    glm::vec3 emission;
   };
 
 }

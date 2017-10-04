@@ -443,6 +443,11 @@ void ie::AssetManager::unwrapPackage(ie::TerrainPackage package)
   asset.indexHeapAmount = package.indices.size();
   asset.tobeVramLoaded = true;
   asset.vramLoaded = false;
+  asset.shininess = package.shininess;
+  asset.ambient = package.ambient;
+  asset.diffuse = package.diffuse;
+  asset.specular = package.specular;
+  asset.emission = package.emission;
   terrainNameIdMap[asset.name] = asset.id;
   terrainAssets[asset.id] = asset;
 }
@@ -478,6 +483,8 @@ ie::AssetStatusToRenderMessage ie::AssetManager::sendAssetStatusToRenderMessage(
   msg.shaderNameIdMap = &shaderNameIdMap;
   msg.lights = &lightAssets;
   msg.lightNameIdMap = &lightNameIdMap;
+  msg.terrains = &terrainAssets;
+  msg.terrainNameIdMap = &terrainNameIdMap;
   msg.staticVList = &staticVList;
   msg.staticVNList = &staticVNList;
   msg.staticVTNList = &staticVTNList;
