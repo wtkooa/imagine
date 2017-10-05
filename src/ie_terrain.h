@@ -34,6 +34,8 @@ namespace ie
     void generateTerrain(short, float);
 
     void applyPerlin(float, float, float);
+    void calcFaceNormals(void);
+    void smoothNormals(void);
 
     void addTexture(std::string, std::string); 
 
@@ -60,6 +62,7 @@ namespace ie
     std::vector<glm::uvec2> blends;
     std::vector<glm::ivec4> indices;
     std::vector<TexturePackage> textures;
+    std::vector<glm::vec3> faceNormals;
 
     float shininess;
     glm::vec3 ambient;

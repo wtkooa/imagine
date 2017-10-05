@@ -22,6 +22,7 @@ uniform mat4 transformationMatrix;
 out vec3 mtwPosition;
 out vec2 texturePipe;
 out vec3 mtwNormal;
+out mat3 blends;
 
 void main()
 {

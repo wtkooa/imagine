@@ -188,8 +188,14 @@ void ie::VramManager::createTerrainVbos(void)
     unsigned int bHeapO = (*terrain).blendHeapOffset;
     unsigned int iHeapO = (*terrain).indexHeapOffset;
     unsigned int iHeapA = (*terrain).indexHeapAmount;
+    std::vector<GLuint>* textureIds = &(*terrain).textureIds;
     terrain->tobeVramLoaded = false;
     terrain->vramLoaded = true;
+
+    for (int nTex = 0; nTex < (*textureIds).size(); nTex++)
+    {
+      loadTexture((*textures)[(*textureIds)[nTex]]);
+    }
 
     unsigned int vboVTNCBOffset = vboVTNCB.size();
     unsigned int indexOffset = vboTerrainIndex.size();
@@ -252,8 +258,12 @@ void ie::VramManager::loadTexture(ie::TextureAsset textureAsset)
   else if (surface->format->BytesPerPixel = 3) {mode = GL_RGB;}
   glTexImage2D(GL_TEXTURE_2D, 0, mode, surface->w, surface->h,
                0, mode, GL_UNSIGNED_BYTE, surface->pixels);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+  glGenerateMipmap(GL_TEXTURE_2D);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+  glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_LOD_BIAS, -0.5); 
   glBindTexture(GL_TEXTURE_2D, 0);
   SDL_FreeSurface(surface);
 }

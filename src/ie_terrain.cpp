@@ -15,6 +15,7 @@
 #include <glm/gtc/noise.hpp>
 #include <glm/mat4x2.hpp>
 #include <glm/vec3.hpp>
+#include <glm/gtx/vector_angle.hpp>
 
 #include "ie_const.h"
 #include "ie_packages.h"
@@ -45,11 +46,11 @@ void ie::TerrainGenerator::clear(void)
   blends.clear();
   indices.clear();
   textures.clear();
-  shininess = 0;
+  shininess = 1;
   ambient = glm::vec3(1.0f, 1.0f, 1.0f);
   diffuse = glm::vec3(0.6f, 0.6f, 0.6f);
   specular = glm::vec3(0.5f, 0.5f, 0.5f);
-  emission = glm::vec3(0.2f, 0.2f, 0.2f);
+  emission = glm::vec3(0.4f, 0.4f, 0.4f);
 }
 
 
@@ -106,6 +107,54 @@ void ie::TerrainGenerator::applyPerlin(float seed, float res, float range)
                         (float(z) + hackyOffset) / res);
       vertices[n].y = glm::perlin(perlVec) * range;
     }
+  }
+  calcFaceNormals();
+}
+
+
+void ie::TerrainGenerator::calcFaceNormals(void)
+{
+  faceNormals.clear();
+  for (short z = 0; z < (dim - 1); z++)
+  {
+    for (short x = 0; x < (dim - 1); x++)
+    {
+      unsigned int n = (z * dim) + x;
+      glm::vec3 v1(vertices[n].x, vertices[n].y, vertices[n].z);
+      glm::vec3 v2(vertices[n+dim].x, vertices[n+dim].y, vertices[n+dim].z);
+      glm::vec3 v3(vertices[n+dim+1].x, vertices[n+dim+1].y, vertices[n+dim+1].z);
+      glm::vec3 v4(vertices[n+1].x, vertices[n+1].y, vertices[n+1].z);
+      glm::vec3 n1 = glm::normalize(cross((v2-v1), (v3-v1)));
+      glm::vec3 n2 = glm::normalize(cross((v3-v1), (v4-v1)));
+      faceNormals.push_back(n1);
+      faceNormals.push_back(n2);
+    }
+  }
+  smoothNormals();
+}
+
+
+void ie::TerrainGenerator::smoothNormals(void)
+{
+  normals.clear();
+  for (unsigned int n = 0; n < dim * dim; n++)
+  {
+    normals.push_back(glm::vec3());
+  }
+  
+  for (unsigned int face = 0; face < indices.size(); face++)
+  {
+      unsigned int vert = indices[face].x; 
+      normals[vert] += faceNormals[face];
+      vert = indices[face].y; 
+      normals[vert] += faceNormals[face];
+      vert = indices[face].z; 
+      normals[vert] += faceNormals[face];
+  }
+
+  for (unsigned int n = 0; n < dim * dim; n++)
+  {
+    normals[n] = glm::normalize(normals[n]);
   }
 }
 

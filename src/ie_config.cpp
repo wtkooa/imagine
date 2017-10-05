@@ -39,7 +39,7 @@ unsigned int ie::ACTIVEBUFFERS = GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT;
 bool ie::WIREFRAME_ON = false;
 bool ie::DEPTHTEST_ON = true;
 bool ie::CULLFACE_ON = true;
-glm::vec4 ie::DEFAULT_CLEAR_COLOR = glm::vec4(0.0, 0.0, 0.0, 1.0);
+glm::vec4 ie::DEFAULT_CLEAR_COLOR = glm::vec4(0.466f, 0.709f, 0.996, 1.0);
 
 
 //FETCHING LOCAL OPENGL VERSIONING INFO FROM VIDEO HARDWARE

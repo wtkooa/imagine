@@ -13,6 +13,7 @@
 in vec3 mtwPosition;
 in vec2 texturePipe;
 in vec3 mtwNormal;
+in mat3 blends;
 
 uniform vec3 cameraPos;
 
@@ -30,6 +31,8 @@ uniform vec3 materialSpecular;
 uniform vec3 materialDiffuse;
 uniform vec3 materialAmbient;
 uniform vec3 materialEmission;
+
+uniform sampler2D texture1;
 
 out vec4 fragmentColor;
 
@@ -60,6 +63,9 @@ void main()
   vec4 diffuse = diffuseCalc * vec4(lightDiffuse, 1.0) *
                                vec4(materialDiffuse, 1.0);
 
-  fragmentColor = (emission + globalAmbient + falloff) *
-                  (lightAmbient + diffuse + specular);
+  vec4 textureColor = texture(texture1, texturePipe.xy);
+  vec4 primaryColor = (emission + globalAmbient + falloff) *
+                      (lightAmbient + diffuse);
+  vec4 secondaryColor = falloff * specular;
+  fragmentColor = (primaryColor * textureColor) + secondaryColor;
 }
