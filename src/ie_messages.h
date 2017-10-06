@@ -34,7 +34,7 @@ namespace ie
     std::vector<glm::vec3>* tHeap;
     std::vector<glm::vec3>* nHeap;
     std::vector<glm::vec3>* cHeap;
-    std::vector<glm::vec2>* bHeap;
+    std::vector<glm::uvec2>* bHeap;
     std::vector<glm::ivec4>* iHeap;
   };
 

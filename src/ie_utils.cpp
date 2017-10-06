@@ -45,6 +45,12 @@ int ie::countTokens(std::string line, char delim)
 }
 
 
+int ie::countChar(std::string line, char c)
+{
+  return std::count(line.begin(), line.end(), c);
+}
+
+
 std::string ie::popFrontToken(std::string line, char delim)
 {
   return line.substr(line.find(delim) + 1);

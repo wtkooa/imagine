@@ -173,9 +173,21 @@ std::map<std::string, ie::GlslUniformPackage> ie::GlslCompiler::findUniforms(
       if (token == "uniform")
       {
         ie::GlslUniformPackage uniPackage;
+        uniPackage.arraySize = 0;
         std::string type = split(line, ' ', 1);
         std::string name = split(line, ' ', 2);
-        name.pop_back();
+        short bracketTokens = ie::countChar(name, '['); 
+        if (bracketTokens > 0)
+        {
+          name = split(name, '[', 0);
+          std::string arraySizeStr = split(line, '[', 1);
+          arraySizeStr = split(arraySizeStr, ']', 0);
+          uniPackage.arraySize = std::stoi(arraySizeStr);
+        }
+        else
+        {
+          name.pop_back();
+        }
         uniPackage.name = name;
         uniPackage.type = type;
         uniPackage.location = glGetUniformLocation(progId,

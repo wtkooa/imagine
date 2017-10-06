@@ -376,6 +376,15 @@ void ie::RenderManager::renderTerrainEntities(void)
   GLuint materialDiffuseLoc = (*shader).uniforms["materialDiffuse"].location;
   GLuint materialAmbientLoc = (*shader).uniforms["materialAmbient"].location;
   GLuint materialEmissionLoc = (*shader).uniforms["materialEmission"].location;
+  GLuint texture1Loc = (*shader).uniforms["texture1"].location;
+  GLuint texture2Loc = (*shader).uniforms["texture2"].location;
+  GLuint texture3Loc = (*shader).uniforms["texture3"].location;
+  GLuint texture4Loc = (*shader).uniforms["texture4"].location;
+  GLuint texture5Loc = (*shader).uniforms["texture5"].location;
+  GLuint texture6Loc = (*shader).uniforms["texture6"].location;
+  GLuint texture7Loc = (*shader).uniforms["texture7"].location;
+  GLuint texture8Loc = (*shader).uniforms["texture8"].location;
+  GLuint textureAmountLoc = (*shader).uniforms["textureAmount"].location;
   GLint currentBoundArrayBuffer;
 
   glGetIntegerv(GL_ARRAY_BUFFER_BINDING, &currentBoundArrayBuffer);
@@ -428,6 +437,14 @@ void ie::RenderManager::renderTerrainEntities(void)
   glUniform1f(lightConstantLoc, constantFalloff);
   glUniform1f(lightLinearLoc, linearFalloff);
   glUniform1f(lightQuadraticLoc, quadraticFalloff);
+  glUniform1i(texture1Loc, 0);
+  glUniform1i(texture2Loc, 1);
+  glUniform1i(texture3Loc, 2);
+  glUniform1i(texture4Loc, 3);
+  glUniform1i(texture5Loc, 4);
+  glUniform1i(texture6Loc, 5);
+  glUniform1i(texture7Loc, 6);
+  glUniform1i(texture8Loc, 7);
 
   for (unsigned int nEntity = 0; nEntity < (*terrainVTNCBList).size(); nEntity++)
   {
@@ -453,6 +470,8 @@ void ie::RenderManager::renderTerrainEntities(void)
     glm::vec3 materialDiffuse = (*terrain).diffuse;
     glm::vec3 materialEmission = (*terrain).emission;
     int texture1Id = (*terrain).textureIds[0];
+    int texture2Id = (*terrain).textureIds[1];
+    short textureAmount = (*terrain).textureIds.size();
 
     glUniform1f(materialShininessLoc, materialShininess);
     glUniform3fv(materialSpecularLoc, 1, &materialSpecular[0]);
@@ -466,11 +485,21 @@ void ie::RenderManager::renderTerrainEntities(void)
     void* p_location = (void*)(long(location));
     unsigned int indexAmount = (*loc).indexAmount;
 
-    glBindTexture(GL_TEXTURE_2D, 2);
+
+    glUniform1i(textureAmountLoc, textureAmount);
+    for (short tex = 0; tex < textureAmount; tex++)
+    {
+      glActiveTexture(GL_TEXTURE0 + tex);
+      glBindTexture(GL_TEXTURE_2D, (*terrain).textureIds[tex]);
+    }
 
     glDrawElements(GL_TRIANGLES, indexAmount, GL_UNSIGNED_INT, p_location);
 
-    glBindTexture(GL_TEXTURE_2D, 0);
+    for (short tex = textureAmount - 1; tex >= 0; tex--)
+    {
+      glActiveTexture(GL_TEXTURE0 + tex);
+      glBindTexture(GL_TEXTURE_2D, 0);
+    }
 
   }
   glDisableVertexAttribArray(0);

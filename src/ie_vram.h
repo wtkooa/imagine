@@ -21,6 +21,7 @@
 #include <glm/vec2.hpp>
 #include <glm/vec3.hpp>
 #include <glm/vec4.hpp>
+#include <SDL2/SDL.h>
 
 #include "ie_assets.h"
 #include "ie_memory.h"
@@ -51,7 +52,13 @@ namespace ie
     //RELEASING VIDEO HARDWARE MEMORY
     void quit(void);
 
+    //GETTERS AND SETTERS
+    void setGlContext(SDL_GLContext);
+
     private:
+    //DATA FOR INIT
+    SDL_GLContext mainGlContext;
+
     //VBO ID PAIRS
     VboPair vPair;
     VboPair vnPair;
@@ -68,7 +75,7 @@ namespace ie
     std::vector<glm::vec3>* tHeap;
     std::vector<glm::vec3>* nHeap;
     std::vector<glm::vec3>* cHeap;
-    std::vector<glm::vec2>* bHeap;
+    std::vector<glm::uvec2>* bHeap;
     std::vector<glm::ivec4>* iHeap;
 
     //CPU SIDE VBO DATA

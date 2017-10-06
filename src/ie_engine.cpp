@@ -92,12 +92,12 @@ bool ie::Engine::initOpenGl(void)
 bool ie::Engine::initCamera(void)
 {
   eye.setWindow(mainWindow);
-  eye.setMoveSpeed(3.0f); //Meters per Second
+  eye.setMoveSpeed(10.0f); //Meters per Second
   eye.setLookSpeed(glm::radians(0.05f)); //Degrees per rel movment
   eye.setProjectionMatrix(glm::perspective(ie::FIELD_OF_VIEW,
                                            ie::ASPECT_RATIO,
                                            ie::Z_NEAR, ie::Z_FAR));
-  eye.setPosVector(glm::vec3(0.0f, 0.0f, 0.0f));
+  eye.setPosVector(glm::vec3(0.0f, 5.0f, 0.0f));
   return true;
 }
 
@@ -106,12 +106,12 @@ bool ie::Engine::initLighting(void)
 {
   LightGenerator light;
   light.setName("light0");
-  light.setPosVector(glm::vec3(0.0f, 20.0f, 0.0f));
-  light.setGlobalAmbient(glm::vec3(0.1f, 0.1f, 0.1f));
+  light.setPosVector(glm::vec3(0.0f, 40.0f, 0.0f));
+  light.setGlobalAmbient(glm::vec3(0.2f, 0.2f, 0.2f));
   light.setLightAmbient(glm::vec3(0.2f, 0.2f, 0.2f));
   light.setLightSpecular(glm::vec3(0.4f, 0.4f, 0.4f));
   light.setLightDiffuse(glm::vec3(0.8f, 0.8f, 0.8f));
-  light.setConstantFalloff(0.5f);
+  light.setConstantFalloff(0.2f);
   light.setLinearFalloff(0.1f);
   light.setQuadraticFalloff(0.0f);
   ie::LightPackage lightPack = light.wrapLightPackage();
@@ -160,12 +160,29 @@ bool ie::Engine::initAssets(void)
   am.createEntity("MaterialedCube", "CubeVN", STATIC);
   am.createEntity("AnotherCube", "CubeVN", STATIC);
 
-  ie::TerrainGenerator terrain;
+  ie::TerrainGenerator terrain(120);
   terrain.applyPerlin(42.0f, 32.0f, 40.0f);
+  terrain.applyDemoBlends();
   terrain.addTexture("data/textures/", "grass.jpg");
+  terrain.addTexture("data/textures/", "cobble.jpg");
+  terrain.addTexture("data/textures/", "topsoil.jpg");
+  terrain.addTexture("data/textures/", "sand.jpg");
+  terrain.addTexture("data/textures/", "dirtrocks.jpg");
+  terrain.addTexture("data/textures/", "fissures.jpg");
+  terrain.addTexture("data/textures/", "snow.jpg");
+  terrain.addTexture("data/textures/", "lava.jpg");
   ie::TerrainPackage terPack = terrain.wrapTerrainPackage();
   am.unwrapPackage(terPack);
   am.createEntity("Terrain", "Terrain", TERRAIN);
+
+  ie::handle TexturedCube = am.getHandle("entity/TexturedCube");
+  ie::handle MaterialedCube = am.getHandle("entity/MaterialedCube");
+  ie::handle NewCube = am.getHandle("entity/NewCube");
+  ie::handle AnotherCube = am.getHandle("entity/AnotherCube");
+  (*TexturedCube.entity).hidden = true;
+  (*MaterialedCube.entity).hidden = true;
+  (*NewCube.entity).hidden = true;
+  (*AnotherCube.entity).hidden = true;
 
   am.createQuickLists();
   return true;
@@ -175,6 +192,7 @@ bool ie::Engine::initVram(void)
 {
   ie::AssetStatusToVramMessage statusMsg = am.sendAssetStatusToVramMessage();
   vram.receiveMessage(statusMsg);
+  vram.setGlContext(mainGlContext);
   vram.createAndLoadVbos();
   return true;
 }
@@ -242,7 +260,6 @@ void ie::Engine::handleLogic(void)
   rotMatrix = glm::rotate(glm::mat4(), glm::radians(0.05f),
                           glm::vec3(0.0f, 1.0f, 0.0f));
   //(*Terrain.entity).rotationMatrix *= rotMatrix;
-  
 }
 
 

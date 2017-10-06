@@ -34,8 +34,10 @@ namespace ie
     void generateTerrain(short, float);
 
     void applyPerlin(float, float, float);
+    void applyDemoBlends(void);
     void calcFaceNormals(void);
     void smoothNormals(void);
+    glm::uvec2 setBlendValue(glm::uvec2, short, short);
 
     void addTexture(std::string, std::string); 
 

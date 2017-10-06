@@ -10,6 +10,7 @@
 
 #include "ie_terrain.h"
 
+#include <cmath>
 #include <iostream>
 
 #include <glm/gtc/noise.hpp>
@@ -50,7 +51,7 @@ void ie::TerrainGenerator::clear(void)
   ambient = glm::vec3(1.0f, 1.0f, 1.0f);
   diffuse = glm::vec3(0.6f, 0.6f, 0.6f);
   specular = glm::vec3(0.5f, 0.5f, 0.5f);
-  emission = glm::vec3(0.4f, 0.4f, 0.4f);
+  emission = glm::vec3(0.3f, 0.3f, 0.3f);
 }
 
 
@@ -67,9 +68,10 @@ void ie::TerrainGenerator::generateTerrain(short d, float u)
       float xv = x - (float(dim) / 2.0);
       float zv = z - (float(dim) / 2.0);
       glm::vec4 vert(xv * unitSize, 0.0f, zv * unitSize, 1.0f);
-      glm::vec3 color(0.6f, 0.6f, 0.6f);
+      srand(x*z);
+      glm::vec3 color(1.0f , 1.0f, 1.0f);
       glm::vec3 normal(0.0f, 1.0f, 0.0f);
-      glm::uvec2 blend(0, 0);
+      glm::uvec2 blend(99, 0);
       vertices.push_back(vert);
       colors.push_back(color);
       normals.push_back(normal);
@@ -157,6 +159,55 @@ void ie::TerrainGenerator::smoothNormals(void)
     normals[n] = glm::normalize(normals[n]);
   }
 }
+
+
+void ie::TerrainGenerator::applyDemoBlends(void)
+{
+  short octalSize = (dim / 8);
+  unsigned int blendAmount = dim * dim;
+  for (unsigned int nBlend = 0; nBlend < blendAmount; nBlend++)
+  {
+    blends[nBlend] = glm::uvec2(0, 0);
+  }
+
+  for (short z = 0; z < dim; z++)
+  {
+    for (short x = 0; x < dim; x++)
+    {
+      unsigned int n = (z * dim) + x;
+      short octal = short(x / octalSize);
+      blends[n] = setBlendValue(blends[n], octal, 49); 
+    }
+  }
+
+  for (short z = 0; z < dim; z++)
+  {
+    for (short x = 0; x < dim; x++)
+    {
+      unsigned int n = (z * dim) + x;
+      short octal = short(z / octalSize);
+      blends[n] = setBlendValue(blends[n], octal, 49); 
+    }
+  }
+}
+
+
+glm::uvec2 ie::TerrainGenerator::setBlendValue(glm::uvec2 blend,
+                                               short tex, short value)
+{
+  tex = 7 - tex;
+  if (tex < 4)
+  {
+    blend.y += value * std::pow(100, tex);
+  }
+  else
+  {
+    tex -= 4;
+    blend.x += value * std::pow(100, tex);
+  }
+  return blend;
+}
+
 
 void ie::TerrainGenerator::addTexture(std::string filepath,
                                       std::string filename)

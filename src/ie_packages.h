@@ -77,6 +77,7 @@ namespace ie
     public:
     std::string name;
     std::string type;
+    unsigned int arraySize;
     GLint location;
   };
 

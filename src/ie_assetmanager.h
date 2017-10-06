@@ -108,7 +108,7 @@ namespace ie
     std::vector<glm::vec3> textureCoordinateHeap;
     std::vector<glm::vec3> normalVectorHeap;
     std::vector<glm::vec3> colorHeap;
-    std::vector<glm::vec2> blendHeap;
+    std::vector<glm::uvec2> blendHeap;
     std::vector<glm::ivec4> indexHeap;
     unsigned int pushVertexData(std::vector<glm::vec4>);
     unsigned int pushTextureCoordinateData(std::vector<glm::vec3>);

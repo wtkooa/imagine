@@ -12,5 +12,8 @@ src/*.swp
 *.o
 src/*.o
 
+#PROJECT IMAGES AND VIDEO
+media
+
 #SCRIBBLEPAD STUFF
 devnotes
