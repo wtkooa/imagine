@@ -44,8 +44,9 @@ namespace ie
     bool run(void);
     void render(void);
     void handleEvents(void);
-    void handleLogic(void);
+    void handleUpdates(void);
     void handleMessages(void);
+    void handleLogic(void);
     void handleResize(int,int);
 
     bool cleanup(void);

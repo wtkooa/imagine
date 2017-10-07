@@ -49,9 +49,9 @@ void ie::TerrainGenerator::clear(void)
   textures.clear();
   shininess = 1;
   ambient = glm::vec3(1.0f, 1.0f, 1.0f);
-  diffuse = glm::vec3(0.6f, 0.6f, 0.6f);
-  specular = glm::vec3(0.5f, 0.5f, 0.5f);
-  emission = glm::vec3(0.3f, 0.3f, 0.3f);
+  diffuse = glm::vec3(0.0f, 0.0f, 0.0f);
+  specular = glm::vec3(0.0f, 0.0f, 0.0f);
+  emission = glm::vec3(0.0f, 0.0f, 0.0f);
 }
 
 
@@ -69,7 +69,7 @@ void ie::TerrainGenerator::generateTerrain(short d, float u)
       float zv = z - (float(dim) / 2.0);
       glm::vec4 vert(xv * unitSize, 0.0f, zv * unitSize, 1.0f);
       srand(x*z);
-      glm::vec3 color(1.0f , 1.0f, 1.0f);
+      glm::vec3 color(0.0f , 0.0f, 0.0f);
       glm::vec3 normal(0.0f, 1.0f, 0.0f);
       glm::uvec2 blend(99, 0);
       vertices.push_back(vert);

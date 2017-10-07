@@ -325,12 +325,12 @@ ie::WavefrontMaterialFilePackage ie::WavefrontMaterialFileReader::read(std::stri
         float r = std::stof(split(line, ' ', 1));
         float g = std::stof(split(line, ' ', 2));
         float b = std::stof(split(line, ' ', 3));
-        filePackage.materials[materialOffset].emission == glm::vec3(r,g,b);
+        filePackage.materials[materialOffset].emission = glm::vec3(r,g,b);
       }     
 
       else if (command == "Ni")
       {
-        filePackage.materials[materialOffset].opticalDensity == std::stof(split(line, ' ', 1));
+        filePackage.materials[materialOffset].opticalDensity = std::stof(split(line, ' ', 1));
       }
 
       else if (command == "d")

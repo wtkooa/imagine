@@ -299,6 +299,11 @@ GLuint ie::AssetManager::unwrapPackage(ie::WavefrontMaterialPackage package)
   asset.emission = package.emission;
   asset.opticalDensity = package.opticalDensity;
   asset.dissolve = package.dissolve;
+  asset.usesGlobalAmbient = true;
+  asset.usesLightAmbient = true;
+  asset.usesLightDiffuse = true;
+  asset.usesLightSpecular = true;
+  asset.usesLightFalloff = true;
   materialNameIdMap[asset.name] = asset.materialId;
   unsigned int texturePackageAmount = package.texturePackages.size();
   if (texturePackageAmount > 0)
@@ -523,6 +528,11 @@ void ie::AssetManager::createEntity(std::string name,
   entity.translationMatrix = glm::mat4();
   entity.rotationMatrix = glm::mat4();
   entity.scaleMatrix = glm::mat4();
+  entity.usesGlobalAmbient = true;
+  entity.usesLightAmbient = true;
+  entity.usesLightDiffuse = true;
+  entity.usesLightSpecular = true;
+  entity.usesLightFalloff = true;
   entityNameIdMap[entity.name] = entity.id;
   entities[entity.id] = entity;
   

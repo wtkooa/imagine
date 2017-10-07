@@ -55,7 +55,6 @@ namespace ie
     std::vector<StaticQuickListElement>* staticVTNList;
     std::vector<unsigned int>* terrainVTNCBList;
 
-
     //DATA FROM VRAM MANAGER
     std::map<unsigned int, std::vector<StaticRenderUnitLocation>>* staticMemoryMap;
     std::map<unsigned int, TerrainRenderUnitLocation>* terrainIndexMemoryMap;

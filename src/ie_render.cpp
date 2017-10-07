@@ -103,6 +103,11 @@ void ie::RenderManager::renderMaterialedEntities(void)
   GLuint lightConstantLoc = (*shader).uniforms["lightConstantFalloff"].location;
   GLuint lightLinearLoc = (*shader).uniforms["lightLinearFalloff"].location;
   GLuint lightQuadraticLoc = (*shader).uniforms["lightQuadraticFalloff"].location;
+  GLuint usesGlobalAmbientLoc = (*shader).uniforms["usesGlobalAmbient"].location;
+  GLuint usesLightAmbientLoc = (*shader).uniforms["usesLightAmbient"].location;
+  GLuint usesLightDiffuseLoc = (*shader).uniforms["usesLightDiffuse"].location;
+  GLuint usesLightSpecularLoc = (*shader).uniforms["usesLightSpecular"].location;
+  GLuint usesLightFalloffLoc = (*shader).uniforms["usesLightFalloff"].location;
   GLuint materialSpecularLoc = (*shader).uniforms["materialSpecular"].location;
   GLuint materialShininessLoc = (*shader).uniforms["materialShininess"].location;
   GLuint materialDiffuseLoc = (*shader).uniforms["materialDiffuse"].location;
@@ -153,6 +158,11 @@ void ie::RenderManager::renderMaterialedEntities(void)
     glm::mat4 translationMatrix = (*entity).translationMatrix; 
     glm::mat4 rotationMatrix = (*entity).rotationMatrix;
     glm::mat4 scaleMatrix = (*entity).scaleMatrix;
+    bool usesGlobalAmbientE = (*entity).usesGlobalAmbient;
+    bool usesLightAmbientE = (*entity).usesLightAmbient;
+    bool usesLightDiffuseE = (*entity).usesLightDiffuse;
+    bool usesLightSpecularE = (*entity).usesLightSpecular;
+    bool usesLightFalloffE = (*entity).usesLightFalloff;
     ie::ModelAsset* modelAsset = &((*models)[(*entity).modelId]);
     unsigned int modelId = (*modelAsset).modelId;
     std::vector<RenderUnit>* renderUnits = &((*modelAsset).renderUnits); 
@@ -175,14 +185,30 @@ void ie::RenderManager::renderMaterialedEntities(void)
       glm::vec3 materialDiffuse = (*material).diffuse;
       glm::vec3 materialSpecular = (*material).specular;
       glm::vec3 materialEmission = (*material).emission;
+      bool usesGlobalAmbientM = (*material).usesGlobalAmbient;
+      bool usesLightAmbientM = (*material).usesLightAmbient;
+      bool usesLightDiffuseM = (*material).usesLightDiffuse;
+      bool usesLightSpecularM = (*material).usesLightSpecular;
+      bool usesLightFalloffM = (*material).usesLightFalloff;
       bool containsTexture = (*material).containsTexture;
       GLuint diffuseMapId = (*material).diffuseMapId;
+
+      bool usesGlobalAmbient = usesGlobalAmbientM && usesGlobalAmbientE;
+      bool usesLightAmbient = usesLightAmbientM && usesLightAmbientE;
+      bool usesLightDiffuse = usesLightDiffuseM && usesLightDiffuseE;
+      bool usesLightSpecular = usesLightSpecularM && usesLightSpecularE;
+      bool usesLightFalloff = usesLightFalloffM && usesLightFalloffE;
 
       glUniform1f(materialShininessLoc, materialShininess);
       glUniform3fv(materialSpecularLoc, 1, &materialSpecular[0]);
       glUniform3fv(materialAmbientLoc, 1, &materialAmbient[0]);
       glUniform3fv(materialDiffuseLoc, 1, &materialDiffuse[0]);
       glUniform3fv(materialEmissionLoc, 1, &materialEmission[0]);
+      glUniform1i(usesGlobalAmbientLoc, usesGlobalAmbient);
+      glUniform1i(usesLightAmbientLoc, usesLightAmbient);
+      glUniform1i(usesLightDiffuseLoc, usesLightDiffuse);
+      glUniform1i(usesLightSpecularLoc, usesLightSpecular);
+      glUniform1i(usesLightFalloffLoc, usesLightFalloff);
 
       std::vector<ie::StaticRenderUnitLocation>* renderUnitLocations = &((*staticMemoryMap)[modelId]);
       ie::StaticRenderUnitLocation* renderUnitLocation = &((*renderUnitLocations)[renderUnitId]); 
@@ -226,6 +252,11 @@ void ie::RenderManager::renderTexturedEntities(void)
   GLuint lightConstantLoc = (*shader).uniforms["lightConstantFalloff"].location;
   GLuint lightLinearLoc = (*shader).uniforms["lightLinearFalloff"].location;
   GLuint lightQuadraticLoc = (*shader).uniforms["lightQuadraticFalloff"].location;
+  GLuint usesGlobalAmbientLoc = (*shader).uniforms["usesGlobalAmbient"].location;
+  GLuint usesLightAmbientLoc = (*shader).uniforms["usesLightAmbient"].location;
+  GLuint usesLightDiffuseLoc = (*shader).uniforms["usesLightDiffuse"].location;
+  GLuint usesLightSpecularLoc = (*shader).uniforms["usesLightSpecular"].location;
+  GLuint usesLightFalloffLoc = (*shader).uniforms["usesLightFalloff"].location;
   GLuint materialSpecularLoc = (*shader).uniforms["materialSpecular"].location;
   GLuint materialShininessLoc = (*shader).uniforms["materialShininess"].location;
   GLuint materialDiffuseLoc = (*shader).uniforms["materialDiffuse"].location;
@@ -280,6 +311,11 @@ void ie::RenderManager::renderTexturedEntities(void)
     glm::mat4 translationMatrix = (*entity).translationMatrix; 
     glm::mat4 rotationMatrix = (*entity).rotationMatrix;
     glm::mat4 scaleMatrix = (*entity).scaleMatrix;
+    bool usesGlobalAmbientE = (*entity).usesGlobalAmbient;
+    bool usesLightAmbientE = (*entity).usesLightAmbient;
+    bool usesLightDiffuseE = (*entity).usesLightDiffuse;
+    bool usesLightSpecularE = (*entity).usesLightSpecular;
+    bool usesLightFalloffE = (*entity).usesLightFalloff;
     ie::ModelAsset* modelAsset = &((*models)[(*entity).modelId]);
     unsigned int modelId = (*modelAsset).modelId;
     std::vector<RenderUnit>* renderUnits = &((*modelAsset).renderUnits); 
@@ -302,14 +338,30 @@ void ie::RenderManager::renderTexturedEntities(void)
       glm::vec3 materialDiffuse = (*material).diffuse;
       glm::vec3 materialSpecular = (*material).specular;
       glm::vec3 materialEmission = (*material).emission;
+      bool usesGlobalAmbientM = (*material).usesGlobalAmbient;
+      bool usesLightAmbientM = (*material).usesLightAmbient;
+      bool usesLightDiffuseM = (*material).usesLightDiffuse;
+      bool usesLightSpecularM = (*material).usesLightSpecular;
+      bool usesLightFalloffM = (*material).usesLightFalloff;
       bool containsTexture = (*material).containsTexture;
       GLuint diffuseMapId = (*material).diffuseMapId;
+
+      bool usesGlobalAmbient = usesGlobalAmbientM && usesGlobalAmbientE;
+      bool usesLightAmbient = usesLightAmbientM && usesLightAmbientE;
+      bool usesLightDiffuse = usesLightDiffuseM && usesLightDiffuseE;
+      bool usesLightSpecular = usesLightSpecularM && usesLightSpecularE;
+      bool usesLightFalloff = usesLightFalloffM && usesLightFalloffE;
 
       glUniform1f(materialShininessLoc, materialShininess);
       glUniform3fv(materialSpecularLoc, 1, &materialSpecular[0]);
       glUniform3fv(materialAmbientLoc, 1, &materialAmbient[0]);
       glUniform3fv(materialDiffuseLoc, 1, &materialDiffuse[0]);
       glUniform3fv(materialEmissionLoc, 1, &materialEmission[0]);
+      glUniform1i(usesGlobalAmbientLoc, usesGlobalAmbient);
+      glUniform1i(usesLightAmbientLoc, usesLightAmbient);
+      glUniform1i(usesLightDiffuseLoc, usesLightDiffuse);
+      glUniform1i(usesLightSpecularLoc, usesLightSpecular);
+      glUniform1i(usesLightFalloffLoc, usesLightFalloff);
 
       std::vector<ie::StaticRenderUnitLocation>* renderUnitLocations = &((*staticMemoryMap)[modelId]);
       ie::StaticRenderUnitLocation* renderUnitLocation = &((*renderUnitLocations)[renderUnitId]); 
@@ -371,6 +423,11 @@ void ie::RenderManager::renderTerrainEntities(void)
   GLuint lightConstantLoc = (*shader).uniforms["lightConstantFalloff"].location;
   GLuint lightLinearLoc = (*shader).uniforms["lightLinearFalloff"].location;
   GLuint lightQuadraticLoc = (*shader).uniforms["lightQuadraticFalloff"].location;
+  GLuint usesGlobalAmbientLoc = (*shader).uniforms["usesGlobalAmbient"].location;
+  GLuint usesLightAmbientLoc = (*shader).uniforms["usesLightAmbient"].location;
+  GLuint usesLightDiffuseLoc = (*shader).uniforms["usesLightDiffuse"].location;
+  GLuint usesLightSpecularLoc = (*shader).uniforms["usesLightSpecular"].location;
+  GLuint usesLightFalloffLoc = (*shader).uniforms["usesLightFalloff"].location;
   GLuint materialSpecularLoc = (*shader).uniforms["materialSpecular"].location;
   GLuint materialShininessLoc = (*shader).uniforms["materialShininess"].location;
   GLuint materialDiffuseLoc = (*shader).uniforms["materialDiffuse"].location;
@@ -455,6 +512,11 @@ void ie::RenderManager::renderTerrainEntities(void)
     glm::mat4 translationMatrix = (*entity).translationMatrix;
     glm::mat4 rotationMatrix = (*entity).rotationMatrix;
     glm::mat4 scaleMatrix = (*entity).scaleMatrix;
+    bool usesGlobalAmbientE = (*entity).usesGlobalAmbient;
+    bool usesLightAmbientE = (*entity).usesLightAmbient;
+    bool usesLightDiffuseE = (*entity).usesLightDiffuse;
+    bool usesLightSpecularE = (*entity).usesLightSpecular;
+    bool usesLightFalloffE = (*entity).usesLightFalloff;
 
     glm::mat4 mtwMatrix = translationMatrix * rotationMatrix *
                           scaleMatrix;
@@ -478,6 +540,11 @@ void ie::RenderManager::renderTerrainEntities(void)
     glUniform3fv(materialAmbientLoc, 1, &materialAmbient[0]);
     glUniform3fv(materialDiffuseLoc, 1, &materialDiffuse[0]);
     glUniform3fv(materialEmissionLoc, 1, &materialEmission[0]);
+    glUniform1i(usesGlobalAmbientLoc, usesGlobalAmbientE);
+    glUniform1i(usesLightAmbientLoc, usesLightAmbientE);
+    glUniform1i(usesLightDiffuseLoc, usesLightDiffuseE);
+    glUniform1i(usesLightSpecularLoc, usesLightSpecularE);
+    glUniform1i(usesLightFalloffLoc, usesLightFalloffE);
 
     ie::TerrainRenderUnitLocation* loc = &(*terrainIndexMemoryMap)[terrainId];
     unsigned int location = (*loc).location;

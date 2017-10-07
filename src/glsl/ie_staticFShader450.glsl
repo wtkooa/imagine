@@ -24,6 +24,11 @@ uniform vec3 lightDiffuse;
 uniform float lightConstantFalloff;
 uniform float lightLinearFalloff;
 uniform float lightQuadraticFalloff;
+uniform int usesGlobalAmbient;
+uniform int usesLightAmbient;
+uniform int usesLightDiffuse;
+uniform int usesLightSpecular;
+uniform int usesLightFalloff;
 
 uniform float materialShininess;
 uniform vec3 materialSpecular;
@@ -39,7 +44,14 @@ out vec4 fragmentColor;
 void main()
 {
 
-  //CALCULATING DIFFUSE LIGHT TERM
+  //SAMPLING TEXTURE
+  vec4 textureColor = vec4(0.0);
+  if (usingTexture == 1)
+  {
+    textureColor = texture(textureId, texturePipe.xy);
+  }
+
+  //CALCULATING DIFFUSE LIGHT COSINE 
   vec3 L = normalize(pointLightPos - mtwPosition);
   float diffuseCos = clamp(dot(L, normalize(mtwNormal)), 0, 1);
   vec4 diffuseCalc = vec4(diffuseCos, diffuseCos, diffuseCos, 1.0);
@@ -61,19 +73,30 @@ void main()
   vec4 globalAmbient = vec4(globalAmbient, 1.0) * vec4(materialAmbient, 1.0);
   vec4 lightAmbient = vec4(lightAmbient, 1.0) * vec4(materialAmbient, 1.0);
   vec4 diffuse = diffuseCalc * vec4(lightDiffuse, 1.0) *
-                               vec4(materialDiffuse, 1.0);
+                 (vec4(materialDiffuse, 1.0) + textureColor);
 
-  if (usingTexture == 0) //NO TEXTURE: PREFORM STANDARD PHONG SHADING
+  //LIGHTING OPT-OUT
+  if (usesGlobalAmbient != 1)
   {
-      fragmentColor = (emission + globalAmbient + falloff) *
-                      (lightAmbient + diffuse + specular);
+    globalAmbient = vec4(0.0);
   }
-  else //HAS TEXTURE: PREFORM SPLIT SPECULAR AND TEXTURE BLENDING
+  if (usesLightAmbient != 1)
   {
-      vec4 textureColor = texture(textureId, texturePipe.xy);
-      vec4 primaryColor = (emission + globalAmbient + falloff) *
-                          (lightAmbient + diffuse);
-      vec4 secondaryColor = falloff * specular;
-      fragmentColor = (primaryColor * textureColor) + secondaryColor;
+    lightAmbient = vec4(0.0);
   }
+  if (usesLightDiffuse != 1)
+  {
+    diffuse = vec4(materialDiffuse, 1.0) + textureColor;
+  }
+  if (usesLightSpecular != 1)
+  {
+    specular = vec4(0.0);
+  }
+  if (usesLightFalloff != 1)
+  {
+    falloff = 1.0;
+  }
+
+    fragmentColor = (emission + globalAmbient) +
+                     (falloff * (lightAmbient + diffuse + specular));
 }

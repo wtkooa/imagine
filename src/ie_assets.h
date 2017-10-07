@@ -42,6 +42,11 @@ namespace ie
     glm::mat4 translationMatrix;
     glm::mat4 rotationMatrix;
     glm::mat4 scaleMatrix;
+    bool usesGlobalAmbient;
+    bool usesLightAmbient;
+    bool usesLightDiffuse;
+    bool usesLightSpecular;
+    bool usesLightFalloff;
   };
 
   class StaticQuickListElement
@@ -100,6 +105,11 @@ namespace ie
     glm::vec3 diffuse;
     glm::vec3 specular;
     glm::vec3 emission;
+    bool usesGlobalAmbient;
+    bool usesLightAmbient;
+    bool usesLightDiffuse;
+    bool usesLightSpecular;
+    bool usesLightFalloff;
     float opticalDensity;
     float dissolve;
     int illum;
