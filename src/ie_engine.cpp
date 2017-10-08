@@ -52,12 +52,13 @@ bool ie::Engine::init(void)
 {
   initSdl();
   initOpenGl();
-  initCamera();
   initLighting();
   initShaders();
   initAssets();
   initVram();
   initRenderers();
+  initPlayer();
+  initCamera();
   return true;
 }
 
@@ -89,26 +90,13 @@ bool ie::Engine::initOpenGl(void)
 }
 
 
-bool ie::Engine::initCamera(void)
-{
-  eye.setWindow(mainWindow);
-  eye.setMoveSpeed(10.0f); //Meters per Second
-  eye.setLookSpeed(glm::radians(0.05f)); //Degrees per rel movment
-  eye.setProjectionMatrix(glm::perspective(ie::FIELD_OF_VIEW,
-                                           ie::ASPECT_RATIO,
-                                           ie::Z_NEAR, ie::Z_FAR));
-  eye.setPosVector(glm::vec3(0.0f, 5.0f, 0.0f));
-  return true;
-}
-
-
 bool ie::Engine::initLighting(void)
 {
   LightGenerator light;
   light.setName("light0");
   light.setPosVector(glm::vec3(0.0f, 40.0f, 0.0f));
   light.setGlobalAmbient(glm::vec3(0.1f, 0.1f, 0.1f));
-  light.setLightAmbient(glm::vec3(0.0f, 0.0f, 0.0f));
+  light.setLightAmbient(glm::vec3(0.1f, 0.1f, 0.1f));
   light.setLightSpecular(glm::vec3(0.5f, 0.5f, 0.5f));
   light.setLightDiffuse(glm::vec3(0.8f, 0.8f, 0.8f));
   light.setConstantFalloff(0.1f);
@@ -164,7 +152,7 @@ bool ie::Engine::initAssets(void)
   (*cursorBG.material).usesLightAmbient = false;
   (*cursorBG.material).usesGlobalAmbient = false;
 
-  ie::TerrainGenerator terrain(100);
+  ie::TerrainGenerator terrain(120);
   terrain.applyPerlin(42.0f, 32.0f, 40.0f);
   terrain.applyDemoBlends();
   terrain.addTexture("data/textures/", "grass.jpg");
@@ -183,6 +171,7 @@ bool ie::Engine::initAssets(void)
   return true;
 }
 
+
 bool ie::Engine::initVram(void)
 {
   ie::AssetStatusToVramMessage statusMsg = am.sendAssetStatusToVramMessage();
@@ -195,6 +184,23 @@ bool ie::Engine::initVram(void)
 
 bool ie::Engine::initRenderers(void)
 {
+}
+
+
+bool ie::Engine::initPlayer(void)
+{
+  player.setWindow(mainWindow);
+  player.setPlayerEntity("Player");
+  player.setPlayerPosition(glm::vec3(0.0f, 10.0f, 0.0f));
+  player.setPlayerRotation(glm::vec3(0.0f, 0.0f, -1.0));
+  ie::AssetStatusToPlayerMessage toPlayerMsg = am.sendAssetStatusToPlayerMessage();
+  player.receiveMessage(toPlayerMsg);
+}
+
+
+bool ie::Engine::initCamera(void)
+{
+  return true;
 }
 
 
@@ -211,34 +217,41 @@ bool ie::Engine::run(void)
   return true;
 }
 
+
 void ie::Engine::handleUpdates(void)
 {
   frameClock.measure();
-  eye.frameUpdate();
+  player.update();
+  eye.update();
 }
+
 
 void ie::Engine::handleLogic(void)
 {
   ie::handle player = am.getHandle("entity/Player");
 
-  glm::mat4 transMatrix = glm::translate(glm::mat4(),
-                                         glm::vec3(0.0f, -3.0f, -3.0f) + 
-                                         eye.getPosVector());
   glm::mat4 rotMatrix = glm::rotate(glm::mat4(), glm::radians(0.5f),
                                     glm::vec3(0.0f, 1.0f, 0.0f));
 
-  (*player.entity).translationMatrix = transMatrix;
   (*player.entity).rotationMatrix *= rotMatrix;
 }
 
 
 void ie::Engine::handleMessages(void)
 {
+  ie::TimeStatusMessage timeStatusMsg = frameClock.sendTimeStatusMessage();
+  eye.receiveMessage(timeStatusMsg);
+  player.receiveMessage(timeStatusMsg);
+
+  ie::AssetStatusToPlayerMessage toPlayerMsg = am.sendAssetStatusToPlayerMessage();
+  player.receiveMessage(toPlayerMsg);
+
+  ie::PlayerStatusToCameraMessage toCameraMsg = player.sendPlayerStatusToCameraMessage();
+  eye.receiveMessage(toCameraMsg);
+
   ie::AssetStatusToVramMessage toVramMsg = am.sendAssetStatusToVramMessage();
   vram.receiveMessage(toVramMsg);
 
-  ie::TimeStatusToCameraMessage toCameraMsg = frameClock.sendTimeStatusToCameraMessage();
-  eye.receiveMessage(toCameraMsg);
 
   ie::CameraStatusToRenderMessage cameraToRenderMsg = eye.sendCameraStatusToRenderMessage();
   rm.receiveMessage(cameraToRenderMsg);
@@ -282,8 +295,8 @@ void ie::Engine::handleEvents(void)
       case SDL_MOUSEMOTION:
         if (SDL_GetRelativeMouseMode() == SDL_TRUE)
         {
-          eye.rotateEventVec.x += evnt.motion.xrel;  
-          eye.rotateEventVec.y += evnt.motion.yrel;  
+          player.rotateEventVec.x += evnt.motion.xrel;  
+          player.rotateEventVec.y += evnt.motion.yrel;  
         }
         break;
       case SDL_KEYDOWN:
@@ -295,43 +308,43 @@ void ie::Engine::handleEvents(void)
           case SDLK_e:
             if (!evnt.key.repeat)
             {
-              eye.toggleGrabMode();
+              player.toggleGrabMode();
             }
             break;
           case SDLK_w:
             if (!evnt.key.repeat)
             { 
-              eye.translEventVec.z += 1.0;
+              player.translEventVec.z += 1.0;
             }
             break;
           case SDLK_s:
             if (!evnt.key.repeat)
             {
-              eye.translEventVec.z -= 1.0;
+              player.translEventVec.z -= 1.0;
             }
             break;
           case SDLK_d:
             if (!evnt.key.repeat)
             {
-              eye.translEventVec.x += 1.0;
+              player.translEventVec.x += 1.0;
             }
             break;
           case SDLK_a:
             if (!evnt.key.repeat)
             {
-              eye.translEventVec.x -= 1.0;
+              player.translEventVec.x -= 1.0;
             }
             break;
           case SDLK_SPACE:
             if (!evnt.key.repeat)
             {
-              eye.translEventVec.y += 1.0;
+              player.translEventVec.y += 1.0;
             }
             break;
           case SDLK_LSHIFT:
             if (!evnt.key.repeat)
             {
-              eye.translEventVec.y -= 1.0;
+              player.translEventVec.y -= 1.0;
             }
             break;
         }
@@ -340,22 +353,22 @@ void ie::Engine::handleEvents(void)
         switch(evnt.key.keysym.sym)
         {
           case SDLK_w:
-              eye.translEventVec.z -= 1.0;
+              player.translEventVec.z -= 1.0;
             break;
           case SDLK_s:
-              eye.translEventVec.z += 1.0;
+              player.translEventVec.z += 1.0;
             break;
           case SDLK_d:
-              eye.translEventVec.x -= 1.0;
+              player.translEventVec.x -= 1.0;
             break;
           case SDLK_a:
-              eye.translEventVec.x += 1.0;
+              player.translEventVec.x += 1.0;
             break;
           case SDLK_SPACE:
-              eye.translEventVec.y -= 1.0;
+              player.translEventVec.y -= 1.0;
             break;
           case SDLK_LSHIFT:
-              eye.translEventVec.y += 1.0;
+              player.translEventVec.y += 1.0;
             break;
         }
         break;
@@ -371,7 +384,7 @@ void ie::Engine::handleResize(int width, int height)
   glViewport(0, 0, width, height);
   eye.setProjectionMatrix(glm::perspective(ie::FIELD_OF_VIEW,
                                            aspectRatio,
-                                           ie::Z_NEAR, ie::Z_FAR));
+                                           ie::NEAR_PLANE, ie::FAR_PLANE));
 }
 
 

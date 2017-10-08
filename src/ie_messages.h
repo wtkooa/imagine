@@ -11,6 +11,7 @@
 // Copyright (c) 2017 David E Lipps
 //______________________________________________________________________________
 #include <map>
+#include <string>
 #include <vector>
 
 #include <glm/mat4x4.hpp>
@@ -57,6 +58,13 @@ namespace ie
     std::vector<unsigned int>* terrainVTNCBList;
   };
 
+  class AssetStatusToPlayerMessage
+  {
+    public:
+    std::map<unsigned int, Entity>* entities;
+    std::map<std::string, unsigned int>* entityNameIdMap;
+  };
+
 
   class VramStatusToRenderMessage
   {
@@ -80,10 +88,20 @@ namespace ie
   };
 
 
-  class TimeStatusToCameraMessage
+  class TimeStatusMessage
   {
     public:
     float frameDelta;
+  };
+
+  class PlayerStatusToCameraMessage
+  {
+    public:
+    glm::vec3 playerPosition;
+    glm::vec3 playerRotation;
+    glm::vec3 translEventVec;
+    glm::vec2 rotateEventVec;    
+    std::string mode;
   };
 
 }

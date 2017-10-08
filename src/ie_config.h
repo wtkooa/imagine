@@ -24,14 +24,17 @@ namespace ie
   extern unsigned short WINDOW_HEIGHT;
   extern float FIELD_OF_VIEW;
   extern float ASPECT_RATIO;
-  extern float Z_NEAR;
-  extern float Z_FAR;
+  extern float NEAR_PLANE;
+  extern float FAR_PLANE;
   extern unsigned int REQUIRED_SDL_MODULES;
   extern unsigned int SDL_MODE;
   extern unsigned int ACTIVEBUFFERS;
   extern bool WIREFRAME_ON;
   extern bool DEPTHTEST_ON;
   extern bool CULLFACE_ON;
+  extern float DEFAULT_PLAYER_MOVESPEED;
+  extern float DEFAULT_PLAYER_TURNSPEED;
+  extern float DEFAULT_CAMERA_LOOKSPEED; 
   
 
   class OpenGlContextDependentConfigs

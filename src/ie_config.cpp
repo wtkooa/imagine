@@ -31,8 +31,8 @@ unsigned short ie::WINDOW_WIDTH = 800;
 unsigned short ie::WINDOW_HEIGHT = 600;
 float ie::ASPECT_RATIO = float(WINDOW_WIDTH) / float(WINDOW_HEIGHT);
 float ie::FIELD_OF_VIEW = glm::radians(60.0f);
-float ie::Z_NEAR = 0.01;
-float ie::Z_FAR = 250.0;
+float ie::NEAR_PLANE = 0.01;
+float ie::FAR_PLANE = 250.0;
 unsigned int ie::REQUIRED_SDL_MODULES = SDL_INIT_EVERYTHING;
 unsigned int ie::SDL_MODE = SDL_WINDOW_SHOWN|SDL_WINDOW_RESIZABLE|SDL_WINDOW_OPENGL;
 unsigned int ie::ACTIVEBUFFERS = GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT;
@@ -40,6 +40,9 @@ bool ie::WIREFRAME_ON = false;
 bool ie::DEPTHTEST_ON = true;
 bool ie::CULLFACE_ON = true;
 glm::vec4 ie::DEFAULT_CLEAR_COLOR = glm::vec4(0.466f, 0.709f, 0.996, 1.0);
+float ie::DEFAULT_PLAYER_MOVESPEED = 10.0; //Meters Per Second
+float ie::DEFAULT_PLAYER_TURNSPEED = glm::radians(0.05f); //Degrees per rel mouse movement 
+float ie::DEFAULT_CAMERA_LOOKSPEED = glm::radians(0.05f); //Degrees per rel mouse  movment
 
 
 //FETCHING LOCAL OPENGL VERSIONING INFO FROM VIDEO HARDWARE

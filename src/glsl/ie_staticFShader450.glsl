@@ -69,11 +69,13 @@ void main()
                       (lightQuadraticFalloff * distance * distance));
 
   //CALCULATING REMAINING PHONG SHADING TERMS
+  vec4 combinedDiffuse = vec4(materialDiffuse, 1.0) + textureColor;
   vec4 emission = vec4(materialEmission, 1.0);    
-  vec4 globalAmbient = vec4(globalAmbient, 1.0) * vec4(materialAmbient, 1.0);
-  vec4 lightAmbient = vec4(lightAmbient, 1.0) * vec4(materialAmbient, 1.0);
-  vec4 diffuse = diffuseCalc * vec4(lightDiffuse, 1.0) *
-                 (vec4(materialDiffuse, 1.0) + textureColor);
+  vec4 globalAmbient = vec4(globalAmbient, 1.0) * vec4(materialAmbient, 1.0) *
+                       combinedDiffuse;
+  vec4 lightAmbient = vec4(lightAmbient, 1.0) * vec4(materialAmbient, 1.0) *
+                      combinedDiffuse;
+  vec4 diffuse = diffuseCalc * vec4(lightDiffuse, 1.0) * combinedDiffuse;
 
   //LIGHTING OPT-OUT
   if (usesGlobalAmbient != 1)

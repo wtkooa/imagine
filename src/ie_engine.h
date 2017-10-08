@@ -17,6 +17,7 @@
 #include "ie_camera.h"
 #include "ie_config.h"
 #include "ie_lighting.h"
+#include "ie_player.h"
 #include "ie_render.h"
 #include "ie_shader.h"
 #include "ie_time.h"
@@ -34,12 +35,13 @@ namespace ie
     bool init(void);
     bool initOpenGl(void);
     bool initSdl(void);
-    bool initCamera(void);
     bool initLighting(void);
     bool initShaders(void);
     bool initAssets(void);
     bool initVram(void);
     bool initRenderers(void);
+    bool initPlayer(void);
+    bool initCamera(void);
 
     bool run(void);
     void render(void);
@@ -60,6 +62,7 @@ namespace ie
     ie::GlslCompiler compiler;
     ie::FrameClock frameClock;
     ie::Camera eye;
+    ie::Player player;
     ie::RenderManager rm;
 
     ie::OpenGlContextDependentConfigs openGlConfigs;

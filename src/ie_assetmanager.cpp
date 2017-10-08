@@ -478,7 +478,7 @@ ie::AssetStatusToVramMessage ie::AssetManager::sendAssetStatusToVramMessage(void
 }
 
 
-ie::AssetStatusToRenderMessage ie::AssetManager::sendAssetStatusToRenderMessage()
+ie::AssetStatusToRenderMessage ie::AssetManager::sendAssetStatusToRenderMessage(void)
 {
   ie::AssetStatusToRenderMessage msg;
   msg.entities = &entities;
@@ -494,6 +494,15 @@ ie::AssetStatusToRenderMessage ie::AssetManager::sendAssetStatusToRenderMessage(
   msg.staticVNList = &staticVNList;
   msg.staticVTNList = &staticVTNList;
   msg.terrainVTNCBList = &terrainVTNCBList;
+  return msg;
+}
+
+
+ie::AssetStatusToPlayerMessage ie::AssetManager::sendAssetStatusToPlayerMessage(void)
+{
+  ie::AssetStatusToPlayerMessage msg;
+  msg.entities = &entities;
+  msg.entityNameIdMap = &entityNameIdMap;
   return msg;
 }
 

@@ -14,7 +14,6 @@
 #include <glm/mat4x4.hpp>
 #include <glm/vec2.hpp>
 #include <glm/vec3.hpp>
-#include <SDL2/SDL.h>
 
 #include "ie_messages.h"
 
@@ -26,47 +25,40 @@ namespace ie
     public:
     Camera();
 
-    void frameUpdate(void);
-    void toggleGrabMode(void);
+    void update(void);
+    void firstPersonUpdate(void);
 
     //SENDING MESSAGES
     CameraStatusToRenderMessage sendCameraStatusToRenderMessage(void);
 
     //RECEIVING MESSAGES
-    void receiveMessage(ie::TimeStatusToCameraMessage);
+    void receiveMessage(ie::TimeStatusMessage);
+    void receiveMessage(ie::PlayerStatusToCameraMessage);
 
     //GETTERS AND SETTERS
     glm::mat4 getViewMatrix(void);
-    float getMoveSpeed(void);
-    void setMoveSpeed(float);
-    float getLookSpeed(void);
-    void setLookSpeed(float);
-    glm::vec3 getUpVector(void);
-    void setUpVector(glm::vec3);
-    glm::vec3 getPosVector(void);
-    void setPosVector(glm::vec3);
-    glm::vec3 getLookVector(void);
-    void setLookVector(glm::vec3);
     glm::mat4 getProjectionMatrix(void);
     void setProjectionMatrix(glm::mat4);
-    void setGrabMode(SDL_bool);
-    void setWindow(SDL_Window*);
-    SDL_Window* getWindow(void);
-
-    //EVENT VECTORS
-    glm::vec3 translEventVec;
-    glm::vec2 rotateEventVec;    
 
     private:
-    SDL_Window * window;
-    float moveSpeed;
-    float lookSpeed;
+    
+    //DATA FROM TIME
     float frameDelta;
+
+    //DATA FROM PLAYER
+    glm::vec3 playerPosition;
+    glm::vec3 playerRotation;
+    glm::vec3 translEventVec;
+    glm::vec2 rotateEventVec;    
+    std::string mode;
+
     glm::vec3 upVector;
-    glm::vec3 posVector;
     glm::vec3 lookVector;
+    glm::vec3 cameraPlayerOffset;
+    glm::vec3 cameraPosition;
     glm::mat4 projectionMatrix;
     glm::mat4 viewMatrix;
+    float lookSpeed;
   };
 
 }

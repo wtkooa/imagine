@@ -37,9 +37,9 @@ void ie::FrameClock::measure(void)
 }
 
 
-ie::TimeStatusToCameraMessage ie::FrameClock::sendTimeStatusToCameraMessage(void)
+ie::TimeStatusMessage ie::FrameClock::sendTimeStatusMessage(void)
 {
-  TimeStatusToCameraMessage msg;
+  TimeStatusMessage msg;
   msg.frameDelta = frameDelta;
   return msg;
 }

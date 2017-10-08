@@ -23,7 +23,7 @@ namespace ie
     void measure(void);
     float getFrameDelta(void);
     float getFps(void);
-    ie::TimeStatusToCameraMessage sendTimeStatusToCameraMessage(void);
+    ie::TimeStatusMessage sendTimeStatusMessage(void);
     private:
     unsigned long frameStart;
     unsigned long frameEnd;

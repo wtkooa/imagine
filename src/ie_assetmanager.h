@@ -44,6 +44,7 @@ namespace ie
     //SENDING MESSAGES
     AssetStatusToVramMessage sendAssetStatusToVramMessage(void); 
     AssetStatusToRenderMessage sendAssetStatusToRenderMessage(void);
+    AssetStatusToPlayerMessage sendAssetStatusToPlayerMessage(void);
     
     //CREATING ENTITIES
     void createEntity(std::string, std::string, EntityType);
