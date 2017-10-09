@@ -43,7 +43,7 @@ namespace ie
     void createAndLoadVbos(void);
     void loadTexture(TextureAsset);
 
-    //RECIEVING MESSAGES
+    //RECEIVING MESSAGES
     void receiveMessage(AssetStatusToVramMessage); 
 
     //SENDING MESSAGES

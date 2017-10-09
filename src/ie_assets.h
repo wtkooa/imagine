@@ -52,7 +52,6 @@ namespace ie
   class StaticQuickListElement
   {
     public:
-    unsigned int entityId;
     std::vector<short> renderUnitList;
   };
 

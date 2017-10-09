@@ -44,6 +44,10 @@ void ie::Player::update(void)
 
   if (mode == "firstperson")
   {
+    if ((*entity).hidden == false)
+    {
+      toggleHideEntity();
+    }
     firstPersonUpdate();
   }
 
@@ -71,6 +75,12 @@ void ie::Player::firstPersonUpdate(void)
     playerPosition += translEventVec.x * delta * glm::normalize(
                                                    glm::cross(playerRotation,
                                                    upVector));
+
+    glm::mat3 yRotate = glm::mat3(glm::rotate(glm::mat4(),
+                                  -float(rotateEventVec.x * turnSpeed),
+                                  upVector));
+    playerRotation = yRotate * playerRotation; 
+
     glm::mat4 tmat = glm::translate(glm::mat4(), playerPosition);
     (*entity).translationMatrix = tmat;
   }
@@ -98,6 +108,21 @@ void ie::Player::toggleGrabMode(void)
   } 
 }
 
+void ie::Player::toggleHideEntity(void)
+{
+  ie::AssetManagerInstruction msg;
+  if ((*entity).hidden == false)
+  {
+    msg.command = "hide entity";
+  }
+  else
+  {
+    msg.command = "unhide entity";
+  }
+  msg.id = (*entity).id;
+  instructions.push_back(msg);
+}
+
 //___|SENDING MESSAGES|_________________________________________________________
 
 ie::PlayerStatusToCameraMessage ie::Player::sendPlayerStatusToCameraMessage(void)
@@ -109,6 +134,14 @@ ie::PlayerStatusToCameraMessage ie::Player::sendPlayerStatusToCameraMessage(void
   msg.rotateEventVec = rotateEventVec;
   rotateEventVec = glm::vec2(0.0f, 0.0f); //Needs to be reset after sending message
   msg.mode = mode;
+  return msg;
+}
+
+ie::AssetManagerInstructions ie::Player::sendAssetManagerInstructionsMessage(void)
+{
+  ie::AssetManagerInstructions msg;
+  msg.instructions = instructions;
+  instructions.clear();
   return msg;
 }
 

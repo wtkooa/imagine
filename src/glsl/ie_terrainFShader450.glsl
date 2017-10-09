@@ -161,7 +161,7 @@ void main()
   }
   if (usesLightDiffuse != 1)
   {
-    diffuse = vec4(materialDiffuse, 1.0) + textureColor;
+    diffuse = combinedDiffuse;
   }
   if (usesLightSpecular != 1)
   {

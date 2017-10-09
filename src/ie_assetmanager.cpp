@@ -29,6 +29,92 @@
 #include "ie_packages.h"
 #include "ie_utils.h"
 
+//___|CARRYING OUT ACCUMULATED INSTRUCTIONS|____________________________________
+
+void ie::AssetManager::update(void)
+{
+  for (unsigned int n = 0; n < instructions.size(); n++)
+  {
+    ie::AssetManagerInstruction instruc = instructions[n];
+    instructions.erase(instructions.begin());
+
+    if (instruc.command == "hide entity")
+    {
+      hideEntity(instruc.id);
+    }
+    else if (instruc.command == "unhide entity")
+    {
+      unhideEntity(instruc.id);
+    }
+  }
+  instructions.clear();
+}
+
+
+void ie::AssetManager::hideEntity(unsigned int entityId)
+{
+  if (entities[entityId].hidden == true) {return;}
+  EntityType type = entities[entityId].type;
+  entities[entityId].hidden = true;
+
+  if (type == STATIC)
+  {
+    staticVList.erase(entityId);
+    staticVNList.erase(entityId);
+    staticVTNList.erase(entityId);
+  }
+  else if (type == TERRAIN)
+  {
+    terrainVTNCBList.erase(entityId);
+  }
+}
+
+
+void ie::AssetManager::unhideEntity(unsigned int entityId)
+{
+  if (entities[entityId].hidden == false) {return;}
+  EntityType type = entities[entityId].type;
+  entities[entityId].hidden = false;
+
+  if (type == STATIC)
+  {
+    StaticQuickListElement vElement;
+    StaticQuickListElement vnElement;
+    StaticQuickListElement vtnElement;
+    Entity* entity = &entities[entityId];
+
+    ModelAsset* model = &modelAssets[(*entity).modelId];
+    for (int nUnit = 0; nUnit < (*model).renderUnits.size(); nUnit++)
+    {
+      RenderUnit* ru = &(*model).renderUnits[nUnit];
+      if ((*ru).hidden == false)
+      {
+        switch ((*ru).dataFormat)
+        {
+          case V:
+            vElement.renderUnitList.push_back(nUnit);
+            break;
+          case VN:
+            vnElement.renderUnitList.push_back(nUnit);
+            break;
+          case VTN:
+            vtnElement.renderUnitList.push_back(nUnit);
+            break;
+        }
+      }
+    }
+    if (vElement.renderUnitList.size() > 0) {staticVList[entityId] = vElement;}
+    if (vnElement.renderUnitList.size() > 0) {staticVNList[entityId]= vnElement;}
+    if (vtnElement.renderUnitList.size() > 0) {staticVTNList[entityId] = vtnElement;}
+  }
+  else if (type == TERRAIN)
+  {
+    terrainVTNCBList.insert(entityId);
+  }
+}
+
+//______________________________________________________________________________
+
 //___|ASSIGNING AND MANAGING ASSET IDS|_________________________________________
 
 unsigned int ie::AssetManager::getNewEntityId(void)
@@ -508,6 +594,24 @@ ie::AssetStatusToPlayerMessage ie::AssetManager::sendAssetStatusToPlayerMessage(
 
 //______________________________________________________________________________
 
+//___|RECEIVING MESSAGES|_______________________________________________________
+
+void ie::AssetManager::receiveMessage(ie::AssetManagerInstructions msg)
+{
+  for (unsigned int n = 0; n < msg.instructions.size(); n++)
+  {
+    receiveMessage(msg.instructions[n]);
+  }
+}
+
+
+void ie::AssetManager::receiveMessage(ie::AssetManagerInstruction instruc)
+{
+  instructions.push_back(instruc);
+}
+
+//______________________________________________________________________________
+
 //___|CREATING AND MANAGING ENTITIES|___________________________________________
 
 void ie::AssetManager::createEntity(std::string name,
@@ -567,9 +671,7 @@ void ie::AssetManager::createStaticQuickLists(void)
       StaticQuickListElement vElement;
       StaticQuickListElement vnElement;
       StaticQuickListElement vtnElement;
-      vElement.entityId = (*entity).id;
-      vnElement.entityId = (*entity).id;
-      vtnElement.entityId = (*entity).id;
+      unsigned int entityId = (*entity).id;
 
       ModelAsset* model = &modelAssets[(*entity).modelId];
       for (int nUnit = 0; nUnit < (*model).renderUnits.size(); nUnit++)
@@ -591,9 +693,9 @@ void ie::AssetManager::createStaticQuickLists(void)
           }
         }
       }
-      if (vElement.renderUnitList.size() > 0) {staticVList.push_back(vElement);}
-      if (vnElement.renderUnitList.size() > 0) {staticVNList.push_back(vnElement);}
-      if (vtnElement.renderUnitList.size() > 0) {staticVTNList.push_back(vtnElement);}
+      if (vElement.renderUnitList.size() > 0) {staticVList[entityId] = vElement;}
+      if (vnElement.renderUnitList.size() > 0) {staticVNList[entityId]= vnElement;}
+      if (vtnElement.renderUnitList.size() > 0) {staticVTNList[entityId] = vtnElement;}
     }
   }
 }
@@ -605,7 +707,7 @@ void ie::AssetManager::createTerrainQuickLists(void)
     Entity* entity = &entIt->second;
     if ((*entity).hidden == false && (*entity).type == TERRAIN)
     {
-      terrainVTNCBList.push_back((*entity).id);
+      terrainVTNCBList.insert((*entity).id);
     }
   }
 }

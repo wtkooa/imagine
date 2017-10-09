@@ -11,6 +11,7 @@
 // Copyright (c) 2017 David E Lipps
 //______________________________________________________________________________
 #include <map>
+#include <set>
 #include <string>
 #include <vector>
 
@@ -52,10 +53,10 @@ namespace ie
     std::map<std::string, unsigned int>* lightNameIdMap;
     std::map<unsigned int, TerrainAsset>* terrains;
     std::map<std::string, unsigned int>* terrainNameIdMap;
-    std::vector<StaticQuickListElement>* staticVList;
-    std::vector<StaticQuickListElement>* staticVNList;
-    std::vector<StaticQuickListElement>* staticVTNList;
-    std::vector<unsigned int>* terrainVTNCBList;
+    std::map<unsigned int, StaticQuickListElement>* staticVList;
+    std::map<unsigned int, StaticQuickListElement>* staticVNList;
+    std::map<unsigned int, StaticQuickListElement>* staticVTNList;
+    std::set<unsigned int>* terrainVTNCBList;
   };
 
   class AssetStatusToPlayerMessage
@@ -102,6 +103,19 @@ namespace ie
     glm::vec3 translEventVec;
     glm::vec2 rotateEventVec;    
     std::string mode;
+  };
+
+  class AssetManagerInstruction 
+  {
+    public:
+    std::string command;
+    unsigned int id;
+  };
+
+  class AssetManagerInstructions
+  {
+    public:
+    std::vector<AssetManagerInstruction> instructions;
   };
 
 }

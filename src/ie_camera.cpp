@@ -32,7 +32,7 @@ ie::Camera::Camera()
   projectionMatrix = glm::perspective(ie::FIELD_OF_VIEW,
                                       ie::ASPECT_RATIO,
                                       ie::NEAR_PLANE, ie::FAR_PLANE);
-  cameraPlayerOffset = glm::vec3(0.0f, 0.0f, 5.0f);
+  cameraPlayerOffset = glm::vec3(0.0f, 2.0f, 0.0f);
 }
 
 
@@ -51,14 +51,15 @@ void ie::Camera::firstPersonUpdate(void)
 {
 
     cameraPosition = playerPosition + cameraPlayerOffset;
-    glm::vec3 newXAxisVector = glm::normalize(glm::cross(lookVector, upVector));
+
     glm::mat3 yRotate = glm::mat3(glm::rotate(glm::mat4(),
                                   -float(rotateEventVec.x * lookSpeed),
-                                  UP_VECTOR));
+                                  upVector));
+    glm::vec3 newXAxisVector = glm::normalize(glm::cross(playerRotation, upVector));
     glm::mat3 xRotate = glm::mat3(glm::rotate(glm::mat4(),
                                   -float(rotateEventVec.y * lookSpeed),
                                   newXAxisVector)); 
-    glm::mat3 rotation = yRotate * xRotate;
+    glm::mat3 rotation = xRotate * yRotate;
     lookVector = rotation * lookVector;
 
     float xOffsetAngle = glm::angle(ie::UP_VECTOR, lookVector);

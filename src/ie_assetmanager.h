@@ -12,6 +12,7 @@
 //______________________________________________________________________________
 
 #include <map>
+#include <set>
 #include <string>
 #include <vector>
 
@@ -32,6 +33,12 @@ namespace ie
   class AssetManager 
   {
     public:
+
+    //FRAME UPDATE AND INSTRUCTIONS
+    void update(void);
+    void hideEntity(unsigned int);
+    void unhideEntity(unsigned int);
+
     //UNWRAPPING PACKAGES
     void unwrapPackage(ie::WavefrontObjectFilePackage);
     void unwrapPackage(ie::WavefrontMaterialFilePackage);
@@ -45,6 +52,10 @@ namespace ie
     AssetStatusToVramMessage sendAssetStatusToVramMessage(void); 
     AssetStatusToRenderMessage sendAssetStatusToRenderMessage(void);
     AssetStatusToPlayerMessage sendAssetStatusToPlayerMessage(void);
+
+    //RECEIVING MESSAGES
+    void receiveMessage(ie::AssetManagerInstructions);
+    void receiveMessage(ie::AssetManagerInstruction);
     
     //CREATING ENTITIES
     void createEntity(std::string, std::string, EntityType);
@@ -119,10 +130,13 @@ namespace ie
     unsigned int pushIndexData(std::vector<glm::ivec4>);
 
     //QUICK LISTS
-    std::vector<StaticQuickListElement> staticVList;
-    std::vector<StaticQuickListElement> staticVNList;
-    std::vector<StaticQuickListElement> staticVTNList;
-    std::vector<unsigned int> terrainVTNCBList;
+    std::map<unsigned int, StaticQuickListElement> staticVList;
+    std::map<unsigned int, StaticQuickListElement> staticVNList;
+    std::map<unsigned int, StaticQuickListElement> staticVTNList;
+    std::set<unsigned int> terrainVTNCBList;
+
+    //INSTRUCTION LIST
+    std::vector<AssetManagerInstruction> instructions;
   };
 
 }

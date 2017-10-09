@@ -29,10 +29,12 @@ namespace ie
     Player();
     void update(void);
     void toggleGrabMode(void);
+    void toggleHideEntity(void);
     void firstPersonUpdate(void);
 
     //SENDING MESSAGES
     ie::PlayerStatusToCameraMessage sendPlayerStatusToCameraMessage(void);
+    ie::AssetManagerInstructions sendAssetManagerInstructionsMessage(void);
 
     //RECEIVING MESSAGES
     void receiveMessage(ie::AssetStatusToPlayerMessage);
@@ -63,6 +65,8 @@ namespace ie
     float frameDelta;
     float moveSpeed;
     float turnSpeed;
+
+    std::vector<AssetManagerInstruction> instructions;
 
   };
 }

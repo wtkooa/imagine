@@ -149,10 +149,10 @@ void ie::RenderManager::renderMaterialedEntities(void)
   glUniform1f(lightLinearLoc, linearFalloff);
   glUniform1f(lightQuadraticLoc, quadraticFalloff);
 
-  for (unsigned int nEntity = 0; nEntity < (*staticVNList).size(); nEntity++)
+  for (auto it = (*staticVNList).begin(); it != (*staticVNList).end(); it++)
   {
-    ie::StaticQuickListElement listElement = (*staticVNList)[nEntity];
-    unsigned int entityId = listElement.entityId;
+    ie::StaticQuickListElement listElement = it->second;
+    unsigned int entityId = it->first;
     std::vector<short> renderUnitList = listElement.renderUnitList;
     ie::Entity* entity = &((*entities)[entityId]); 
     glm::mat4 translationMatrix = (*entity).translationMatrix; 
@@ -302,10 +302,10 @@ void ie::RenderManager::renderTexturedEntities(void)
   glUniform1f(lightLinearLoc, linearFalloff);
   glUniform1f(lightQuadraticLoc, quadraticFalloff);
 
-  for (unsigned int nEntity = 0; nEntity < (*staticVTNList).size(); nEntity++)
+  for (auto it = (*staticVTNList).begin(); it != (*staticVTNList).end(); it++)
   {
-    ie::StaticQuickListElement listElement = (*staticVTNList)[nEntity];
-    unsigned int entityId = listElement.entityId;
+    ie::StaticQuickListElement listElement = it->second;
+    unsigned int entityId = it->first;
     std::vector<short> renderUnitList = listElement.renderUnitList;
     ie::Entity* entity = &((*entities)[entityId]); 
     glm::mat4 translationMatrix = (*entity).translationMatrix; 
@@ -503,9 +503,9 @@ void ie::RenderManager::renderTerrainEntities(void)
   glUniform1i(texture7Loc, 6);
   glUniform1i(texture8Loc, 7);
 
-  for (unsigned int nEntity = 0; nEntity < (*terrainVTNCBList).size(); nEntity++)
+  for (auto it = (*terrainVTNCBList).begin(); it != (*terrainVTNCBList).end(); it++)
   {
-    unsigned int entityId = (*terrainVTNCBList)[nEntity];
+    unsigned int entityId = *it;
     Entity* entity = &(*entities)[entityId];
     unsigned int terrainId = (*entity).terrainId;
     TerrainAsset* terrain = &(*terrains)[terrainId]; 

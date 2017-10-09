@@ -210,7 +210,6 @@ bool ie::Engine::run(void)
   while (engineOn) {
     handleEvents();
     handleUpdates();
-    handleMessages();
     handleLogic();
     render();
   } 
@@ -221,8 +220,37 @@ bool ie::Engine::run(void)
 void ie::Engine::handleUpdates(void)
 {
   frameClock.measure();
+
+  ie::TimeStatusMessage timeStatusMsg = frameClock.sendTimeStatusMessage();
+  eye.receiveMessage(timeStatusMsg);
+  player.receiveMessage(timeStatusMsg);
+
+  ie::AssetStatusToPlayerMessage toPlayerMsg = am.sendAssetStatusToPlayerMessage();
+  player.receiveMessage(toPlayerMsg);
+
   player.update();
+
+  ie::PlayerStatusToCameraMessage toCameraMsg = player.sendPlayerStatusToCameraMessage();
+  eye.receiveMessage(toCameraMsg);
+
   eye.update();
+
+  ie::AssetManagerInstructions assetInstrucMsg = player.sendAssetManagerInstructionsMessage();
+  am.receiveMessage(assetInstrucMsg);
+
+  am.update();
+
+  ie::CameraStatusToRenderMessage cameraToRenderMsg = eye.sendCameraStatusToRenderMessage();
+  rm.receiveMessage(cameraToRenderMsg);
+
+  ie::AssetStatusToVramMessage toVramMsg = am.sendAssetStatusToVramMessage();
+  vram.receiveMessage(toVramMsg);
+
+  ie::VramStatusToRenderMessage vramToRenderMsg  = vram.sendVramStatusToRenderMessage();
+  rm.receiveMessage(vramToRenderMsg);
+
+  ie::AssetStatusToRenderMessage assetToRenderMsg = am.sendAssetStatusToRenderMessage();
+  rm.receiveMessage(assetToRenderMsg);
 }
 
 
@@ -234,33 +262,6 @@ void ie::Engine::handleLogic(void)
                                     glm::vec3(0.0f, 1.0f, 0.0f));
 
   (*player.entity).rotationMatrix *= rotMatrix;
-}
-
-
-void ie::Engine::handleMessages(void)
-{
-  ie::TimeStatusMessage timeStatusMsg = frameClock.sendTimeStatusMessage();
-  eye.receiveMessage(timeStatusMsg);
-  player.receiveMessage(timeStatusMsg);
-
-  ie::AssetStatusToPlayerMessage toPlayerMsg = am.sendAssetStatusToPlayerMessage();
-  player.receiveMessage(toPlayerMsg);
-
-  ie::PlayerStatusToCameraMessage toCameraMsg = player.sendPlayerStatusToCameraMessage();
-  eye.receiveMessage(toCameraMsg);
-
-  ie::AssetStatusToVramMessage toVramMsg = am.sendAssetStatusToVramMessage();
-  vram.receiveMessage(toVramMsg);
-
-
-  ie::CameraStatusToRenderMessage cameraToRenderMsg = eye.sendCameraStatusToRenderMessage();
-  rm.receiveMessage(cameraToRenderMsg);
-
-  ie::AssetStatusToRenderMessage assetToRenderMsg = am.sendAssetStatusToRenderMessage();
-  rm.receiveMessage(assetToRenderMsg);
-
-  ie::VramStatusToRenderMessage vramToRenderMsg  = vram.sendVramStatusToRenderMessage();
-  rm.receiveMessage(vramToRenderMsg);
 }
 
 

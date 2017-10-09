@@ -47,7 +47,6 @@ namespace ie
     void render(void);
     void handleEvents(void);
     void handleUpdates(void);
-    void handleMessages(void);
     void handleLogic(void);
     void handleResize(int,int);
 
