@@ -33,7 +33,7 @@ namespace ie
   class Entity
   {
     public:
-    unsigned int id;
+    unsigned int assetId;
     std::string name;
     EntityType type;
     unsigned int modelId;
@@ -56,10 +56,11 @@ namespace ie
   };
 
 
-  class ShaderProgramAsset
+  class ShaderAsset
   {
     public:
     std::string name;
+    unsigned int assetId;
     GLuint programId;
     GLuint vertexShaderId;
     GLuint fragmentShaderId;
@@ -70,7 +71,8 @@ namespace ie
   class RenderUnit
   {
     public:
-    unsigned int materialId;
+    unsigned int assetId;
+    unsigned int material;
     VboDataFormat dataFormat;
     std::string shaderProgram;
     unsigned int indexOffset;
@@ -82,7 +84,7 @@ namespace ie
   class ModelAsset
   {
     public:
-    unsigned int modelId;
+    unsigned int assetId;
     std::string name;
     std::string filename; 
     std::string filepath;
@@ -95,7 +97,7 @@ namespace ie
   class MaterialAsset
   {
     public:
-    unsigned int materialId; 
+    unsigned int assetId; 
     std::string name;
     std::string filename;
     std::string filepath;
@@ -113,19 +115,20 @@ namespace ie
     float dissolve;
     int illum;
     bool containsTexture;
-    GLuint ambientMapId;
-    GLuint diffuseMapId; 
-    GLuint specularMapId;
-    GLuint highlightMapId;
-    GLuint alphaMapId;
-    GLuint bumpMapId;
+    unsigned int ambientMapId;
+    unsigned int diffuseMapId; 
+    unsigned int specularMapId;
+    unsigned int highlightMapId;
+    unsigned int alphaMapId;
+    unsigned int bumpMapId;
   };
 
 
   class TextureAsset
   {
     public:
-    GLuint textureOpenglId;
+    unsigned int assetId;
+    GLuint textureId;
     std::string filename;
     std::string filepath;
     std::string name;
@@ -138,7 +141,7 @@ namespace ie
   class LightAsset
   {
     public:
-    unsigned int lightId;
+    unsigned int assetId;
     std::string name;
     glm::vec3 posVector;
     glm::vec3 globalAmbient;
@@ -153,11 +156,11 @@ namespace ie
   class TerrainAsset
   {
     public:
-    unsigned int id;
+    unsigned int assetId;
     std::string name;
     short dim;
     float unitSize;
-    std::vector<GLuint> textureIds;
+    std::vector<unsigned int> textureIds;
     unsigned int vertexHeapOffset;
     unsigned int normalHeapOffset;
     unsigned int colorHeapOffset;
@@ -179,7 +182,7 @@ namespace ie
     std::map<unsigned int, ModelAsset>* models;
     std::map<unsigned int, MaterialAsset>* materials;
     std::map<unsigned int, TextureAsset>* textures;
-    std::map<GLuint, ShaderProgramAsset>* shaders;
+    std::map<GLuint, ShaderAsset>* shaders;
     std::map<unsigned int, LightAsset>* lights;
     std::map<unsigned int, TerrainAsset>* terrains;
 
@@ -187,7 +190,7 @@ namespace ie
     ModelAsset* model;
     MaterialAsset* material;
     TextureAsset* texture;
-    ShaderProgramAsset* shader;
+    ShaderAsset* shader;
     RenderUnit* ru;
     GlslUniformPackage* uniform;
     LightAsset* light;

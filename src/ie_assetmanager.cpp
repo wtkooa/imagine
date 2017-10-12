@@ -11,6 +11,7 @@
 #include "ie_assetmanager.h"
 
 #include <iostream>
+#include <list>
 #include <map>
 #include <string>
 #include <vector>
@@ -28,6 +29,13 @@
 #include "ie_messages.h"
 #include "ie_packages.h"
 #include "ie_utils.h"
+
+
+ie::AssetManager::AssetManager()
+{
+  newAssetId = 0;
+}
+
 
 //___|CARRYING OUT ACCUMULATED INSTRUCTIONS|____________________________________
 
@@ -117,75 +125,17 @@ void ie::AssetManager::unhideEntity(unsigned int entityId)
 
 //___|ASSIGNING AND MANAGING ASSET IDS|_________________________________________
 
-unsigned int ie::AssetManager::getNewEntityId(void)
+unsigned int ie::AssetManager::assignAssetId(void)
 {
-  if (availableEntityIds.empty())
+  if (usedAssetIds.empty())
   {
-    return entities.size();  
+    newAssetId++;
+    return newAssetId;  
   }
   else
   {
-    unsigned int id = availableEntityIds[0];
-    availableEntityIds.erase(availableEntityIds.begin());
-    return id; 
-  }
-}
-
-unsigned int ie::AssetManager::getNewModelAssetId(void)
-{
-  if (availableModelIds.empty())
-  {
-    return modelAssets.size();  
-  }
-  else
-  {
-    unsigned int id = availableModelIds[0];
-    availableModelIds.erase(availableModelIds.begin());
-    return id; 
-  }
-}
-
-
-unsigned int ie::AssetManager::getNewMaterialAssetId(void)
-{
-  if (availableMaterialIds.empty())
-  {
-    return materialAssets.size();  
-  }
-  else
-  {
-    unsigned int id = availableMaterialIds[0];
-    availableMaterialIds.erase(availableMaterialIds.begin());
-    return id; 
-  }
-}
-
-
-unsigned int ie::AssetManager::getNewLightAssetId(void)
-{
-  if (availableLightIds.empty())
-  {
-    return lightAssets.size();  
-  }
-  else
-  {
-    unsigned int id = availableLightIds[0];
-    availableLightIds.erase(availableLightIds.begin());
-    return id; 
-  }
-}
-
-
-unsigned int ie::AssetManager::getNewTerrainAssetId(void)
-{
-  if (availableTerrainIds.empty())
-  {
-    return terrainAssets.size();  
-  }
-  else
-  {
-    unsigned int id = availableTerrainIds[0];
-    availableTerrainIds.erase(availableTerrainIds.begin());
+    unsigned int id = usedAssetIds.front();
+    usedAssetIds.pop_front();
     return id; 
   }
 }
@@ -286,8 +236,8 @@ void ie::AssetManager::unwrapPackage(ie::WavefrontObjectFilePackage filePackage)
       "' already exists." << std::endl;
       continue;
     }
-    asset.modelId = getNewModelAssetId();
-    modelNameIdMap[asset.name] = asset.modelId;
+    asset.assetId = assignAssetId();
+    modelNameIdMap[asset.name] = asset.assetId;
     asset.filename = filePackage.filename;
     asset.filepath = filePackage.filepath;
     asset.tobeVramLoaded = true;
@@ -339,7 +289,8 @@ void ie::AssetManager::unwrapPackage(ie::WavefrontObjectFilePackage filePackage)
         {
           renderUnit.dataFormat = VboDataFormat::VTN;
         }
-        renderUnit.materialId = materialNameIdMap[usingMaterialName];
+        renderUnit.assetId = assignAssetId();
+        renderUnit.material = materialNameIdMap[usingMaterialName];
         renderUnit.shaderProgram = "static";
         renderUnit.indexOffset = indexOffset + groupIndexBegin;
         renderUnit.vertexAmount = groupVertexAmount;
@@ -347,7 +298,7 @@ void ie::AssetManager::unwrapPackage(ie::WavefrontObjectFilePackage filePackage)
         asset.renderUnits.push_back(renderUnit);
       }
     }
-    modelAssets[asset.modelId] = asset;
+    modelAssets[asset.assetId] = asset;
   } 
 }
 
@@ -375,7 +326,7 @@ GLuint ie::AssetManager::unwrapPackage(ie::WavefrontMaterialPackage package)
     "' already exists. Engine will use original." << std::endl;
     return 0;
   }
-  asset.materialId = getNewMaterialAssetId();
+  asset.assetId = assignAssetId();
   asset.filename = package.filename;
   asset.filepath = package.filepath;
   asset.shininess = package.shininess;
@@ -390,7 +341,7 @@ GLuint ie::AssetManager::unwrapPackage(ie::WavefrontMaterialPackage package)
   asset.usesLightDiffuse = true;
   asset.usesLightSpecular = true;
   asset.usesLightFalloff = true;
-  materialNameIdMap[asset.name] = asset.materialId;
+  materialNameIdMap[asset.name] = asset.assetId;
   unsigned int texturePackageAmount = package.texturePackages.size();
   if (texturePackageAmount > 0)
   {
@@ -425,14 +376,13 @@ GLuint ie::AssetManager::unwrapPackage(ie::WavefrontMaterialPackage package)
         break;
     }
   }
-  materialAssets[asset.materialId] = asset;
+  materialAssets[asset.assetId] = asset;
 }
 
 
 //UNWRAP TEXTURE PACKAGES
 GLuint ie::AssetManager::unwrapPackage(ie::TexturePackage package)
 {
-  GLuint id;
   ie::TextureAsset asset;
   std::string filename = package.filename;
   int tokenAmount = ie::countTokens(filename, '/') - 1; 
@@ -446,23 +396,25 @@ GLuint ie::AssetManager::unwrapPackage(ie::TexturePackage package)
     "' already exists. Engine will use original." << std::endl;
     return textureNameIdMap[asset.name];
   }
-  glGenTextures(1, &id);
-  asset.textureOpenglId = id;
+  GLuint textureId;
+  glGenTextures(1, &textureId);
+  asset.textureId = textureId;
+  asset.assetId = assignAssetId();
   asset.filename = package.filename;
   asset.filepath = package.filepath;
   asset.textureType = package.type;
   asset.tobeVramLoaded = true;
   asset.vramLoaded = false;
-  textureNameIdMap[asset.name] = asset.textureOpenglId;
-  textureAssets[asset.textureOpenglId] = asset;
-  return id;
+  textureNameIdMap[asset.name] = asset.assetId;
+  textureAssets[asset.assetId] = asset;
+  return asset.assetId;
 }
 
 
 //UNWRAP SHADER PACKAGES 
 void ie::AssetManager::unwrapPackage(ie::ShaderProgramPackage package)
 {
-  ie::ShaderProgramAsset asset;
+  ie::ShaderAsset asset;
   asset.name = package.name;
   bool shaderProgramNameTaken = shaderNameIdMap.count(package.name) == 1;
   if (shaderProgramNameTaken)
@@ -471,12 +423,13 @@ void ie::AssetManager::unwrapPackage(ie::ShaderProgramPackage package)
     "' already exists. Engine will use original." << std::endl;
     return;
   }
+  asset.assetId = assignAssetId();
   asset.programId = package.programId;
   asset.vertexShaderId = package.vertexShaderId;
   asset.fragmentShaderId = package.fragmentShaderId;
   asset.uniforms = package.uniforms;
-  shaderProgramAssets[asset.programId] = asset;
-  shaderNameIdMap[asset.name] = asset.programId;
+  shaderNameIdMap[asset.name] = asset.assetId;
+  shaderAssets[asset.assetId] = asset;
 }
 
 
@@ -492,7 +445,7 @@ void ie::AssetManager::unwrapPackage(ie::LightPackage package)
     "' already exists. Engine will use original." << std::endl;
     return;
   }
-  asset.lightId = getNewLightAssetId();
+  asset.assetId = assignAssetId();
   asset.posVector = package.posVector;
   asset.globalAmbient = package.globalAmbient;
   asset.lightAmbient = package.lightAmbient;
@@ -501,8 +454,8 @@ void ie::AssetManager::unwrapPackage(ie::LightPackage package)
   asset.constantFalloff = package.constantFalloff;
   asset.linearFalloff = package.linearFalloff;
   asset.quadraticFalloff = package.quadraticFalloff;
-  lightNameIdMap[asset.name] = asset.lightId;
-  lightAssets[asset.lightId] = asset;
+  lightNameIdMap[asset.name] = asset.assetId;
+  lightAssets[asset.assetId] = asset;
 }
 
 //UNWRAP TERRAIN PACKAGES
@@ -523,7 +476,7 @@ void ie::AssetManager::unwrapPackage(ie::TerrainPackage package)
     asset.textureIds.push_back(unwrapPackage(package.textures[nTex])); 
   }
 
-  asset.id = getNewTerrainAssetId();
+  asset.assetId = assignAssetId();
   asset.dim = package.dim;
   asset.unitSize = package.unitSize;
   asset.vertexHeapOffset = pushVertexData(package.vertices);
@@ -539,8 +492,8 @@ void ie::AssetManager::unwrapPackage(ie::TerrainPackage package)
   asset.diffuse = package.diffuse;
   asset.specular = package.specular;
   asset.emission = package.emission;
-  terrainNameIdMap[asset.name] = asset.id;
-  terrainAssets[asset.id] = asset;
+  terrainNameIdMap[asset.name] = asset.assetId;
+  terrainAssets[asset.assetId] = asset;
 }
 
 //______________________________________________________________________________
@@ -570,12 +523,14 @@ ie::AssetStatusToRenderMessage ie::AssetManager::sendAssetStatusToRenderMessage(
   msg.entities = &entities;
   msg.materials = &materialAssets;
   msg.models = &modelAssets;
-  msg.shaders = &shaderProgramAssets;
+  msg.shaders = &shaderAssets;
   msg.shaderNameIdMap = &shaderNameIdMap;
   msg.lights = &lightAssets;
   msg.lightNameIdMap = &lightNameIdMap;
   msg.terrains = &terrainAssets;
   msg.terrainNameIdMap = &terrainNameIdMap;
+  msg.textures = &textureAssets;
+  msg.textureNameIdMap = &textureNameIdMap;
   msg.staticVList = &staticVList;
   msg.staticVNList = &staticVNList;
   msg.staticVTNList = &staticVTNList;
@@ -627,7 +582,7 @@ void ie::AssetManager::createEntity(std::string name,
     "' already exists. Engine will use original." << std::endl;
     return;
   }
-  entity.id = getNewEntityId(); 
+  entity.assetId = assignAssetId(); 
   entity.type = type;
   if (type == STATIC)
   {
@@ -646,8 +601,8 @@ void ie::AssetManager::createEntity(std::string name,
   entity.usesLightDiffuse = true;
   entity.usesLightSpecular = true;
   entity.usesLightFalloff = true;
-  entityNameIdMap[entity.name] = entity.id;
-  entities[entity.id] = entity;
+  entityNameIdMap[entity.name] = entity.assetId;
+  entities[entity.assetId] = entity;
   
 }
 
@@ -671,7 +626,7 @@ void ie::AssetManager::createStaticQuickLists(void)
       StaticQuickListElement vElement;
       StaticQuickListElement vnElement;
       StaticQuickListElement vtnElement;
-      unsigned int entityId = (*entity).id;
+      unsigned int entityId = (*entity).assetId;
 
       ModelAsset* model = &modelAssets[(*entity).modelId];
       for (int nUnit = 0; nUnit < (*model).renderUnits.size(); nUnit++)
@@ -707,7 +662,7 @@ void ie::AssetManager::createTerrainQuickLists(void)
     Entity* entity = &entIt->second;
     if ((*entity).hidden == false && (*entity).type == TERRAIN)
     {
-      terrainVTNCBList.insert((*entity).id);
+      terrainVTNCBList.insert((*entity).assetId);
     }
   }
 }
@@ -745,7 +700,7 @@ ie::handle ie::AssetManager::getHandle(std::string line)
   }
   else if (token == "shaders" && tokenAmount == 1)
   {
-    hdl.shaders = &shaderProgramAssets;
+    hdl.shaders = &shaderAssets;
     return hdl;
   }
   else if (token == "lights" && tokenAmount == 1)
@@ -894,7 +849,7 @@ ie::handle ie::AssetManager::getHandle(std::string line)
     }
 
     GLuint id = shaderNameIdMap[token];
-    ShaderProgramAsset* spa = &shaderProgramAssets[id];
+    ShaderAsset* spa = &shaderAssets[id];
     if (tokenAmount == 1)
     {
       hdl.shader = spa;  
@@ -1022,27 +977,26 @@ ie::handle ie::AssetManager::getHandle(std::string line)
 
 //___|RELEASING ASSETS AND CLEARING MEMORY|_____________________________________
 
-bool ie::AssetManager::releaseAllShaderPrograms(void)
+bool ie::AssetManager::releaseAllShaders(void)
 {
-  for (auto it = shaderProgramAssets.begin();
-       it != shaderProgramAssets.end(); it++)
+  for (auto it = shaderAssets.begin();
+       it != shaderAssets.end(); it++)
   {
-    ShaderProgramAsset asset = it->second;  
-    releaseShaderProgram(asset.name);
+    ShaderAsset asset = it->second;  
+    releaseShader(asset.name);
   }
 }
 
 
-bool ie::AssetManager::releaseShaderProgram(std::string name)
+bool ie::AssetManager::releaseShader(std::string name)
 {
-  GLuint shaderId = shaderNameIdMap[name];
-  ShaderProgramAsset asset = shaderProgramAssets[shaderId];
-  glDetachShader(asset.programId, asset.vertexShaderId);
-  glDetachShader(asset.programId, asset.fragmentShaderId);
-  glDeleteShader(asset.vertexShaderId);
-  glDeleteShader(asset.fragmentShaderId);
+  ShaderAsset* shader = &shaderAssets[shaderNameIdMap[name]];
+  glDetachShader((*shader).programId, (*shader).vertexShaderId);
+  glDetachShader((*shader).programId, (*shader).fragmentShaderId);
+  glDeleteShader((*shader).vertexShaderId);
+  glDeleteShader((*shader).fragmentShaderId);
   glUseProgram(0);
-  glDeleteProgram(asset.programId);
+  glDeleteProgram((*shader).programId);
 }
 
 
@@ -1052,15 +1006,15 @@ bool ie::AssetManager::releaseAllTextures(void)
        texIt != textureAssets.end(); texIt++)
   {
     ie::TextureAsset asset = texIt->second;
-    releaseTexture(asset.textureOpenglId);
+    releaseTexture(asset.textureId);
   }
 }
 
 
 bool ie::AssetManager::releaseTexture(std::string name)
 {
-  GLuint id = textureNameIdMap[name];
-  releaseTexture(id);  
+  GLuint textureId = textureAssets[textureNameIdMap[name]].textureId;
+  releaseTexture(textureId);  
 }
 
 
@@ -1073,7 +1027,7 @@ bool ie::AssetManager::releaseTexture(GLuint id)
 bool ie::AssetManager::quit(void)
 {
   releaseAllTextures();
-  releaseAllShaderPrograms();
+  releaseAllShaders();
 }
 
 //_____________________________________________________________________________

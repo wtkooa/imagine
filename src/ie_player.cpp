@@ -119,7 +119,7 @@ void ie::Player::toggleHideEntity(void)
   {
     msg.command = "unhide entity";
   }
-  msg.id = (*entity).id;
+  msg.id = (*entity).assetId;
   instructions.push_back(msg);
 }
 

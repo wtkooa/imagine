@@ -11,6 +11,7 @@
 // Copyright (c) 2017 David E Lipps
 //______________________________________________________________________________
 
+#include <list>
 #include <map>
 #include <set>
 #include <string>
@@ -33,6 +34,8 @@ namespace ie
   class AssetManager 
   {
     public:
+
+    AssetManager();
 
     //FRAME UPDATE AND INSTRUCTIONS
     void update(void);
@@ -72,48 +75,44 @@ namespace ie
     bool releaseAllTextures(void);
     bool releaseTexture(std::string);
     bool releaseTexture(GLuint);
-    bool releaseAllShaderPrograms(void);
-    bool releaseShaderProgram(std::string);
+    bool releaseAllShaders(void);
+    bool releaseShader(std::string);
     bool quit(void);
 
     private:
-    //Entities
+
+    //ASSIGNING AND MANAGING ASSET IDS
+    unsigned int newAssetId;
+    std::list<unsigned int> usedAssetIds; 
+    unsigned int assignAssetId(void);
+    
+    //ENTITIES
     std::map<unsigned int, Entity> entities;
     std::map<std::string, unsigned int> entityNameIdMap;
-    std::vector<unsigned int> availableEntityIds; 
-    unsigned int getNewEntityId(void);
 
     //MODELS
     std::map<unsigned int, ModelAsset> modelAssets;
     std::map<std::string, unsigned int> modelNameIdMap;
-    std::vector<unsigned int> availableModelIds; 
-    unsigned int getNewModelAssetId(void);
 
     //MATERIALS
     std::map<unsigned int, MaterialAsset> materialAssets;
     std::map<std::string, unsigned int> materialNameIdMap;
-    std::vector<unsigned int> availableMaterialIds; 
-    unsigned int getNewMaterialAssetId(void);
 
     //TEXTURES
     std::map<unsigned int, TextureAsset> textureAssets;
-    std::map<std::string, GLuint> textureNameIdMap;
+    std::map<std::string, unsigned int> textureNameIdMap;
 
     //SHADERS
-    std::map<GLuint, ShaderProgramAsset> shaderProgramAssets;
-    std::map<std::string, GLuint> shaderNameIdMap;
+    std::map<GLuint, ShaderAsset> shaderAssets;
+    std::map<std::string, unsigned int> shaderNameIdMap;
 
     //LIGHTS
     std::map<unsigned int, LightAsset> lightAssets;
     std::map<std::string, unsigned int> lightNameIdMap;
-    std::vector<unsigned int> availableLightIds;
-    unsigned int getNewLightAssetId(void);
 
     //TERRAIN
     std::map<unsigned int, TerrainAsset> terrainAssets;
     std::map<std::string, unsigned int> terrainNameIdMap;
-    std::vector<unsigned int> availableTerrainIds; 
-    unsigned int getNewTerrainAssetId(void);
 
     //VERTEX DATA HEAP
     std::vector<glm::vec4> vertexHeap;

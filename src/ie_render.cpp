@@ -36,6 +36,8 @@ void ie::RenderManager::receiveMessage(AssetStatusToRenderMessage msg)
   lightNameIdMap = msg.lightNameIdMap;
   terrains = msg.terrains;
   terrainNameIdMap = msg.terrainNameIdMap;
+  textures = msg.textures;
+  textureNameIdMap = msg.textureNameIdMap;
   staticVList = msg.staticVList;
   staticVNList = msg.staticVNList;
   staticVTNList = msg.staticVTNList;
@@ -91,7 +93,7 @@ void ie::RenderManager::renderMaterialedEntities(void)
   float quadraticFalloff = (*light).quadraticFalloff;
 
   GLuint shaderId = (*shaderNameIdMap)["static"];
-  ShaderProgramAsset* shader = &(*shaders)[shaderId];
+  ShaderAsset* shader = &(*shaders)[shaderId];
   GLuint cameraPosLoc = (*shader).uniforms["cameraPos"].location;
   GLuint mtwMatrixLoc = (*shader).uniforms["mtwMatrix"].location;
   GLuint transformationMatrixLoc = (*shader).uniforms["transformationMatrix"].location;
@@ -164,7 +166,7 @@ void ie::RenderManager::renderMaterialedEntities(void)
     bool usesLightSpecularE = (*entity).usesLightSpecular;
     bool usesLightFalloffE = (*entity).usesLightFalloff;
     ie::ModelAsset* modelAsset = &((*models)[(*entity).modelId]);
-    unsigned int modelId = (*modelAsset).modelId;
+    unsigned int modelId = (*modelAsset).assetId;
     std::vector<RenderUnit>* renderUnits = &((*modelAsset).renderUnits); 
 
     glm::mat4 mtwMatrix = translationMatrix * rotationMatrix *
@@ -178,7 +180,7 @@ void ie::RenderManager::renderMaterialedEntities(void)
     for (short nRu = 0; nRu < renderUnitList.size(); nRu++)
     {
       short renderUnitId = renderUnitList[nRu];
-      unsigned int materialId = (*renderUnits)[renderUnitId].materialId;
+      unsigned int materialId = (*renderUnits)[renderUnitId].material;
       MaterialAsset* material = &((*materials)[materialId]);
       float materialShininess = (*material).shininess;
       glm::vec3 materialAmbient = (*material).ambient;
@@ -240,7 +242,7 @@ void ie::RenderManager::renderTexturedEntities(void)
   float quadraticFalloff = (*light).quadraticFalloff;
 
   GLuint shaderId = (*shaderNameIdMap)["static"];
-  ShaderProgramAsset* shader = &(*shaders)[shaderId];
+  ShaderAsset* shader = &(*shaders)[shaderId];
   GLuint cameraPosLoc = (*shader).uniforms["cameraPos"].location;
   GLuint mtwMatrixLoc = (*shader).uniforms["mtwMatrix"].location;
   GLuint transformationMatrixLoc = (*shader).uniforms["transformationMatrix"].location;
@@ -317,7 +319,7 @@ void ie::RenderManager::renderTexturedEntities(void)
     bool usesLightSpecularE = (*entity).usesLightSpecular;
     bool usesLightFalloffE = (*entity).usesLightFalloff;
     ie::ModelAsset* modelAsset = &((*models)[(*entity).modelId]);
-    unsigned int modelId = (*modelAsset).modelId;
+    unsigned int modelId = (*modelAsset).assetId;
     std::vector<RenderUnit>* renderUnits = &((*modelAsset).renderUnits); 
 
     glm::mat4 mtwMatrix = translationMatrix * rotationMatrix *
@@ -331,7 +333,7 @@ void ie::RenderManager::renderTexturedEntities(void)
     for (short nRu = 0; nRu < renderUnitList.size(); nRu++)
     {
       short renderUnitId = renderUnitList[nRu];
-      unsigned int materialId = (*renderUnits)[renderUnitId].materialId;
+      unsigned int materialId = (*renderUnits)[renderUnitId].material;
       MaterialAsset* material = &((*materials)[materialId]);
       float materialShininess = (*material).shininess;
       glm::vec3 materialAmbient = (*material).ambient;
@@ -344,7 +346,8 @@ void ie::RenderManager::renderTexturedEntities(void)
       bool usesLightSpecularM = (*material).usesLightSpecular;
       bool usesLightFalloffM = (*material).usesLightFalloff;
       bool containsTexture = (*material).containsTexture;
-      GLuint diffuseMapId = (*material).diffuseMapId;
+      unsigned int textureAssetId = (*material).diffuseMapId;
+      GLuint diffuseMapId = (*textures)[textureAssetId].textureId;
 
       bool usesGlobalAmbient = usesGlobalAmbientM && usesGlobalAmbientE;
       bool usesLightAmbient = usesLightAmbientM && usesLightAmbientE;
@@ -411,7 +414,7 @@ void ie::RenderManager::renderTerrainEntities(void)
   float quadraticFalloff = (*light).quadraticFalloff;
 
   GLuint shaderId = (*shaderNameIdMap)["terrain"];
-  ShaderProgramAsset* shader = &(*shaders)[shaderId];
+  ShaderAsset* shader = &(*shaders)[shaderId];
   GLuint cameraPosLoc = (*shader).uniforms["cameraPos"].location;
   GLuint mtwMatrixLoc = (*shader).uniforms["mtwMatrix"].location;
   GLuint transformationMatrixLoc = (*shader).uniforms["transformationMatrix"].location;
@@ -557,7 +560,9 @@ void ie::RenderManager::renderTerrainEntities(void)
     for (short tex = 0; tex < textureAmount; tex++)
     {
       glActiveTexture(GL_TEXTURE0 + tex);
-      glBindTexture(GL_TEXTURE_2D, (*terrain).textureIds[tex]);
+      unsigned int textureAssetId = (*terrain).textureIds[tex];
+      GLuint diffuseMapId = (*textures)[textureAssetId].textureId;
+      glBindTexture(GL_TEXTURE_2D, diffuseMapId);
     }
 
     glDrawElements(GL_TRIANGLES, indexAmount, GL_UNSIGNED_INT, p_location);

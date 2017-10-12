@@ -77,7 +77,7 @@ ie::GlslCompiler::GlslCompiler(std::string name,
                                std::string fShaderFilepath,
                                std::string fShaderFilename)
 {
-  compile(name,vShaderFilepath, vShaderFilename,
+  compile(name, vShaderFilepath, vShaderFilename,
           fShaderFilepath, fShaderFilename);
 }
 

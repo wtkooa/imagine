@@ -44,12 +44,14 @@ namespace ie
     std::map<unsigned int, Entity>* entities;
     std::map<unsigned int, MaterialAsset>* materials;
     std::map<unsigned int, ModelAsset>* models;
-    std::map<GLuint, ShaderProgramAsset>* shaders;
-    std::map<std::string, GLuint>* shaderNameIdMap;
+    std::map<GLuint, ShaderAsset>* shaders;
+    std::map<std::string, unsigned int>* shaderNameIdMap;
     std::map<unsigned int, LightAsset>* lights;
     std::map<std::string, unsigned int>* lightNameIdMap;
     std::map<unsigned int, TerrainAsset>* terrains;
     std::map<std::string, unsigned int>* terrainNameIdMap;
+    std::map<unsigned int, TextureAsset>* textures;
+    std::map<std::string, unsigned int>* textureNameIdMap;
     std::map<unsigned int, StaticQuickListElement>* staticVList;
     std::map<unsigned int, StaticQuickListElement>* staticVNList;
     std::map<unsigned int, StaticQuickListElement>* staticVTNList;

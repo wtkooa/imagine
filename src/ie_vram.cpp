@@ -92,7 +92,7 @@ void ie::VramManager::createStaticVbos()
     for (short ru = 0; ru < renderUnitAmount; ru++)
     {
       ie::VboDataFormat dataFormat = model.renderUnits[ru].dataFormat;
-      unsigned int materialId = model.renderUnits[ru].materialId;
+      unsigned int materialId = model.renderUnits[ru].material;
       MaterialAsset* material = &(*materials)[materialId];
       GLuint textureId = (*material).diffuseMapId;
       TextureAsset* textureAsset = &(*textures)[textureId];
@@ -165,7 +165,7 @@ void ie::VramManager::createStaticVbos()
         break;
       }
     }
-    staticMemoryMap[model.modelId] = ruLocations;
+    staticMemoryMap[model.assetId] = ruLocations;
   }
 }
 
@@ -205,8 +205,8 @@ void ie::VramManager::createTerrainVbos(void)
     vboVTNCBMapUnit.indexAmount = vHeapA;
     indexMapUnit.location = indexOffset;
     indexMapUnit.indexAmount = iHeapA * 3;
-    terrainMemoryMap[(*terrain).id] = vboVTNCBMapUnit;
-    terrainIndexMemoryMap[(*terrain).id] = indexMapUnit;
+    terrainMemoryMap[(*terrain).assetId] = vboVTNCBMapUnit;
+    terrainIndexMemoryMap[(*terrain).assetId] = indexMapUnit;
 
     std::vector<glm::vec2> tCoords;
     for (short z = 0; z < dim; z++)
@@ -247,7 +247,7 @@ void ie::VramManager::createTerrainVbos(void)
 void ie::VramManager::loadTexture(ie::TextureAsset textureAsset)
 { 
   SDL_Surface* surface;
-  GLuint textureId = textureAsset.textureOpenglId;
+  GLuint textureId = textureAsset.textureId;
   int mode;
   surface = IMG_Load((textureAsset.filepath +
                       textureAsset.filename).c_str());
