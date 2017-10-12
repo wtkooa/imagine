@@ -155,12 +155,12 @@ bool ie::Engine::initAssets(void)
   ie::TerrainGenerator terrain(120);
   terrain.applyPerlin(42.0f, 32.0f, 40.0f);
   terrain.applyDemoBlends();
-  terrain.addTexture("data/textures/", "grass.jpg");
+  terrain.addTexture("data/textures/", "001_grass.png");
   terrain.addTexture("data/textures/", "cobble.jpg");
   terrain.addTexture("data/textures/", "topsoil.jpg");
   terrain.addTexture("data/textures/", "sand.jpg");
   terrain.addTexture("data/textures/", "dirtrocks.jpg");
-  terrain.addTexture("data/textures/", "fissures.jpg");
+  terrain.addTexture("data/textures/", "cementDark.png");
   terrain.addTexture("data/textures/", "snow.jpg");
   terrain.addTexture("data/textures/", "lava.jpg");
   ie::TerrainPackage terPack = terrain.wrapTerrainPackage();
