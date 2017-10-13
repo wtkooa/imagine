@@ -1,7 +1,7 @@
 #ifndef IE_TIME_H
 #define IE_TIME_H
 
-//___|"ie_time.h"|____________________________________________________________
+//___|"ie_time.h"|______________________________________________________________
 //
 // Project: Imagine: 3D Environment Engine
 // Version: 0.1.0

@@ -144,51 +144,11 @@ unsigned int ie::AssetManager::assignAssetId(void)
 
 //___|LOADING VERTEX HEAP DATA|_________________________________________________
 
-unsigned int ie::AssetManager::pushVertexData(std::vector<glm::vec4> v)
+template <class T, class S>
+unsigned int ie::AssetManager::pushToHeap(T* heap, S* data)
 {
-  unsigned int offset = vertexHeap.size();
-  vertexHeap.insert(vertexHeap.end(), v.begin(), v.end());
-  return offset;
-}
-
-
-unsigned int ie::AssetManager::pushTextureCoordinateData(std::vector<glm::vec3> vt)
-{
-  unsigned int offset = textureCoordinateHeap.size();
-  textureCoordinateHeap.insert(textureCoordinateHeap.end(),
-                               vt.begin(), vt.end());
-  return offset;
-}
-
-
-unsigned int ie::AssetManager::pushNormalVectorData(std::vector<glm::vec3> vn)
-{
-  unsigned int offset = normalVectorHeap.size();
-  normalVectorHeap.insert(normalVectorHeap.end(), vn.begin(), vn.end());
-  return offset;
-}
-
-
-unsigned int ie::AssetManager::pushIndexData(std::vector<glm::ivec4> f)
-{
-  unsigned int offset = indexHeap.size();
-  indexHeap.insert(indexHeap.end(), f.begin(), f.end());
-  return offset;
-}
-
-
-unsigned int ie::AssetManager::pushColorData(std::vector<glm::vec3> c)
-{
-  unsigned int offset = colorHeap.size();
-  colorHeap.insert(colorHeap.end(), c.begin(), c.end());
-  return offset;
-}
-
-
-unsigned int ie::AssetManager::pushBlendData(std::vector<glm::uvec2> b)
-{
-  unsigned int offset = blendHeap.size();
-  blendHeap.insert(blendHeap.end(), b.begin(), b.end());
+  unsigned int offset = heap->size();
+  heap->insert(heap->end(), data->begin(), data->end());
   return offset;
 }
 
@@ -199,9 +159,12 @@ unsigned int ie::AssetManager::pushBlendData(std::vector<glm::uvec2> b)
 //UNWRAP WAVEFRONT OBJ FILE PACKAGES
 void ie::AssetManager::unwrapPackage(ie::WavefrontObjectFilePackage filePackage)
 {
-  unsigned int vertexHeapOffset = pushVertexData(filePackage.v);
-  unsigned int textureCoordinateHeapOffset = pushTextureCoordinateData(filePackage.vt);
-  unsigned int normalVectorHeapOffset = pushNormalVectorData(filePackage.vn);
+  unsigned int vertexHeapOffset = pushToHeap(&vertexHeap, &filePackage.v);
+;
+  unsigned int textureCoordinateHeapOffset = pushToHeap(&textureCoordinateHeap,
+                                             &filePackage.vt);
+  unsigned int normalVectorHeapOffset = pushToHeap(&normalVectorHeap,
+                                                   &filePackage.vn);
   unsigned int indexAmount = filePackage.f.size();
 
   for (int n = 0; n < indexAmount; n++)
@@ -216,7 +179,7 @@ void ie::AssetManager::unwrapPackage(ie::WavefrontObjectFilePackage filePackage)
       filePackage.f[n].z += normalVectorHeapOffset - 1;
     }
   }
-  unsigned int indexOffset = pushIndexData(filePackage.f);
+  unsigned int indexOffset = pushToHeap(&indexHeap, &filePackage.f);
 
   unsigned int materialFileAmount = filePackage.materialFilePackages.size();
   for (int nFile = 0; nFile < materialFileAmount; nFile++)
@@ -479,11 +442,11 @@ void ie::AssetManager::unwrapPackage(ie::TerrainPackage package)
   asset.assetId = assignAssetId();
   asset.dim = package.dim;
   asset.unitSize = package.unitSize;
-  asset.vertexHeapOffset = pushVertexData(package.vertices);
-  asset.normalHeapOffset = pushNormalVectorData(package.normals);
-  asset.colorHeapOffset = pushColorData(package.colors);
-  asset.blendHeapOffset = pushBlendData(package.blends);
-  asset.indexHeapOffset = pushIndexData(package.indices);
+  asset.vertexHeapOffset = pushToHeap(&vertexHeap, &package.vertices);
+  asset.normalHeapOffset = pushToHeap(&normalVectorHeap, &package.normals);
+  asset.colorHeapOffset = pushToHeap(&colorHeap, &package.colors);
+  asset.blendHeapOffset = pushToHeap(&blendHeap, &package.blends);
+  asset.indexHeapOffset = pushToHeap(&indexHeap, &package.indices);
   asset.indexHeapAmount = package.indices.size();
   asset.tobeVramLoaded = true;
   asset.vramLoaded = false;

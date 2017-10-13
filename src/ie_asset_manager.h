@@ -121,12 +121,8 @@ namespace ie
     std::vector<glm::vec3> colorHeap;
     std::vector<glm::uvec2> blendHeap;
     std::vector<glm::ivec4> indexHeap;
-    unsigned int pushVertexData(std::vector<glm::vec4>);
-    unsigned int pushTextureCoordinateData(std::vector<glm::vec3>);
-    unsigned int pushNormalVectorData(std::vector<glm::vec3>);
-    unsigned int pushColorData(std::vector<glm::vec3>);
-    unsigned int pushBlendData(std::vector<glm::uvec2>);
-    unsigned int pushIndexData(std::vector<glm::ivec4>);
+    template <class T, class S>
+    unsigned int pushToHeap(T*, S*);
 
     //QUICK LISTS
     std::map<unsigned int, StaticQuickListElement> staticVList;
