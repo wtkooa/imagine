@@ -48,8 +48,6 @@ void ie::RenderManager::receiveMessage(AssetStatusToRenderMessage msg)
 
 void ie::RenderManager::receiveMessage(VramStatusToRenderMessage msg)
 {
-  staticMemoryMap = msg.staticMemoryMap;
-  terrainIndexMemoryMap = msg.terrainIndexMemoryMap;
   vPair = msg.vPair;
   vnPair = msg.vnPair;
   vtnPair = msg.vtnPair;
@@ -181,6 +179,8 @@ void ie::RenderManager::renderMaterialedEntities(void)
     {
       short renderUnitId = renderUnitList[nRu];
       unsigned int materialId = (*renderUnits)[renderUnitId].material;
+      unsigned int vramLocation = (*renderUnits)[renderUnitId].vramLocation;
+      unsigned int indexAmount = (*renderUnits)[renderUnitId].vertexAmount;
       MaterialAsset* material = &((*materials)[materialId]);
       float materialShininess = (*material).shininess;
       glm::vec3 materialAmbient = (*material).ambient;
@@ -212,12 +212,7 @@ void ie::RenderManager::renderMaterialedEntities(void)
       glUniform1i(usesLightSpecularLoc, usesLightSpecular);
       glUniform1i(usesLightFalloffLoc, usesLightFalloff);
 
-      std::vector<ie::StaticRenderUnitLocation>* renderUnitLocations = &((*staticMemoryMap)[modelId]);
-      ie::StaticRenderUnitLocation* renderUnitLocation = &((*renderUnitLocations)[renderUnitId]); 
-      unsigned int location = (*renderUnitLocation).location;
-      unsigned int indexAmount = (*renderUnitLocation).indexAmount;
-
-      glDrawArrays(GL_TRIANGLES, location, indexAmount);
+      glDrawArrays(GL_TRIANGLES, vramLocation, indexAmount);
     }
   }
     glDisableVertexAttribArray(0);
@@ -335,6 +330,8 @@ void ie::RenderManager::renderTexturedEntities(void)
       short renderUnitId = renderUnitList[nRu];
       unsigned int materialId = (*renderUnits)[renderUnitId].material;
       MaterialAsset* material = &((*materials)[materialId]);
+      unsigned int vramLocation = (*renderUnits)[renderUnitId].vramLocation;
+      unsigned int indexAmount = (*renderUnits)[renderUnitId].vertexAmount;
       float materialShininess = (*material).shininess;
       glm::vec3 materialAmbient = (*material).ambient;
       glm::vec3 materialDiffuse = (*material).diffuse;
@@ -366,11 +363,6 @@ void ie::RenderManager::renderTexturedEntities(void)
       glUniform1i(usesLightSpecularLoc, usesLightSpecular);
       glUniform1i(usesLightFalloffLoc, usesLightFalloff);
 
-      std::vector<ie::StaticRenderUnitLocation>* renderUnitLocations = &((*staticMemoryMap)[modelId]);
-      ie::StaticRenderUnitLocation* renderUnitLocation = &((*renderUnitLocations)[renderUnitId]); 
-      unsigned int location = (*renderUnitLocation).location;
-      unsigned int indexAmount = (*renderUnitLocation).indexAmount;
-
       if (containsTexture)
       {
         glBindTexture(GL_TEXTURE_2D, diffuseMapId);
@@ -381,7 +373,7 @@ void ie::RenderManager::renderTexturedEntities(void)
         glUniform1i(usingTextureLoc, 0);
       }
 
-      glDrawArrays(GL_TRIANGLES, location, indexAmount);
+      glDrawArrays(GL_TRIANGLES, vramLocation, indexAmount);
       
       if (containsTexture)
       {
@@ -537,6 +529,9 @@ void ie::RenderManager::renderTerrainEntities(void)
     int texture1Id = (*terrain).textureIds[0];
     int texture2Id = (*terrain).textureIds[1];
     short textureAmount = (*terrain).textureIds.size();
+    unsigned int vramIndexLocation = (*terrain).vramIndexLocation;
+    unsigned int vramIndexAmount = (*terrain).vramIndexAmount;
+    void* p_vramLocation = (void*)(long(vramIndexLocation));
 
     glUniform1f(materialShininessLoc, materialShininess);
     glUniform3fv(materialSpecularLoc, 1, &materialSpecular[0]);
@@ -549,13 +544,6 @@ void ie::RenderManager::renderTerrainEntities(void)
     glUniform1i(usesLightSpecularLoc, usesLightSpecularE);
     glUniform1i(usesLightFalloffLoc, usesLightFalloffE);
 
-    ie::TerrainRenderUnitLocation* loc = &(*terrainIndexMemoryMap)[terrainId];
-    unsigned int location = (*loc).location;
-    location = location * sizeof(unsigned int);
-    void* p_location = (void*)(long(location));
-    unsigned int indexAmount = (*loc).indexAmount;
-
-
     glUniform1i(textureAmountLoc, textureAmount);
     for (short tex = 0; tex < textureAmount; tex++)
     {
@@ -565,7 +553,10 @@ void ie::RenderManager::renderTerrainEntities(void)
       glBindTexture(GL_TEXTURE_2D, diffuseMapId);
     }
 
-    glDrawElements(GL_TRIANGLES, indexAmount, GL_UNSIGNED_INT, p_location);
+    glDrawElements(GL_TRIANGLES,
+                   vramIndexAmount,
+                   GL_UNSIGNED_INT,
+                   p_vramLocation);
 
     for (short tex = textureAmount - 1; tex >= 0; tex--)
     {

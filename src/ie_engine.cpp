@@ -191,7 +191,7 @@ bool ie::Engine::initPlayer(void)
 {
   player.setWindow(mainWindow);
   player.setPlayerEntity("Player");
-  player.setPlayerPosition(glm::vec3(0.0f, 10.0f, 0.0f));
+  player.setPlayerPosition(glm::vec3(0.0f, 0.0f, 0.0f));
   player.setPlayerRotation(glm::vec3(0.0f, 0.0f, -1.0));
   ie::AssetStatusToPlayerMessage toPlayerMsg = am.sendAssetStatusToPlayerMessage();
   player.receiveMessage(toPlayerMsg);

@@ -292,7 +292,7 @@ void ie::AssetManager::unwrapPackage(ie::WavefrontObjectFilePackage filePackage)
         renderUnit.assetId = assignAssetId();
         renderUnit.material = materialNameIdMap[usingMaterialName];
         renderUnit.shaderProgram = "static";
-        renderUnit.indexOffset = indexOffset + groupIndexBegin;
+        renderUnit.heapIndexOffset = indexOffset + groupIndexBegin;
         renderUnit.vertexAmount = groupVertexAmount;
         renderUnit.hidden = false;
         asset.renderUnits.push_back(renderUnit);

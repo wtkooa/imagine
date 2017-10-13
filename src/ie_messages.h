@@ -72,8 +72,6 @@ namespace ie
   class VramStatusToRenderMessage
   {
     public:
-    std::map<unsigned int, std::vector<StaticRenderUnitLocation>>* staticMemoryMap;
-    std::map<unsigned int, TerrainRenderUnitLocation>* terrainIndexMemoryMap;
     VboPair* vPair;
     VboPair* vnPair;
     VboPair* vtnPair;

@@ -57,8 +57,6 @@ ie::VramStatusToRenderMessage ie::VramManager::sendVramStatusToRenderMessage()
   msg.vtnPair = &vtnPair;
   msg.vtncbPair = &vtncbPair;
   msg.terrainIndexPair = &terrainIndexPair;
-  msg.staticMemoryMap = &(staticMemoryMap);
-  msg.terrainIndexMemoryMap = &terrainIndexMemoryMap;
   return msg;
 }
 
@@ -73,7 +71,7 @@ void ie::VramManager::createVbos(void)
 }
 
 
-//CREATING STATIC VBOS AND MEMORY MAPS
+//CREATING STATIC VBOS
 void ie::VramManager::createStaticVbos()
 {
   vPair.genBuffers();
@@ -82,36 +80,25 @@ void ie::VramManager::createStaticVbos()
 
   for (auto modIt = models->begin(); modIt != models->end(); modIt++)
   {
-    unsigned int modelId = modIt->first;
-    ie::ModelAsset model = modIt->second;
-    if (model.tobeVramLoaded == false) {continue;} 
-    (modIt->second).vramLoaded = true;
-    (modIt->second).tobeVramLoaded = false;
-    short renderUnitAmount = model.renderUnits.size();
-    std::vector<StaticRenderUnitLocation> ruLocations;
-    for (short ru = 0; ru < renderUnitAmount; ru++)
+    ie::ModelAsset* model = &modIt->second;
+    if ((*model).tobeVramLoaded == false) {continue;} 
+    (*model).vramLoaded = true;
+    (*model).tobeVramLoaded = false;
+    auto rus = &(*model).renderUnits;
+    for (auto ruIt = rus->begin(); ruIt != rus->end(); ruIt++)
     {
-      ie::VboDataFormat dataFormat = model.renderUnits[ru].dataFormat;
-      unsigned int materialId = model.renderUnits[ru].material;
-      MaterialAsset* material = &(*materials)[materialId];
-      GLuint textureId = (*material).diffuseMapId;
-      TextureAsset* textureAsset = &(*textures)[textureId];
-      StaticRenderUnitLocation ruLocation;
-      ruLocation.renderUnit = ru;
-      ruLocation.format = dataFormat;
-      unsigned int indexAmount = model.renderUnits[ru].vertexAmount;
-      ruLocation.indexAmount = indexAmount;
-      switch (dataFormat)
+      ie::RenderUnit* ru = &(*ruIt);
+      MaterialAsset* material = &(*materials)[ru->material];
+      ie::TextureAsset* textureAsset = &(*textures)[(*material).diffuseMapId];
+      switch (ru->dataFormat)
       {
         case V:
-          ruLocation.location = vboV.size(); 
-          ruLocations.push_back(ruLocation);
+          (*ru).vramLocation = vboV.size(); 
 
-          for (unsigned int n = 0; n < indexAmount; n++)
+          for (unsigned int n = 0; n < ru->vertexAmount; n++)
           {
             ie::VFormat vboDataUnit;
-            unsigned int baseIndex = model.renderUnits[ru].indexOffset;
-            glm::ivec4 faceElement = (*iHeap)[baseIndex + n];
+            glm::ivec4 faceElement = (*iHeap)[ru->heapIndexOffset + n];
             unsigned int vertexIndex = faceElement.x;
             glm::vec4 vertex = (*vHeap)[vertexIndex];
             vboDataUnit.vertex = glm::vec3(vertex.x, vertex.y, vertex.z);
@@ -119,14 +106,12 @@ void ie::VramManager::createStaticVbos()
           }
           break;
         case VN:
-          ruLocation.location = vboVN.size(); 
-          ruLocations.push_back(ruLocation);
+          (*ru).vramLocation = vboVN.size(); 
 
-          for (unsigned int n = 0; n < indexAmount; n++)
+          for (unsigned int n = 0; n < ru->vertexAmount; n++)
           {
             ie::VNFormat vboDataUnit;
-            unsigned int baseIndex = model.renderUnits[ru].indexOffset;
-            glm::ivec4 faceElement = (*iHeap)[baseIndex + n];
+            glm::ivec4 faceElement = (*iHeap)[ru->heapIndexOffset + n];
             unsigned int vertexIndex = faceElement.x;
             unsigned int normalIndex = faceElement.z;
             glm::vec4 vertex = (*vHeap)[vertexIndex];
@@ -137,14 +122,12 @@ void ie::VramManager::createStaticVbos()
           }
           break;
         case VTN:
-          ruLocation.location = vboVTN.size(); 
-          ruLocations.push_back(ruLocation);
+          (*ru).vramLocation = vboVTN.size(); 
 
-          for (unsigned int n = 0; n < indexAmount; n++)
+          for (unsigned int n = 0; n < ru->vertexAmount; n++)
           {
             ie::VTNFormat vboDataUnit;
-            unsigned int baseIndex = model.renderUnits[ru].indexOffset;
-            glm::ivec4 faceElement = (*iHeap)[baseIndex + n];
+            glm::ivec4 faceElement = (*iHeap)[ru->heapIndexOffset + n];
             unsigned int vertexIndex = faceElement.x;
             unsigned int textureIndex = faceElement.y;
             unsigned int normalIndex = faceElement.z;
@@ -155,22 +138,19 @@ void ie::VramManager::createStaticVbos()
             vboDataUnit.texture = glm::vec2(texture.x, texture.y);
             vboDataUnit.normal = glm::vec3(normal.x, normal.y, normal.z);
             vboVTN.push_back(vboDataUnit);
-            if ((*textureAsset).tobeVramLoaded == true)
+            if (textureAsset->tobeVramLoaded == true)
             {
-              loadTexture((*textureAsset));
-              (*textureAsset).tobeVramLoaded = false;
-              (*textureAsset).vramLoaded = true;
+              loadTexture(textureAsset);
             }
           }
         break;
       }
     }
-    staticMemoryMap[model.assetId] = ruLocations;
   }
 }
 
 
-//CREATING TERRAIN VBOS AND MEMORY MAPS
+//CREATING TERRAIN VBOS
 void ie::VramManager::createTerrainVbos(void)
 {
   vtncbPair.genBuffers();
@@ -179,39 +159,33 @@ void ie::VramManager::createTerrainVbos(void)
   for (auto terIt = terrains->begin(); terIt != terrains->end(); terIt++)
   {
     TerrainAsset* terrain = &terIt->second; 
-    short dim = (*terrain).dim;
-    float unitSize = (*terrain).unitSize;
-    unsigned int vHeapA = dim * dim;
-    unsigned int vHeapO = (*terrain).vertexHeapOffset;
-    unsigned int nHeapO = (*terrain).normalHeapOffset;
-    unsigned int cHeapO = (*terrain).colorHeapOffset;
-    unsigned int bHeapO = (*terrain).blendHeapOffset;
-    unsigned int iHeapO = (*terrain).indexHeapOffset;
-    unsigned int iHeapA = (*terrain).indexHeapAmount;
-    std::vector<GLuint>* textureIds = &(*terrain).textureIds;
+    unsigned int vHeapA = terrain->dim * terrain->dim;
+    unsigned int vHeapO = terrain->vertexHeapOffset;
+    unsigned int nHeapO = terrain->normalHeapOffset;
+    unsigned int cHeapO = terrain->colorHeapOffset;
+    unsigned int bHeapO = terrain->blendHeapOffset;
+    unsigned int iHeapO = terrain->indexHeapOffset;
+    unsigned int iHeapA = terrain->indexHeapAmount;
+    std::vector<unsigned int>* textureAssetIds = &terrain->textureIds;
     terrain->tobeVramLoaded = false;
     terrain->vramLoaded = true;
 
-    for (int nTex = 0; nTex < (*textureIds).size(); nTex++)
+    for (int nTex = 0; nTex < (*textureAssetIds).size(); nTex++)
     {
-      loadTexture((*textures)[(*textureIds)[nTex]]);
+      loadTexture(&(*textures)[(*textureAssetIds)[nTex]]);
     }
 
     unsigned int vboVTNCBOffset = vboVTNCB.size();
     unsigned int indexOffset = vboTerrainIndex.size();
-    ie::TerrainRenderUnitLocation vboVTNCBMapUnit;
-    ie::TerrainRenderUnitLocation indexMapUnit;
-    vboVTNCBMapUnit.location = vboVTNCBOffset;
-    vboVTNCBMapUnit.indexAmount = vHeapA;
-    indexMapUnit.location = indexOffset;
-    indexMapUnit.indexAmount = iHeapA * 3;
-    terrainMemoryMap[(*terrain).assetId] = vboVTNCBMapUnit;
-    terrainIndexMemoryMap[(*terrain).assetId] = indexMapUnit;
+    (*terrain).vramArrayLocation = vboVTNCBOffset;
+    (*terrain).vramVertexAmount = vHeapA;
+    (*terrain).vramIndexLocation = indexOffset;
+    (*terrain).vramIndexAmount = iHeapA * 3;
 
     std::vector<glm::vec2> tCoords;
-    for (short z = 0; z < dim; z++)
+    for (short z = 0; z < terrain->dim; z++)
     {
-      for (short x = 0; x < dim; x++)
+      for (short x = 0; x < terrain->dim; x++)
       {
         glm::vec2 coords(x, z);
         tCoords.push_back(coords);
@@ -244,16 +218,14 @@ void ie::VramManager::createTerrainVbos(void)
 
 //___|LOADING DATA TO VIDEO HARDWARE|___________________________________________
 
-void ie::VramManager::loadTexture(ie::TextureAsset textureAsset)
+void ie::VramManager::loadTexture(ie::TextureAsset* texture)
 { 
   SDL_Surface* surface;
-  GLuint textureId = textureAsset.textureId;
   int mode;
-  surface = IMG_Load((textureAsset.filepath +
-                      textureAsset.filename).c_str());
-  if (!surface) {std::cout << "Warning: Texture '" << textureAsset.filename <<
+  surface = IMG_Load((texture->filepath + texture->filename).c_str());
+  if (!surface) {std::cout << "Warning: Texture '" << texture->filename <<
   "' failed to load to VRAM..." << std::endl;}
-  glBindTexture(GL_TEXTURE_2D, textureId);
+  glBindTexture(GL_TEXTURE_2D, texture->textureId);
   if (surface->format->BytesPerPixel == 4) {mode = GL_RGBA;}
   else if (surface->format->BytesPerPixel = 3) {mode = GL_RGB;}
   glTexImage2D(GL_TEXTURE_2D, 0, mode, surface->w, surface->h,
@@ -267,6 +239,8 @@ void ie::VramManager::loadTexture(ie::TextureAsset textureAsset)
   glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAX_ANISOTROPY_EXT, 4.0f);// Un-hard code this;
   glBindTexture(GL_TEXTURE_2D, 0);
   SDL_FreeSurface(surface);
+  (*texture).tobeVramLoaded = false;
+  (*texture).vramLoaded = true;
 }
 
 

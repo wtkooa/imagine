@@ -75,8 +75,9 @@ namespace ie
     unsigned int material;
     VboDataFormat dataFormat;
     std::string shaderProgram;
-    unsigned int indexOffset;
+    unsigned int heapIndexOffset;
     unsigned int vertexAmount;
+    unsigned int vramLocation;
     bool hidden;
   };
 
@@ -167,6 +168,10 @@ namespace ie
     unsigned int blendHeapOffset;
     unsigned int indexHeapOffset;
     unsigned int indexHeapAmount;
+    unsigned int vramArrayLocation;
+    unsigned int vramVertexAmount;
+    unsigned int vramIndexLocation;
+    unsigned int vramIndexAmount;
     bool tobeVramLoaded;
     bool vramLoaded;
     float shininess;
