@@ -13,7 +13,7 @@
 
 #include <SDL2/SDL.h>
 
-#include "ie_assetmanager.h"
+#include "ie_asset_manager.h"
 #include "ie_camera.h"
 #include "ie_config.h"
 #include "ie_lighting.h"
@@ -21,7 +21,7 @@
 #include "ie_render.h"
 #include "ie_shader.h"
 #include "ie_time.h"
-#include "ie_vram.h"
+#include "ie_vram_manager.h"
 
 namespace ie
 {

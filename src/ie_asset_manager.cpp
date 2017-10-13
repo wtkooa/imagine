@@ -1,4 +1,4 @@
-//___|"ie_assetmanager.cpp"|____________________________________________________
+//___|"ie_asset_manager.cpp"|___________________________________________________
 //
 // Project: Imagine: 3D Environment Engine
 // Version: 0.1.0
@@ -8,7 +8,7 @@
 // Copyright (c) 2017 David E Lipps
 //______________________________________________________________________________
 
-#include "ie_assetmanager.h"
+#include "ie_asset_manager.h"
 
 #include <iostream>
 #include <list>
@@ -25,7 +25,7 @@
 #include <glm/vec4.hpp>
 
 #include "ie_assets.h"
-#include "ie_memory.h"
+#include "ie_vram.h"
 #include "ie_messages.h"
 #include "ie_packages.h"
 #include "ie_utils.h"

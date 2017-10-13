@@ -1,5 +1,5 @@
-#ifndef IE_VRAM_H
-#define IE_VRAM_H
+#ifndef IE_MEMORY_H
+#define IE_MEMORY_H
 
 //___|"ie_vram.h"|______________________________________________________________
 //
@@ -11,79 +11,77 @@
 // Copyright (c) 2017 David E Lipps
 //______________________________________________________________________________
 
-#include <map>
-#include <string>
-#include <vector>
-
-#define GL_GLEXT_PROTOTYPES // Needs to be defined for some GL funcs to work.
+#define GL_GLEXT_PROTOTYPES //Needs to be defined for some GL funcs to work.
 #include <GL/gl.h>
 #include <GL/glu.h>
 #include <glm/vec2.hpp>
 #include <glm/vec3.hpp>
-#include <glm/vec4.hpp>
-#include <SDL2/SDL.h>
-
-#include "ie_assets.h"
-#include "ie_memory.h"
-#include "ie_messages.h"
 
 namespace ie
 {
-  
-  class VramManager
+
+  class VFormat
   {
     public:
-    //BUILDING CPU SIDE VBOS
-    void createVbos(void);
-    void createStaticVbos(void);
-    void createTerrainVbos(void);
-    
-    //SENDING DATA TO VIDEO HARDWARE
-    void loadVbos(void);
-    void createAndLoadVbos(void);
-    void loadTexture(TextureAsset*);
+    glm::vec3 vertex;
+  };
 
-    //RECEIVING MESSAGES
-    void receiveMessage(AssetStatusToVramMessage); 
 
-    //SENDING MESSAGES
-    VramStatusToRenderMessage sendVramStatusToRenderMessage();
+  class VNFormat
+  {
+    public:
+    glm::vec3 vertex;
+    glm::vec3 normal;
+  };
 
-    //RELEASING VIDEO HARDWARE MEMORY
-    void quit(void);
 
-    //GETTERS AND SETTERS
-    void setGlContext(SDL_GLContext);
+  class VTNFormat
+  {
+    public:
+    glm::vec3 vertex;
+    glm::vec2 texture;
+    glm::vec3 normal;
+  };
 
-    private:
-    //DATA FOR INIT
-    SDL_GLContext mainGlContext;
+  class VTNCBFormat
+  {
+    public:
+    glm::vec3 vertex;
+    glm::vec2 texture;
+    glm::vec3 normal;
+    glm::vec3 color;
+    glm::uvec2 blend;
+  };
 
-    //VBO ID PAIRS
-    VboPair vPair;
-    VboPair vnPair;
-    VboPair vtnPair;
-    VboPair vtncbPair;
-    VboPair terrainIndexPair;
 
-    //DATA FROM ASSET MANAGER
-    std::map<unsigned int, ModelAsset>* models;
-    std::map<unsigned int, TextureAsset>* textures; 
-    std::map<unsigned int, MaterialAsset>* materials;
-    std::map<unsigned int, TerrainAsset>* terrains;
-    std::vector<glm::vec4>* vHeap;
-    std::vector<glm::vec3>* tHeap;
-    std::vector<glm::vec3>* nHeap;
-    std::vector<glm::vec3>* cHeap;
-    std::vector<glm::uvec2>* bHeap;
-    std::vector<glm::ivec4>* iHeap;
+  class VboPair
+  {
+    public:
+    void genBuffers(void);
+    GLuint readVbo;
+    GLuint writeVbo;
+    void swap(void);
+    void release(void);
+  };
 
-    //CPU SIDE VBO DATA
-    std::vector<VFormat> vboV;
-    std::vector<VNFormat> vboVN;
-    std::vector<VTNFormat> vboVTN;
-    std::vector<VTNCBFormat> vboVTNCB;
-    std::vector<unsigned int> vboTerrainIndex;
+
+  enum VboDataFormat {V, VN, VTN, VTNCB};
+
+
+  class StaticRenderUnitLocation 
+  {
+    public:
+    short renderUnit;
+    VboDataFormat format;
+    unsigned int location;
+    unsigned int indexAmount;
+  };
+
+  class TerrainRenderUnitLocation
+  {
+    public:
+    unsigned int location;
+    unsigned int indexAmount;
   };
 
 }

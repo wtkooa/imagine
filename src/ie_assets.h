@@ -21,7 +21,7 @@
 #include <glm/mat4x4.hpp>
 #include <glm/vec3.hpp>
 
-#include "ie_memory.h"
+#include "ie_vram.h"
 #include "ie_packages.h"
 
 namespace ie

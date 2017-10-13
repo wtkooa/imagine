@@ -21,7 +21,7 @@
 
 #include "ie_assets.h"
 #include "ie_const.h"
-#include "ie_memory.h"
+#include "ie_vram.h"
 
 //___|RECEIVING MESSAGES|_______________________________________________________
 

@@ -20,7 +20,7 @@
 #include <glm/vec4.hpp>
 
 #include "ie_assets.h"
-#include "ie_memory.h"
+#include "ie_vram.h"
 
 namespace ie
 {

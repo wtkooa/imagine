@@ -24,7 +24,7 @@
 #include <SDL2/SDL.h>
 
 #include "ie_assets.h"
-#include "ie_assetmanager.h"
+#include "ie_asset_manager.h"
 #include "ie_config.h"
 #include "ie_const.h"
 #include "ie_camera.h"

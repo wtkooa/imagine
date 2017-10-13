@@ -1,7 +1,7 @@
 #ifndef IE_ASSETMANAGER_H
 #define IE_ASSETMANAGER_H
 
-//___|"ie_assetmanager.h"|______________________________________________________
+//___|"ie_asset_manager.h"|_____________________________________________________
 //
 // Project: Imagine: 3D Environment Engine
 // Version: 0.1.0
