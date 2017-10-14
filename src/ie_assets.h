@@ -28,7 +28,7 @@ namespace ie
 {
 
 
-  enum EntityType{STATIC, TERRAIN, WATER};
+  enum EntityType{NONE, STATIC, TERRAIN, WATER};
   
   class Entity
   {

@@ -31,7 +31,8 @@
 #include "ie_lighting.h"
 #include "ie_messages.h"
 #include "ie_packages.h"
-#include "ie_render.h"
+#include "ie_render_engine.h"
+#include "ie_scenegraph.h"
 #include "ie_shader.h"
 #include "ie_terrain.h"
 #include "ie_time.h"
@@ -57,6 +58,7 @@ bool ie::Engine::init(void)
   initAssets();
   initVram();
   initRenderers();
+  initSceneGraph();
   initPlayer();
   initCamera();
   return true;
@@ -186,6 +188,15 @@ bool ie::Engine::initRenderers(void)
 {
 }
 
+bool ie::Engine::initSceneGraph(void)
+{
+  ie::EntityNode* child = new EntityNode();
+  ie::EntityNode* childchild = new EntityNode();
+  sg.root.addChild(child);
+  child->addChild(childchild); 
+  sg.root.update();
+}
+
 
 bool ie::Engine::initPlayer(void)
 {
@@ -241,16 +252,16 @@ void ie::Engine::handleUpdates(void)
   am.update();
 
   ie::CameraStatusToRenderMessage cameraToRenderMsg = eye.sendCameraStatusToRenderMessage();
-  rm.receiveMessage(cameraToRenderMsg);
+  re.receiveMessage(cameraToRenderMsg);
 
   ie::AssetStatusToVramMessage toVramMsg = am.sendAssetStatusToVramMessage();
   vram.receiveMessage(toVramMsg);
 
   ie::VramStatusToRenderMessage vramToRenderMsg  = vram.sendVramStatusToRenderMessage();
-  rm.receiveMessage(vramToRenderMsg);
+  re.receiveMessage(vramToRenderMsg);
 
   ie::AssetStatusToRenderMessage assetToRenderMsg = am.sendAssetStatusToRenderMessage();
-  rm.receiveMessage(assetToRenderMsg);
+  re.receiveMessage(assetToRenderMsg);
 }
 
 
@@ -269,7 +280,7 @@ void ie::Engine::render(void)
 {
   glClear(ACTIVEBUFFERS);
 
-  rm.render();
+  re.render();
 
   SDL_GL_SwapWindow(mainWindow);
 }

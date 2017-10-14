@@ -1,5 +1,5 @@
-#ifndef IE_MEMORY_H
-#define IE_MEMORY_H
+#ifndef IE_VRAM_H
+#define IE_VRAM_H
 
 //___|"ie_vram.h"|______________________________________________________________
 //

@@ -18,7 +18,8 @@
 #include "ie_config.h"
 #include "ie_lighting.h"
 #include "ie_player.h"
-#include "ie_render.h"
+#include "ie_render_engine.h"
+#include "ie_scenegraph.h"
 #include "ie_shader.h"
 #include "ie_time.h"
 #include "ie_vram_manager.h"
@@ -40,6 +41,7 @@ namespace ie
     bool initAssets(void);
     bool initVram(void);
     bool initRenderers(void);
+    bool initSceneGraph(void);
     bool initPlayer(void);
     bool initCamera(void);
 
@@ -62,7 +64,8 @@ namespace ie
     ie::FrameClock frameClock;
     ie::Camera eye;
     ie::Player player;
-    ie::RenderManager rm;
+    ie::RenderEngine re;
+    ie::SceneGraph sg;
 
     ie::OpenGlContextDependentConfigs openGlConfigs;
   };

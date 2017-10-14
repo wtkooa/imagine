@@ -1,7 +1,7 @@
-#ifndef IE_RENDER_H
-#define IE_RENDER_H
+#ifndef IE_RENDER_ENGINE_H
+#define IE_RENDER_ENGINE_H
 
-//___|"ie_render.h"|____________________________________________________________
+//___|"ie_render_engine.h"|_____________________________________________________
 //
 // Project: Imagine: 3D Environment Engine
 // Version: 0.1.0
@@ -25,7 +25,7 @@
 namespace ie
 {
 
-  class RenderManager
+  class RenderEngine
   {
     public:
     //RENDERING

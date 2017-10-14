@@ -1,4 +1,4 @@
-//___|"ie_render.cpp"|__________________________________________________________
+//___|"ie_render_engine.cpp"|___________________________________________________
 //
 // Project: Imagine: 3D Environment Engine
 // Version: 0.1.0
@@ -8,7 +8,7 @@
 // Copyright (c) 2017 David E Lipps
 //______________________________________________________________________________
 
-#include "ie_render.h"
+#include "ie_render_engine.h"
 
 #include <iostream>
 
@@ -25,7 +25,7 @@
 
 //___|RECEIVING MESSAGES|_______________________________________________________
 
-void ie::RenderManager::receiveMessage(AssetStatusToRenderMessage msg)
+void ie::RenderEngine::receiveMessage(AssetStatusToRenderMessage msg)
 {
   entities = msg.entities;
   materials = msg.materials;
@@ -46,7 +46,7 @@ void ie::RenderManager::receiveMessage(AssetStatusToRenderMessage msg)
 }
 
 
-void ie::RenderManager::receiveMessage(VramStatusToRenderMessage msg)
+void ie::RenderEngine::receiveMessage(VramStatusToRenderMessage msg)
 {
   vPair = msg.vPair;
   vnPair = msg.vnPair;
@@ -56,7 +56,7 @@ void ie::RenderManager::receiveMessage(VramStatusToRenderMessage msg)
 }
 
 
-void ie::RenderManager::receiveMessage(CameraStatusToRenderMessage msg)
+void ie::RenderEngine::receiveMessage(CameraStatusToRenderMessage msg)
 {
   projectionMatrix = msg.projectionMatrix;
   viewMatrix = msg.viewMatrix;
@@ -67,7 +67,7 @@ void ie::RenderManager::receiveMessage(CameraStatusToRenderMessage msg)
 
 //___|RENDERERS|________________________________________________________________
 
-void ie::RenderManager::render(void)
+void ie::RenderEngine::render(void)
 {
   renderMaterialedEntities();
   renderTexturedEntities();
@@ -75,7 +75,7 @@ void ie::RenderManager::render(void)
 }
 
 //STATIC MATERIALED ENTITIES RENDERER
-void ie::RenderManager::renderMaterialedEntities(void)
+void ie::RenderEngine::renderMaterialedEntities(void)
 {
   if ((*staticVNList).size() == 0) {return;}
 
@@ -221,7 +221,7 @@ void ie::RenderManager::renderMaterialedEntities(void)
 
 
 //STATIC TEXTURED ENTITIES RENDERER
-void ie::RenderManager::renderTexturedEntities(void)
+void ie::RenderEngine::renderTexturedEntities(void)
 {
   if ((*staticVTNList).size() == 0) {return;}
 
@@ -389,7 +389,7 @@ void ie::RenderManager::renderTexturedEntities(void)
 
 
 //TERRAIN ENTITIES RENDERER
-void ie::RenderManager::renderTerrainEntities(void)
+void ie::RenderEngine::renderTerrainEntities(void)
 {
 
   if ((*terrainVTNCBList).size() == 0) {return;}    

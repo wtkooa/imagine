@@ -1,5 +1,5 @@
-#ifndef IE_ASSETMANAGER_H
-#define IE_ASSETMANAGER_H
+#ifndef IE_ASSET_MANAGER_H
+#define IE_ASSET_MANAGER_H
 
 //___|"ie_asset_manager.h"|_____________________________________________________
 //
@@ -93,6 +93,9 @@ namespace ie
     //MODELS
     std::map<unsigned int, ModelAsset> modelAssets;
     std::map<std::string, unsigned int> modelNameIdMap;
+
+    //RENDER UNITS
+    std::map<unsigned int, RenderUnit> renderUnits;
 
     //MATERIALS
     std::map<unsigned int, MaterialAsset> materialAssets;
