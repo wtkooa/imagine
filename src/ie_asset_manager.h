@@ -53,6 +53,7 @@ namespace ie
     AssetStatusToVramMessage sendAssetStatusToVramMessage(void); 
     AssetStatusToRenderMessage sendAssetStatusToRenderMessage(void);
     AssetStatusToPlayerMessage sendAssetStatusToPlayerMessage(void);
+    AssetStatusToScenegraphMessage sendAssetStatusToScenegraphMessage(void);
 
     //RECEIVING MESSAGES
     void receiveMessage(ie::AssetManagerInstructions);

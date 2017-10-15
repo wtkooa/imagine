@@ -43,7 +43,6 @@ void ie::RenderEngine::receiveMessage(AssetStatusToRenderMessage msg)
   staticVNList = msg.staticVNList;
   staticVTNList = msg.staticVTNList;
   terrainVTNCBList = msg.terrainVTNCBList;
-  
 }
 
 

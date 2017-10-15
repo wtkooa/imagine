@@ -146,8 +146,7 @@ void ie::AssetManager::unwrapPackage(ie::WavefrontObjectFilePackage filePackage)
     {
       objectIndexEnd = nextIt->first;
     }
-    else
-    {
+    else {
       objectIndexEnd = indexAmount;
     }
     for (auto mgIt = filePackage.materialGroups.begin();
@@ -445,6 +444,21 @@ ie::AssetStatusToPlayerMessage ie::AssetManager::sendAssetStatusToPlayerMessage(
   ie::AssetStatusToPlayerMessage msg;
   msg.entities = &entities;
   msg.entityNameIdMap = &entityNameIdMap;
+  return msg;
+}
+
+ie::AssetStatusToScenegraphMessage ie::AssetManager::sendAssetStatusToScenegraphMessage(void)
+{
+  ie::AssetStatusToScenegraphMessage msg;
+  msg.models = &modelAssets;
+  msg.modelNameIdMap = &modelNameIdMap;
+  msg.terrains = &terrainAssets;
+  msg.terrainNameIdMap = &terrainNameIdMap;
+  msg.materials = &materialAssets;
+  msg.materialNameIdMap = &materialNameIdMap;
+  msg.lights = &lightAssets;
+  msg.lightNameIdMap = &lightNameIdMap;
+  msg.rus = &renderUnits;
   return msg;
 }
 

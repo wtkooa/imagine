@@ -190,11 +190,14 @@ bool ie::Engine::initRenderers(void)
 
 bool ie::Engine::initSceneGraph(void)
 {
-  ie::EntityNode* child = new EntityNode();
-  ie::EntityNode* childchild = new EntityNode();
-  sg.root.addChild(child);
-  child->addChild(childchild); 
-  sg.root.update();
+  ie::AssetStatusToScenegraphMessage toSG = am.sendAssetStatusToScenegraphMessage();
+  sg.receiveMessage(toSG);
+
+  ie::EntityNode* terrain = new EntityNode("Terrain", "Terrain", TERRAIN);
+  ie::EntityNode* cursor = new EntityNode("Player", "Cursor", STATIC);
+  sg.root->addChild(terrain);
+  terrain->addChild(cursor); 
+  sg.update();
 }
 
 

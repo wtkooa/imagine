@@ -63,6 +63,20 @@ namespace ie
     std::set<unsigned int>* terrainVTNCBList;
   };
 
+  class AssetStatusToScenegraphMessage
+  {
+    public:
+    std::map<unsigned int, ModelAsset>* models;
+    std::map<std::string, unsigned int>* modelNameIdMap;
+    std::map<unsigned int, TerrainAsset>* terrains;
+    std::map<std::string, unsigned int>* terrainNameIdMap;
+    std::map<unsigned int, LightAsset>* lights;
+    std::map<std::string, unsigned int>* lightNameIdMap;
+    std::map<unsigned int, MaterialAsset>* materials;
+    std::map<std::string, unsigned int>* materialNameIdMap;
+    std::map<unsigned int, RenderUnit>* rus;
+  };
+
   class AssetStatusToPlayerMessage
   {
     public:
