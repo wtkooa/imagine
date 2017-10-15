@@ -68,6 +68,7 @@ namespace ie
 
     //DATA FROM ASSET MANAGER
     std::map<unsigned int, ModelAsset>* models;
+    std::map<unsigned int, RenderUnit>* rus;
     std::map<unsigned int, TextureAsset>* textures; 
     std::map<unsigned int, MaterialAsset>* materials;
     std::map<unsigned int, TerrainAsset>* terrains;

@@ -29,7 +29,6 @@ namespace ie
     Player();
     void update(void);
     void toggleGrabMode(void);
-    void toggleHideEntity(void);
     void firstPersonUpdate(void);
 
     //SENDING MESSAGES

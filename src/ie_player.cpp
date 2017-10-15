@@ -44,10 +44,6 @@ void ie::Player::update(void)
 
   if (mode == "firstperson")
   {
-    if ((*entity).hidden == false)
-    {
-      toggleHideEntity();
-    }
     firstPersonUpdate();
   }
 
@@ -106,21 +102,6 @@ void ie::Player::toggleGrabMode(void)
     std::cout << "GrabMode Off" << std::endl;
     setGrabMode(SDL_FALSE);
   } 
-}
-
-void ie::Player::toggleHideEntity(void)
-{
-  ie::AssetManagerInstruction msg;
-  if ((*entity).hidden == false)
-  {
-    msg.command = "hide entity";
-  }
-  else
-  {
-    msg.command = "unhide entity";
-  }
-  msg.id = (*entity).assetId;
-  instructions.push_back(msg);
 }
 
 //___|SENDING MESSAGES|_________________________________________________________

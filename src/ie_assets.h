@@ -79,6 +79,8 @@ namespace ie
     unsigned int vertexAmount;
     unsigned int vramLocation;
     bool hidden;
+    bool tobeVramLoaded;
+    bool vramLoaded;
   };
 
 
@@ -89,9 +91,7 @@ namespace ie
     std::string name;
     std::string filename; 
     std::string filepath;
-    std::vector<RenderUnit> renderUnits;
-    bool tobeVramLoaded;
-    bool vramLoaded;
+    std::vector<unsigned int> renderUnits;
   };
 
 

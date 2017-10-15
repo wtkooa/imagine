@@ -48,77 +48,12 @@ void ie::AssetManager::update(void)
 
     if (instruc.command == "hide entity")
     {
-      hideEntity(instruc.id);
     }
     else if (instruc.command == "unhide entity")
     {
-      unhideEntity(instruc.id);
     }
   }
   instructions.clear();
-}
-
-
-void ie::AssetManager::hideEntity(unsigned int entityId)
-{
-  if (entities[entityId].hidden == true) {return;}
-  EntityType type = entities[entityId].type;
-  entities[entityId].hidden = true;
-
-  if (type == STATIC)
-  {
-    staticVList.erase(entityId);
-    staticVNList.erase(entityId);
-    staticVTNList.erase(entityId);
-  }
-  else if (type == TERRAIN)
-  {
-    terrainVTNCBList.erase(entityId);
-  }
-}
-
-
-void ie::AssetManager::unhideEntity(unsigned int entityId)
-{
-  if (entities[entityId].hidden == false) {return;}
-  EntityType type = entities[entityId].type;
-  entities[entityId].hidden = false;
-
-  if (type == STATIC)
-  {
-    StaticQuickListElement vElement;
-    StaticQuickListElement vnElement;
-    StaticQuickListElement vtnElement;
-    Entity* entity = &entities[entityId];
-
-    ModelAsset* model = &modelAssets[(*entity).modelId];
-    for (int nUnit = 0; nUnit < (*model).renderUnits.size(); nUnit++)
-    {
-      RenderUnit* ru = &(*model).renderUnits[nUnit];
-      if ((*ru).hidden == false)
-      {
-        switch ((*ru).dataFormat)
-        {
-          case V:
-            vElement.renderUnitList.push_back(nUnit);
-            break;
-          case VN:
-            vnElement.renderUnitList.push_back(nUnit);
-            break;
-          case VTN:
-            vtnElement.renderUnitList.push_back(nUnit);
-            break;
-        }
-      }
-    }
-    if (vElement.renderUnitList.size() > 0) {staticVList[entityId] = vElement;}
-    if (vnElement.renderUnitList.size() > 0) {staticVNList[entityId]= vnElement;}
-    if (vtnElement.renderUnitList.size() > 0) {staticVTNList[entityId] = vtnElement;}
-  }
-  else if (type == TERRAIN)
-  {
-    terrainVTNCBList.insert(entityId);
-  }
 }
 
 //______________________________________________________________________________
@@ -160,7 +95,7 @@ unsigned int ie::AssetManager::pushToHeap(T* heap, S* data)
 void ie::AssetManager::unwrapPackage(ie::WavefrontObjectFilePackage filePackage)
 {
   unsigned int vertexHeapOffset = pushToHeap(&vertexHeap, &filePackage.v);
-;
+
   unsigned int textureCoordinateHeapOffset = pushToHeap(&textureCoordinateHeap,
                                              &filePackage.vt);
   unsigned int normalVectorHeapOffset = pushToHeap(&normalVectorHeap,
@@ -203,8 +138,6 @@ void ie::AssetManager::unwrapPackage(ie::WavefrontObjectFilePackage filePackage)
     modelNameIdMap[asset.name] = asset.assetId;
     asset.filename = filePackage.filename;
     asset.filepath = filePackage.filepath;
-    asset.tobeVramLoaded = true;
-    asset.vramLoaded = false;
     unsigned int objectIndexBegin = it->first;
     unsigned int objectIndexEnd = 0;
     auto nextIt = it;
@@ -258,7 +191,10 @@ void ie::AssetManager::unwrapPackage(ie::WavefrontObjectFilePackage filePackage)
         renderUnit.heapIndexOffset = indexOffset + groupIndexBegin;
         renderUnit.vertexAmount = groupVertexAmount;
         renderUnit.hidden = false;
-        asset.renderUnits.push_back(renderUnit);
+        renderUnit.tobeVramLoaded = true;
+        renderUnit.vramLoaded = false;
+        asset.renderUnits.push_back(renderUnit.assetId);
+        renderUnits[renderUnit.assetId] = renderUnit;
       }
     }
     modelAssets[asset.assetId] = asset;
@@ -467,6 +403,7 @@ ie::AssetStatusToVramMessage ie::AssetManager::sendAssetStatusToVramMessage(void
 {
   ie::AssetStatusToVramMessage msg;
   msg.models = &modelAssets;
+  msg.rus = &renderUnits;
   msg.textures = &textureAssets;
   msg.materials = &materialAssets;
   msg.terrains = &terrainAssets;
@@ -486,6 +423,7 @@ ie::AssetStatusToRenderMessage ie::AssetManager::sendAssetStatusToRenderMessage(
   msg.entities = &entities;
   msg.materials = &materialAssets;
   msg.models = &modelAssets;
+  msg.rus = &renderUnits;
   msg.shaders = &shaderAssets;
   msg.shaderNameIdMap = &shaderNameIdMap;
   msg.lights = &lightAssets;
@@ -566,7 +504,6 @@ void ie::AssetManager::createEntity(std::string name,
   entity.usesLightFalloff = true;
   entityNameIdMap[entity.name] = entity.assetId;
   entities[entity.assetId] = entity;
-  
 }
 
 //______________________________________________________________________________
@@ -594,7 +531,8 @@ void ie::AssetManager::createStaticQuickLists(void)
       ModelAsset* model = &modelAssets[(*entity).modelId];
       for (int nUnit = 0; nUnit < (*model).renderUnits.size(); nUnit++)
       {
-        RenderUnit* ru = &(*model).renderUnits[nUnit];
+        unsigned int ruId = (*model).renderUnits[nUnit];
+        RenderUnit* ru = &renderUnits[ruId];
         if ((*ru).hidden == false)
         {
           switch ((*ru).dataFormat)
@@ -699,41 +637,6 @@ ie::handle ie::AssetManager::getHandle(std::string line)
       hdl.model = ma;  
       return hdl;
     }
-    
-    line = ie::popFrontToken(line, '/');
-    token = ie::split(line, '/', 0);
-    tokenAmount = ie::countTokens(line, '/');
-    int ru;
-    if (tokenAmount == 1)
-    {
-      try
-      {
-        ru = std::stoi(token);
-      }
-      catch(...)
-      {
-        std::cout << "Warning: stoi conversion of render unit '" << token <<
-        "' failed"  << std::endl;
-        hdl.model = 0; 
-        return hdl;
-      }
-      if (ru > (*ma).renderUnits.size() - 1)
-      {
-        std::cout << "Warning: Render unit '" << ru <<
-        "' isn't a member of '" << (*ma).name << "'"  << std::endl;
-        hdl.model = 0;
-        return hdl;
-      }
-      hdl.ru = &(*ma).renderUnits[ru];
-      return hdl;
-    }
-    else
-    {
-      std::cout << "Warning: Unrecognized model path '" << line << std::endl;
-      hdl.model = 0;
-      return hdl;
-    }
-
   }
 
   //RETURN POINTER TO A MATERIAL

@@ -39,8 +39,6 @@ namespace ie
 
     //FRAME UPDATE AND INSTRUCTIONS
     void update(void);
-    void hideEntity(unsigned int);
-    void unhideEntity(unsigned int);
 
     //UNWRAPPING PACKAGES
     void unwrapPackage(ie::WavefrontObjectFilePackage);

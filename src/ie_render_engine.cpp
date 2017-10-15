@@ -30,6 +30,7 @@ void ie::RenderEngine::receiveMessage(AssetStatusToRenderMessage msg)
   entities = msg.entities;
   materials = msg.materials;
   models = msg.models;
+  rus = msg.rus;
   shaders = msg.shaders;
   shaderNameIdMap = msg.shaderNameIdMap;
   lights = msg.lights;
@@ -165,7 +166,7 @@ void ie::RenderEngine::renderMaterialedEntities(void)
     bool usesLightFalloffE = (*entity).usesLightFalloff;
     ie::ModelAsset* modelAsset = &((*models)[(*entity).modelId]);
     unsigned int modelId = (*modelAsset).assetId;
-    std::vector<RenderUnit>* renderUnits = &((*modelAsset).renderUnits); 
+    std::vector<unsigned int>* renderUnitIds = &((*modelAsset).renderUnits); 
 
     glm::mat4 mtwMatrix = translationMatrix * rotationMatrix *
                           scaleMatrix;
@@ -175,12 +176,13 @@ void ie::RenderEngine::renderMaterialedEntities(void)
     glUniformMatrix4fv(transformationMatrixLoc, 1, GL_FALSE,
                        &transformationMatrix[0][0]);
 
-    for (short nRu = 0; nRu < renderUnitList.size(); nRu++)
+    for (short nRu = 0; nRu < renderUnitIds->size(); nRu++)
     {
-      short renderUnitId = renderUnitList[nRu];
-      unsigned int materialId = (*renderUnits)[renderUnitId].material;
-      unsigned int vramLocation = (*renderUnits)[renderUnitId].vramLocation;
-      unsigned int indexAmount = (*renderUnits)[renderUnitId].vertexAmount;
+      unsigned int renderUnitId = (*renderUnitIds)[nRu];
+      RenderUnit* ru = &(*rus)[renderUnitId];
+      unsigned int materialId = ru->material;
+      unsigned int vramLocation = ru->vramLocation;
+      unsigned int indexAmount = ru->vertexAmount;
       MaterialAsset* material = &((*materials)[materialId]);
       float materialShininess = (*material).shininess;
       glm::vec3 materialAmbient = (*material).ambient;
@@ -315,7 +317,7 @@ void ie::RenderEngine::renderTexturedEntities(void)
     bool usesLightFalloffE = (*entity).usesLightFalloff;
     ie::ModelAsset* modelAsset = &((*models)[(*entity).modelId]);
     unsigned int modelId = (*modelAsset).assetId;
-    std::vector<RenderUnit>* renderUnits = &((*modelAsset).renderUnits); 
+    std::vector<unsigned int>* renderUnitIds = &((*modelAsset).renderUnits); 
 
     glm::mat4 mtwMatrix = translationMatrix * rotationMatrix *
                           scaleMatrix;
@@ -325,13 +327,14 @@ void ie::RenderEngine::renderTexturedEntities(void)
     glUniformMatrix4fv(transformationMatrixLoc, 1, GL_FALSE,
                        &transformationMatrix[0][0]);
 
-    for (short nRu = 0; nRu < renderUnitList.size(); nRu++)
+    for (short nRu = 0; nRu < renderUnitIds->size(); nRu++)
     {
-      short renderUnitId = renderUnitList[nRu];
-      unsigned int materialId = (*renderUnits)[renderUnitId].material;
+      unsigned int renderUnitId = (*renderUnitIds)[nRu];
+      RenderUnit* ru = &(*rus)[renderUnitId];
+      unsigned int materialId = ru->material;
+      unsigned int vramLocation = ru->vramLocation;
+      unsigned int indexAmount = ru->vertexAmount;
       MaterialAsset* material = &((*materials)[materialId]);
-      unsigned int vramLocation = (*renderUnits)[renderUnitId].vramLocation;
-      unsigned int indexAmount = (*renderUnits)[renderUnitId].vertexAmount;
       float materialShininess = (*material).shininess;
       glm::vec3 materialAmbient = (*material).ambient;
       glm::vec3 materialDiffuse = (*material).diffuse;

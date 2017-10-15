@@ -44,6 +44,7 @@ namespace ie
     std::map<unsigned int, Entity>* entities;
     std::map<unsigned int, MaterialAsset>* materials;
     std::map<unsigned int, ModelAsset>* models;
+    std::map<unsigned int, RenderUnit>* rus;
     std::map<GLuint, ShaderAsset>* shaders;
     std::map<std::string, unsigned int>* shaderNameIdMap;
     std::map<unsigned int, LightAsset>* lights;

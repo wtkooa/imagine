@@ -29,6 +29,7 @@ namespace ie
   {
     public:
     std::map<unsigned int, ModelAsset>* models;
+    std::map<unsigned int, RenderUnit>* rus;
     std::map<unsigned int, TextureAsset>* textures; 
     std::map<unsigned int, MaterialAsset>* materials;
     std::map<unsigned int, TerrainAsset>* terrains;
@@ -47,6 +48,7 @@ namespace ie
     std::map<unsigned int, Entity>* entities;
     std::map<unsigned int, MaterialAsset>* materials;
     std::map<unsigned int, ModelAsset>* models;
+    std::map<unsigned int, RenderUnit>* rus;
     std::map<GLuint, ShaderAsset>* shaders;
     std::map<std::string, GLuint>* shaderNameIdMap;
     std::map<unsigned int, LightAsset>* lights;
