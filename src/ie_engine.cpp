@@ -265,6 +265,12 @@ void ie::Engine::handleUpdates(void)
 
   ie::AssetStatusToRenderMessage assetToRenderMsg = am.sendAssetStatusToRenderMessage();
   re.receiveMessage(assetToRenderMsg);
+
+  //sg.update();
+
+  ie::GraphStatusToRenderMessage graphToRenderMsg = sg.sendGraphStatusToRenderMessage();
+  re.receiveMessage(graphToRenderMsg);
+
 }
 
 

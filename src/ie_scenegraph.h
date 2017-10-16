@@ -37,7 +37,7 @@ namespace ie
 
     void addChild(GraphNode*);
     void update(void);
-    void render(void);
+    virtual void render(void);
     void setParentNode(GraphNode*);
     void setSortTreeRoot(SortTreeNode*);
     void receiveMessage(ie::AssetStatusToScenegraphMessage);
@@ -45,6 +45,10 @@ namespace ie
 
     protected:
     glm::mat4 transformation;
+    std::vector<GraphNode*> children;
+    glm::vec3 translation;
+    glm::vec3 rotation;
+    glm::vec3 scale;
 
     //DATA FROM THE ASSET MANAGER
     static SortTreeNode* sortTreeRoot;
@@ -60,10 +64,6 @@ namespace ie
 
     private:
     GraphNode* parentNode;
-    std::vector<GraphNode*> children;
-    glm::vec3 translation;
-    glm::vec3 rotation;
-    glm::vec3 scale;
 
   };
 
@@ -73,10 +73,11 @@ namespace ie
     public:
     EntityNode();
     EntityNode(std::string, std::string, EntityType);
+    virtual void render(void);
     EntityType getType(void);
     unsigned int getAssetId(void);
-
-    private:
+    
+    protected:
     std::string name;
     EntityType type;
     unsigned int assetId;
@@ -86,6 +87,8 @@ namespace ie
     bool usesLightDiffuse;
     bool usesLightSpecular;
     bool usesLightFalloff;
+
+    private:
   };
 
   //SORTING BUCKET TREE NODES
@@ -99,16 +102,23 @@ namespace ie
   };
 
 
+  class RenderInstructions
+  {
+    public:
+    std::string shader;
+  };
+
   class SortTreeNode
   {
     public:
     void addChild(SortTreeNode*);
-    void sort(EntityNode*);
-    void sort(RenderPointers);
+    virtual void sort(EntityNode*);
+    virtual void sort(RenderPointers);
 
     void receiveMessage(ie::AssetStatusToScenegraphMessage);
 
     protected:
+    std::vector<SortTreeNode*> children;
 
     //DATA FROM THE ASSET MANAGER
     static std::map<unsigned int, ModelAsset>* models;
@@ -122,7 +132,6 @@ namespace ie
     static std::map<unsigned int, RenderUnit>* rus;
 
     private:
-    std::vector<SortTreeNode*> children;
   };
 
   class SortEntityTypeNode : public SortTreeNode
@@ -151,15 +160,19 @@ namespace ie
 
 
   //SORT TREE BUCKETS
-
   class SortBucket : public SortTreeNode
   {
     public:
-    void sort(RenderPointers);
-    void addLink(SortBucket*);
-    std::string renderer;
+    virtual void sort(RenderPointers);
+    void clear();
+    void setNextBucket(SortBucket*);
+    SortBucket* getNextBucket(void);
+    void setRenderInstructions(RenderInstructions);
+    RenderInstructions getRenderInstructions(void);
+    std::vector<RenderPointers>* getRenderUnits(void);
 
-    private:
+    protected:
+    RenderInstructions instructions;
     std::vector<RenderPointers> renderUnits;
     SortBucket* link;
   };
@@ -173,8 +186,10 @@ namespace ie
     SceneGraph();
     GraphNode* root;
     SortTreeNode* sortTree;
+    SortBucket* firstBucket;
     void update(void);
     void receiveMessage(ie::AssetStatusToScenegraphMessage);
+    ie::GraphStatusToRenderMessage sendGraphStatusToRenderMessage(void);
     private:
 
   };

@@ -63,6 +63,11 @@ void ie::RenderEngine::receiveMessage(CameraStatusToRenderMessage msg)
   cameraPos = msg.cameraPos;
 }
 
+void ie::RenderEngine::receiveMessage(GraphStatusToRenderMessage msg)
+{
+  firstBucket = msg.bucket;
+}
+
 //______________________________________________________________________________
 
 //___|RENDERERS|________________________________________________________________

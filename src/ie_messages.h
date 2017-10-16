@@ -134,6 +134,14 @@ namespace ie
     std::vector<AssetManagerInstruction> instructions;
   };
 
+
+  class SortBucket; //Forward Declaration
+  class GraphStatusToRenderMessage
+  {
+    public:
+    SortBucket* bucket;
+  };
+
 }
 
 #endif

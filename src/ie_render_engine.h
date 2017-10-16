@@ -19,8 +19,9 @@
 #include <glm/vec3.hpp>
 
 #include "ie_assets.h"
-#include "ie_vram.h"
 #include "ie_messages.h"
+#include "ie_scenegraph.h"
+#include "ie_vram.h"
 
 namespace ie
 {
@@ -38,6 +39,7 @@ namespace ie
     void receiveMessage(AssetStatusToRenderMessage);
     void receiveMessage(VramStatusToRenderMessage);
     void receiveMessage(CameraStatusToRenderMessage);
+    void receiveMessage(GraphStatusToRenderMessage);
 
     private:
     //DATA FROM ASSET MANAGER
@@ -69,6 +71,9 @@ namespace ie
     glm::mat4 projectionMatrix;
     glm::mat4 viewMatrix;
     glm::vec3 cameraPos;
+
+    //DATA FROM SCENEGRAPH
+    SortBucket* firstBucket;
   };
 
 }

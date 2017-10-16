@@ -152,6 +152,18 @@ ie::EntityNode::EntityNode(std::string entityName,
   usesLightFalloff = true;
 }
 
+void ie::EntityNode::render(void)
+{
+  if (hidden == false)
+  {
+    sortTreeRoot->sort(this);
+  }
+  for (auto it = children.begin(); it != children.end(); it++)
+  {
+    (*it)->render();
+  }
+}
+
 ie::EntityType ie::EntityNode::getType(void) {return type;}
 unsigned int ie::EntityNode::getAssetId(void) {return assetId;}
 
@@ -202,7 +214,11 @@ void ie::SortEntityTypeNode::sort(EntityNode* entity)
 {
   if (entity->getType() == TERRAIN)
   {
-    toTerrain->sort(entity);
+    TerrainAsset* terrain = &(*terrains)[entity->getAssetId()];
+    RenderPointers rps;
+    rps.entity = entity;
+    rps.ta = terrain;
+    toTerrain->sort(rps);
   }
   else if (entity->getType() == STATIC)
   {
@@ -237,7 +253,31 @@ void ie::SortStaticTypeNode::sort(EntityNode* entity)
 void ie::SortStaticTypeNode::addToStaticMaterialedChild(SortTreeNode* node) {toMaterialed = node;}
 void ie::SortStaticTypeNode::addToStaticTexturedChild(SortTreeNode* node) {toTextured = node;}
 
-//Implement Bucket
+void ie::SortBucket::sort(RenderPointers rps)
+{
+  renderUnits.push_back(rps);
+}
+
+void ie::SortBucket::clear(void)
+{
+  renderUnits.clear();
+  link->clear();
+}
+
+void ie::SortBucket::setNextBucket(SortBucket* newLink) {link = newLink;}
+ie::SortBucket* ie::SortBucket::getNextBucket(void) {return link;}
+void ie::SortBucket::setRenderInstructions(ie::RenderInstructions instruc)
+{
+  instructions = instruc;
+}
+ie::RenderInstructions ie::SortBucket::getRenderInstructions(void)
+{
+  return instructions;
+}
+std::vector<ie::RenderPointers>* ie::SortBucket::getRenderUnits(void)
+{
+  return &renderUnits;
+}
 
 //______________________________________________________________________________
 
@@ -245,15 +285,38 @@ void ie::SortStaticTypeNode::addToStaticTexturedChild(SortTreeNode* node) {toTex
 
 ie::SceneGraph::SceneGraph()
 {
+  //Generating Nodes
   root = new GraphNode();
   sortTree = new SortTreeNode();
+  SortEntityTypeNode* entityType = new SortEntityTypeNode(); 
+  SortStaticTypeNode* staticType = new SortStaticTypeNode();
+  SortBucket* terrainBucket = new SortBucket();
+  SortBucket* materialedBucket = new SortBucket();
+  SortBucket* texturedBucket = new SortBucket();;
+  firstBucket = terrainBucket;
+  
+  //Setting Node Status
+  ie::RenderInstructions terrainInstructions;
+  terrainInstructions.shader = "terrain";
+  terrainBucket->setRenderInstructions(terrainInstructions);
+  ie::RenderInstructions materialedInstructions;
+  materialedInstructions.shader = "materialed";
+  materialedBucket->setRenderInstructions(materialedInstructions);
+  ie::RenderInstructions texturedInstructions;
+  texturedInstructions.shader = "textured";
+  texturedBucket->setRenderInstructions(texturedInstructions);
+  
+  //Linking Nodes
   root->setSortTreeRoot(sortTree);
 
-  SortEntityTypeNode* entityType = new SortEntityTypeNode(); 
   sortTree->addChild(entityType);
-
-  SortStaticTypeNode* staticType = new SortStaticTypeNode();
   entityType->addToStaticChild(staticType);
+  entityType->addToTerrainChild(terrainBucket);
+  staticType->addToStaticMaterialedChild(materialedBucket);
+  staticType->addToStaticTexturedChild(texturedBucket);
+  terrainBucket->setNextBucket(materialedBucket);
+  materialedBucket->setNextBucket(texturedBucket);
+
 }
 
 void ie::SceneGraph::receiveMessage(ie::AssetStatusToScenegraphMessage msg)
@@ -262,9 +325,18 @@ void ie::SceneGraph::receiveMessage(ie::AssetStatusToScenegraphMessage msg)
   sortTree->receiveMessage(msg);
 }
 
+
+ie::GraphStatusToRenderMessage ie::SceneGraph::sendGraphStatusToRenderMessage(void)
+{
+  ie::GraphStatusToRenderMessage msg;
+  msg.bucket = firstBucket;
+  return msg;
+}
+
 void ie::SceneGraph::update(void)
 {
   root->update();
+  root->render();
 }
 
 
