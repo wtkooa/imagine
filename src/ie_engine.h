@@ -34,9 +34,8 @@ namespace ie
 
     private:
     bool init(void);
-    bool initOpenGl(void);
     bool initSdl(void);
-    bool initLighting(void);
+    bool initOpenGl(void);
     bool initShaders(void);
     bool initAssets(void);
     bool initVram(void);
@@ -60,7 +59,6 @@ namespace ie
 
     ie::AssetManager am;
     ie::VramManager vram;
-    ie::GlslCompiler compiler;
     ie::FrameClock frameClock;
     ie::Camera eye;
     ie::Player player;

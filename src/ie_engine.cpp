@@ -30,6 +30,7 @@
 #include "ie_camera.h"
 #include "ie_lighting.h"
 #include "ie_messages.h"
+#include "ie_nodes.h"
 #include "ie_packages.h"
 #include "ie_render_engine.h"
 #include "ie_scenegraph.h"
@@ -53,7 +54,6 @@ bool ie::Engine::init(void)
 {
   initSdl();
   initOpenGl();
-  initLighting();
   initShaders();
   initAssets();
   initVram();
@@ -92,26 +92,9 @@ bool ie::Engine::initOpenGl(void)
 }
 
 
-bool ie::Engine::initLighting(void)
-{
-  LightGenerator light;
-  light.setName("light0");
-  light.setPosVector(glm::vec3(0.0f, 40.0f, 0.0f));
-  light.setGlobalAmbient(glm::vec3(0.1f, 0.1f, 0.1f));
-  light.setLightAmbient(glm::vec3(0.1f, 0.1f, 0.1f));
-  light.setLightSpecular(glm::vec3(0.5f, 0.5f, 0.5f));
-  light.setLightDiffuse(glm::vec3(0.8f, 0.8f, 0.8f));
-  light.setConstantFalloff(0.1f);
-  light.setLinearFalloff(0.02f);
-  light.setQuadraticFalloff(0.0f);
-  ie::LightPackage lightPack = light.wrapLightPackage();
-  am.unwrapPackage(lightPack);
-  return true;
-}
-
-
 bool ie::Engine::initShaders(void)
 {
+  GlslCompiler compiler;
   if (openGlConfigs.LOCAL_GLSL_VERSION_NUMERIC >= ie::GLSL_VERSION_450)
   {
     ie::ShaderProgramPackage statPack = compiler.compile("static",
@@ -141,6 +124,20 @@ bool ie::Engine::initShaders(void)
 
 bool ie::Engine::initAssets(void)
 {
+  
+  LightGenerator light;
+  light.setName("light0");
+  light.setPosVector(glm::vec3(0.0f, 40.0f, 0.0f));
+  light.setGlobalAmbient(glm::vec3(0.1f, 0.1f, 0.1f));
+  light.setLightAmbient(glm::vec3(0.1f, 0.1f, 0.1f));
+  light.setLightSpecular(glm::vec3(0.5f, 0.5f, 0.5f));
+  light.setLightDiffuse(glm::vec3(0.8f, 0.8f, 0.8f));
+  light.setConstantFalloff(0.1f);
+  light.setLinearFalloff(0.02f);
+  light.setQuadraticFalloff(0.0f);
+  ie::LightPackage lightPack = light.wrapLightPackage();
+  am.unwrapPackage(lightPack);
+
   ie::WavefrontObjectFileReader objReader;  
   ie::WavefrontObjectFilePackage cursorPack = objReader.read("data/wavefront/",
                                                           "Cursor.obj");
@@ -194,6 +191,7 @@ bool ie::Engine::initSceneGraph(void)
   ie::EntityNode* cursor = new EntityNode("Player", "Cursor", STATIC);
   sg.root->addChild(terrain);
   terrain->addChild(cursor); 
+  cursor->setTranslation(glm::vec3(0.0f, 2.0f, 0.0f));
   sg.update();
 }
 
