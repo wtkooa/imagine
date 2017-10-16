@@ -146,7 +146,6 @@ bool ie::Engine::initAssets(void)
                                                           "Cursor.obj");
   am.unwrapPackage(cursorPack);
 
-  am.createEntity("Player", "Cursor", STATIC);
   ie::handle cursorBG = am.getHandle("material/CursorBG");
   (*cursorBG.material).usesLightFalloff = false;
   (*cursorBG.material).usesLightDiffuse = false;
@@ -167,9 +166,7 @@ bool ie::Engine::initAssets(void)
   terrain.addTexture("data/textures/", "lava.jpg");
   ie::TerrainPackage terPack = terrain.wrapTerrainPackage();
   am.unwrapPackage(terPack);
-  am.createEntity("Terrain", "Terrain", TERRAIN);
 
-  am.createQuickLists();
   return true;
 }
 
@@ -204,11 +201,8 @@ bool ie::Engine::initSceneGraph(void)
 bool ie::Engine::initPlayer(void)
 {
   player.setWindow(mainWindow);
-  player.setPlayerEntity("Player");
   player.setPlayerPosition(glm::vec3(0.0f, 0.0f, 0.0f));
   player.setPlayerRotation(glm::vec3(0.0f, 0.0f, -1.0));
-  ie::AssetStatusToPlayerMessage toPlayerMsg = am.sendAssetStatusToPlayerMessage();
-  player.receiveMessage(toPlayerMsg);
 }
 
 
@@ -239,9 +233,6 @@ void ie::Engine::handleUpdates(void)
   eye.receiveMessage(timeStatusMsg);
   player.receiveMessage(timeStatusMsg);
 
-  ie::AssetStatusToPlayerMessage toPlayerMsg = am.sendAssetStatusToPlayerMessage();
-  player.receiveMessage(toPlayerMsg);
-
   player.update();
 
   ie::PlayerStatusToCameraMessage toCameraMsg = player.sendPlayerStatusToCameraMessage();
@@ -266,7 +257,7 @@ void ie::Engine::handleUpdates(void)
   ie::AssetStatusToRenderMessage assetToRenderMsg = am.sendAssetStatusToRenderMessage();
   re.receiveMessage(assetToRenderMsg);
 
-  //sg.update();
+  sg.update();
 
   ie::GraphStatusToRenderMessage graphToRenderMsg = sg.sendGraphStatusToRenderMessage();
   re.receiveMessage(graphToRenderMsg);
@@ -276,12 +267,6 @@ void ie::Engine::handleUpdates(void)
 
 void ie::Engine::handleLogic(void)
 {
-  ie::handle player = am.getHandle("entity/Player");
-
-  glm::mat4 rotMatrix = glm::rotate(glm::mat4(), glm::radians(0.5f),
-                                    glm::vec3(0.0f, 1.0f, 0.0f));
-
-  (*player.entity).rotationMatrix *= rotMatrix;
 }
 
 

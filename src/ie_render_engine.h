@@ -31,9 +31,9 @@ namespace ie
     public:
     //RENDERING
     void render(void);
-    void renderMaterialedEntities(void);
-    void renderTexturedEntities(void);
-    void renderTerrainEntities(void);
+    void renderMaterialedEntities(std::vector<RenderPointers>*, ShaderAsset*);
+    void renderTexturedEntities(std::vector<RenderPointers>*, ShaderAsset*);
+    void renderTerrainEntities(std::vector<RenderPointers>*, ShaderAsset*);
 
     //RECEIVING MESSAGES
     void receiveMessage(AssetStatusToRenderMessage);
@@ -43,7 +43,6 @@ namespace ie
 
     private:
     //DATA FROM ASSET MANAGER
-    std::map<unsigned int, Entity>* entities;
     std::map<unsigned int, MaterialAsset>* materials;
     std::map<unsigned int, ModelAsset>* models;
     std::map<unsigned int, RenderUnit>* rus;
@@ -55,10 +54,6 @@ namespace ie
     std::map<std::string, unsigned int>* terrainNameIdMap;
     std::map<unsigned int, TextureAsset>* textures;
     std::map<std::string, unsigned int>* textureNameIdMap;
-    std::map<unsigned int, StaticQuickListElement>* staticVList;
-    std::map<unsigned int, StaticQuickListElement>* staticVNList;
-    std::map<unsigned int, StaticQuickListElement>* staticVTNList;
-    std::set<unsigned int>* terrainVTNCBList;
 
     //DATA FROM VRAM MANAGER
     VboPair* vPair;

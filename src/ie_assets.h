@@ -30,32 +30,6 @@ namespace ie
 
   enum EntityType{NONE, STATIC, TERRAIN, WATER};
   
-  class Entity
-  {
-    public:
-    unsigned int assetId;
-    std::string name;
-    EntityType type;
-    unsigned int modelId;
-    unsigned int terrainId;
-    bool hidden;
-    glm::mat4 translationMatrix;
-    glm::mat4 rotationMatrix;
-    glm::mat4 scaleMatrix;
-    bool usesGlobalAmbient;
-    bool usesLightAmbient;
-    bool usesLightDiffuse;
-    bool usesLightSpecular;
-    bool usesLightFalloff;
-  };
-
-  class StaticQuickListElement
-  {
-    public:
-    std::vector<short> renderUnitList;
-  };
-
-
   class ShaderAsset
   {
     public:
@@ -183,7 +157,6 @@ namespace ie
 
   union handle 
   {
-    std::map<unsigned int, Entity>* entities;
     std::map<unsigned int, ModelAsset>* models;
     std::map<unsigned int, MaterialAsset>* materials;
     std::map<unsigned int, TextureAsset>* textures;
@@ -191,7 +164,6 @@ namespace ie
     std::map<unsigned int, LightAsset>* lights;
     std::map<unsigned int, TerrainAsset>* terrains;
 
-    Entity* entity;
     ModelAsset* model;
     MaterialAsset* material;
     TextureAsset* texture;

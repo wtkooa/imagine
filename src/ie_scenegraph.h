@@ -40,11 +40,12 @@ namespace ie
     virtual void render(void);
     void setParentNode(GraphNode*);
     void setSortTreeRoot(SortTreeNode*);
+    glm::mat4 getTransformationMatrix(void);
     void receiveMessage(ie::AssetStatusToScenegraphMessage);
 
 
     protected:
-    glm::mat4 transformation;
+    glm::mat4 transformationMatrix;
     std::vector<GraphNode*> children;
     glm::vec3 translation;
     glm::vec3 rotation;
@@ -76,17 +77,17 @@ namespace ie
     virtual void render(void);
     EntityType getType(void);
     unsigned int getAssetId(void);
-    
-    protected:
-    std::string name;
-    EntityType type;
-    unsigned int assetId;
-    bool hidden;
     bool usesGlobalAmbient;
     bool usesLightAmbient;
     bool usesLightDiffuse;
     bool usesLightSpecular;
     bool usesLightFalloff;
+
+    protected:
+    std::string name;
+    EntityType type;
+    unsigned int assetId;
+    bool hidden;
 
     private:
   };
@@ -105,6 +106,7 @@ namespace ie
   class RenderInstructions
   {
     public:
+    std::string renderer;
     std::string shader;
   };
 
@@ -163,12 +165,13 @@ namespace ie
   class SortBucket : public SortTreeNode
   {
     public:
+    SortBucket();
     virtual void sort(RenderPointers);
     void clear();
     void setNextBucket(SortBucket*);
     SortBucket* getNextBucket(void);
     void setRenderInstructions(RenderInstructions);
-    RenderInstructions getRenderInstructions(void);
+    RenderInstructions* getRenderInstructions(void);
     std::vector<RenderPointers>* getRenderUnits(void);
 
     protected:

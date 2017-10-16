@@ -21,13 +21,13 @@
 
 #include "ie_assets.h"
 #include "ie_const.h"
+#include "ie_scenegraph.h"
 #include "ie_vram.h"
 
 //___|RECEIVING MESSAGES|_______________________________________________________
 
 void ie::RenderEngine::receiveMessage(AssetStatusToRenderMessage msg)
 {
-  entities = msg.entities;
   materials = msg.materials;
   models = msg.models;
   rus = msg.rus;
@@ -39,10 +39,6 @@ void ie::RenderEngine::receiveMessage(AssetStatusToRenderMessage msg)
   terrainNameIdMap = msg.terrainNameIdMap;
   textures = msg.textures;
   textureNameIdMap = msg.textureNameIdMap;
-  staticVList = msg.staticVList;
-  staticVNList = msg.staticVNList;
-  staticVTNList = msg.staticVTNList;
-  terrainVTNCBList = msg.terrainVTNCBList;
 }
 
 
@@ -74,16 +70,41 @@ void ie::RenderEngine::receiveMessage(GraphStatusToRenderMessage msg)
 
 void ie::RenderEngine::render(void)
 {
-  renderMaterialedEntities();
-  renderTexturedEntities();
-  renderTerrainEntities();
+  SortBucket* currentBucket = firstBucket;
+  while (currentBucket != NULL)
+  {
+    RenderInstructions* instruct = currentBucket->getRenderInstructions();
+    std::vector<RenderPointers>* rpsList = currentBucket->getRenderUnits();
+    GLuint shaderId = (*shaderNameIdMap)[instruct->shader];
+    ShaderAsset* shader = &(*shaders)[shaderId];
+    GLint currentProg;
+    glGetIntegerv(GL_CURRENT_PROGRAM, &currentProg);
+    if (shader->programId != currentProg)
+    {
+      glUseProgram(shader->programId);
+    }
+
+    if (instruct->renderer == "materialed")
+    {
+      renderMaterialedEntities(rpsList, shader);
+    }
+    else if (instruct->renderer == "textured")
+    {
+      renderTexturedEntities(rpsList, shader);
+    }
+    else if (instruct->renderer == "terrain")
+    {
+      renderTerrainEntities(rpsList, shader);
+    }
+    currentBucket = currentBucket->getNextBucket();
+  }
+  firstBucket->clear();
 }
 
 //STATIC MATERIALED ENTITIES RENDERER
-void ie::RenderEngine::renderMaterialedEntities(void)
+void ie::RenderEngine::renderMaterialedEntities(std::vector<RenderPointers>* rpsList,
+                                                ShaderAsset* shader)
 {
-  if ((*staticVNList).size() == 0) {return;}
-
   unsigned int lightId = (*lightNameIdMap)["light0"];
   LightAsset* light = &(*lights)[lightId];
   glm::vec3 pointLightPos = (*light).posVector; 
@@ -95,8 +116,6 @@ void ie::RenderEngine::renderMaterialedEntities(void)
   float linearFalloff = (*light).linearFalloff;
   float quadraticFalloff = (*light).quadraticFalloff;
 
-  GLuint shaderId = (*shaderNameIdMap)["static"];
-  ShaderAsset* shader = &(*shaders)[shaderId];
   GLuint cameraPosLoc = (*shader).uniforms["cameraPos"].location;
   GLuint mtwMatrixLoc = (*shader).uniforms["mtwMatrix"].location;
   GLuint transformationMatrixLoc = (*shader).uniforms["transformationMatrix"].location;
@@ -128,14 +147,6 @@ void ie::RenderEngine::renderMaterialedEntities(void)
     glBindBuffer(GL_ARRAY_BUFFER, requiredVbo); 
   }
 
-  GLint currentProg;
-  glGetIntegerv(GL_CURRENT_PROGRAM, &currentProg);
-  GLuint requiredProg = (*shader).programId;
-  if (requiredProg != currentProg)
-  {
-    glUseProgram(requiredProg);
-  }
-  
   glEnableVertexAttribArray(0);
   glEnableVertexAttribArray(2);
 
@@ -154,83 +165,67 @@ void ie::RenderEngine::renderMaterialedEntities(void)
   glUniform1f(lightLinearLoc, linearFalloff);
   glUniform1f(lightQuadraticLoc, quadraticFalloff);
 
-  for (auto it = (*staticVNList).begin(); it != (*staticVNList).end(); it++)
+  for (auto it = rpsList->begin(); it != rpsList->end(); it++)
   {
-    ie::StaticQuickListElement listElement = it->second;
-    unsigned int entityId = it->first;
-    std::vector<short> renderUnitList = listElement.renderUnitList;
-    ie::Entity* entity = &((*entities)[entityId]); 
-    glm::mat4 translationMatrix = (*entity).translationMatrix; 
-    glm::mat4 rotationMatrix = (*entity).rotationMatrix;
-    glm::mat4 scaleMatrix = (*entity).scaleMatrix;
-    bool usesGlobalAmbientE = (*entity).usesGlobalAmbient;
-    bool usesLightAmbientE = (*entity).usesLightAmbient;
-    bool usesLightDiffuseE = (*entity).usesLightDiffuse;
-    bool usesLightSpecularE = (*entity).usesLightSpecular;
-    bool usesLightFalloffE = (*entity).usesLightFalloff;
-    ie::ModelAsset* modelAsset = &((*models)[(*entity).modelId]);
-    unsigned int modelId = (*modelAsset).assetId;
-    std::vector<unsigned int>* renderUnitIds = &((*modelAsset).renderUnits); 
-
-    glm::mat4 mtwMatrix = translationMatrix * rotationMatrix *
-                          scaleMatrix;
+    EntityNode* entity = it->entity;
+    RenderUnit* ru = it->ru;
+    glm::mat4 mtwMatrix = entity->getTransformationMatrix(); 
+    bool usesGlobalAmbientE = entity->usesGlobalAmbient;
+    bool usesLightAmbientE = entity->usesLightAmbient;
+    bool usesLightDiffuseE = entity->usesLightDiffuse;
+    bool usesLightSpecularE = entity->usesLightSpecular;
+    bool usesLightFalloffE = entity->usesLightFalloff;
     glm::mat4 transformationMatrix = projectionMatrix *
                                      viewMatrix * mtwMatrix;
     glUniformMatrix4fv(mtwMatrixLoc, 1, GL_FALSE, &mtwMatrix[0][0]);
     glUniformMatrix4fv(transformationMatrixLoc, 1, GL_FALSE,
                        &transformationMatrix[0][0]);
 
-    for (short nRu = 0; nRu < renderUnitIds->size(); nRu++)
-    {
-      unsigned int renderUnitId = (*renderUnitIds)[nRu];
-      RenderUnit* ru = &(*rus)[renderUnitId];
-      unsigned int materialId = ru->material;
-      unsigned int vramLocation = ru->vramLocation;
-      unsigned int indexAmount = ru->vertexAmount;
-      MaterialAsset* material = &((*materials)[materialId]);
-      float materialShininess = (*material).shininess;
-      glm::vec3 materialAmbient = (*material).ambient;
-      glm::vec3 materialDiffuse = (*material).diffuse;
-      glm::vec3 materialSpecular = (*material).specular;
-      glm::vec3 materialEmission = (*material).emission;
-      bool usesGlobalAmbientM = (*material).usesGlobalAmbient;
-      bool usesLightAmbientM = (*material).usesLightAmbient;
-      bool usesLightDiffuseM = (*material).usesLightDiffuse;
-      bool usesLightSpecularM = (*material).usesLightSpecular;
-      bool usesLightFalloffM = (*material).usesLightFalloff;
-      bool containsTexture = (*material).containsTexture;
-      GLuint diffuseMapId = (*material).diffuseMapId;
+    unsigned int materialId = ru->material;
+    unsigned int vramLocation = ru->vramLocation;
+    unsigned int indexAmount = ru->vertexAmount;
+    MaterialAsset* material = &((*materials)[materialId]);
+    float materialShininess = (*material).shininess;
+    glm::vec3 materialAmbient = (*material).ambient;
+    glm::vec3 materialDiffuse = (*material).diffuse;
+    glm::vec3 materialSpecular = (*material).specular;
+    glm::vec3 materialEmission = (*material).emission;
+    bool usesGlobalAmbientM = (*material).usesGlobalAmbient;
+    bool usesLightAmbientM = (*material).usesLightAmbient;
+    bool usesLightDiffuseM = (*material).usesLightDiffuse;
+    bool usesLightSpecularM = (*material).usesLightSpecular;
+    bool usesLightFalloffM = (*material).usesLightFalloff;
+    bool containsTexture = (*material).containsTexture;
+    GLuint diffuseMapId = (*material).diffuseMapId;
 
-      bool usesGlobalAmbient = usesGlobalAmbientM && usesGlobalAmbientE;
-      bool usesLightAmbient = usesLightAmbientM && usesLightAmbientE;
-      bool usesLightDiffuse = usesLightDiffuseM && usesLightDiffuseE;
-      bool usesLightSpecular = usesLightSpecularM && usesLightSpecularE;
-      bool usesLightFalloff = usesLightFalloffM && usesLightFalloffE;
+    bool usesGlobalAmbient = usesGlobalAmbientM && usesGlobalAmbientE;
+    bool usesLightAmbient = usesLightAmbientM && usesLightAmbientE;
+    bool usesLightDiffuse = usesLightDiffuseM && usesLightDiffuseE;
+    bool usesLightSpecular = usesLightSpecularM && usesLightSpecularE;
+    bool usesLightFalloff = usesLightFalloffM && usesLightFalloffE;
 
-      glUniform1f(materialShininessLoc, materialShininess);
-      glUniform3fv(materialSpecularLoc, 1, &materialSpecular[0]);
-      glUniform3fv(materialAmbientLoc, 1, &materialAmbient[0]);
-      glUniform3fv(materialDiffuseLoc, 1, &materialDiffuse[0]);
-      glUniform3fv(materialEmissionLoc, 1, &materialEmission[0]);
-      glUniform1i(usesGlobalAmbientLoc, usesGlobalAmbient);
-      glUniform1i(usesLightAmbientLoc, usesLightAmbient);
-      glUniform1i(usesLightDiffuseLoc, usesLightDiffuse);
-      glUniform1i(usesLightSpecularLoc, usesLightSpecular);
-      glUniform1i(usesLightFalloffLoc, usesLightFalloff);
+    glUniform1f(materialShininessLoc, materialShininess);
+    glUniform3fv(materialSpecularLoc, 1, &materialSpecular[0]);
+    glUniform3fv(materialAmbientLoc, 1, &materialAmbient[0]);
+    glUniform3fv(materialDiffuseLoc, 1, &materialDiffuse[0]);
+    glUniform3fv(materialEmissionLoc, 1, &materialEmission[0]);
+    glUniform1i(usesGlobalAmbientLoc, usesGlobalAmbient);
+    glUniform1i(usesLightAmbientLoc, usesLightAmbient);
+    glUniform1i(usesLightDiffuseLoc, usesLightDiffuse);
+    glUniform1i(usesLightSpecularLoc, usesLightSpecular);
+    glUniform1i(usesLightFalloffLoc, usesLightFalloff);
 
-      glDrawArrays(GL_TRIANGLES, vramLocation, indexAmount);
-    }
+    glDrawArrays(GL_TRIANGLES, vramLocation, indexAmount);
   }
-    glDisableVertexAttribArray(0);
-    glDisableVertexAttribArray(2);
+  glDisableVertexAttribArray(0);
+  glDisableVertexAttribArray(2);
 }
 
 
 //STATIC TEXTURED ENTITIES RENDERER
-void ie::RenderEngine::renderTexturedEntities(void)
+void ie::RenderEngine::renderTexturedEntities(std::vector<RenderPointers>* rpsList,
+                                              ShaderAsset* shader)
 {
-  if ((*staticVTNList).size() == 0) {return;}
-
   unsigned int lightId = (*lightNameIdMap)["light0"];
   LightAsset* light = &(*lights)[lightId];
   glm::vec3 pointLightPos = (*light).posVector; 
@@ -242,8 +237,6 @@ void ie::RenderEngine::renderTexturedEntities(void)
   float linearFalloff = (*light).linearFalloff;
   float quadraticFalloff = (*light).quadraticFalloff;
 
-  GLuint shaderId = (*shaderNameIdMap)["static"];
-  ShaderAsset* shader = &(*shaders)[shaderId];
   GLuint cameraPosLoc = (*shader).uniforms["cameraPos"].location;
   GLuint mtwMatrixLoc = (*shader).uniforms["mtwMatrix"].location;
   GLuint transformationMatrixLoc = (*shader).uniforms["transformationMatrix"].location;
@@ -276,14 +269,6 @@ void ie::RenderEngine::renderTexturedEntities(void)
     glBindBuffer(GL_ARRAY_BUFFER, requiredVbo); 
   }
 
-  GLint currentProg;
-  glGetIntegerv(GL_CURRENT_PROGRAM, &currentProg);
-  GLuint requiredProg = (*shader).programId;
-  if (requiredProg != currentProg)
-  {
-    glUseProgram(requiredProg);
-  }
-  
   glEnableVertexAttribArray(0);
   glEnableVertexAttribArray(1);
   glEnableVertexAttribArray(2);
@@ -305,88 +290,74 @@ void ie::RenderEngine::renderTexturedEntities(void)
   glUniform1f(lightLinearLoc, linearFalloff);
   glUniform1f(lightQuadraticLoc, quadraticFalloff);
 
-  for (auto it = (*staticVTNList).begin(); it != (*staticVTNList).end(); it++)
+  for (auto it = rpsList->begin(); it != rpsList->end(); it++)
   {
-    ie::StaticQuickListElement listElement = it->second;
-    unsigned int entityId = it->first;
-    std::vector<short> renderUnitList = listElement.renderUnitList;
-    ie::Entity* entity = &((*entities)[entityId]); 
-    glm::mat4 translationMatrix = (*entity).translationMatrix; 
-    glm::mat4 rotationMatrix = (*entity).rotationMatrix;
-    glm::mat4 scaleMatrix = (*entity).scaleMatrix;
-    bool usesGlobalAmbientE = (*entity).usesGlobalAmbient;
-    bool usesLightAmbientE = (*entity).usesLightAmbient;
-    bool usesLightDiffuseE = (*entity).usesLightDiffuse;
-    bool usesLightSpecularE = (*entity).usesLightSpecular;
-    bool usesLightFalloffE = (*entity).usesLightFalloff;
-    ie::ModelAsset* modelAsset = &((*models)[(*entity).modelId]);
-    unsigned int modelId = (*modelAsset).assetId;
-    std::vector<unsigned int>* renderUnitIds = &((*modelAsset).renderUnits); 
+    EntityNode* entity = it->entity;
+    RenderUnit* ru = it->ru;
+    glm::mat4 mtwMatrix = entity->getTransformationMatrix(); 
+    bool usesGlobalAmbientE = entity->usesGlobalAmbient;
+    bool usesLightAmbientE = entity->usesLightAmbient;
+    bool usesLightDiffuseE = entity->usesLightDiffuse;
+    bool usesLightSpecularE = entity->usesLightSpecular;
+    bool usesLightFalloffE = entity->usesLightFalloff;
 
-    glm::mat4 mtwMatrix = translationMatrix * rotationMatrix *
-                          scaleMatrix;
     glm::mat4 transformationMatrix = projectionMatrix *
                                      viewMatrix * mtwMatrix;
     glUniformMatrix4fv(mtwMatrixLoc, 1, GL_FALSE, &mtwMatrix[0][0]);
     glUniformMatrix4fv(transformationMatrixLoc, 1, GL_FALSE,
                        &transformationMatrix[0][0]);
 
-    for (short nRu = 0; nRu < renderUnitIds->size(); nRu++)
+    unsigned int materialId = ru->material;
+    unsigned int vramLocation = ru->vramLocation;
+    unsigned int indexAmount = ru->vertexAmount;
+    MaterialAsset* material = &((*materials)[materialId]);
+    float materialShininess = (*material).shininess;
+    glm::vec3 materialAmbient = (*material).ambient;
+    glm::vec3 materialDiffuse = (*material).diffuse;
+    glm::vec3 materialSpecular = (*material).specular;
+    glm::vec3 materialEmission = (*material).emission;
+    bool usesGlobalAmbientM = (*material).usesGlobalAmbient;
+    bool usesLightAmbientM = (*material).usesLightAmbient;
+    bool usesLightDiffuseM = (*material).usesLightDiffuse;
+    bool usesLightSpecularM = (*material).usesLightSpecular;
+    bool usesLightFalloffM = (*material).usesLightFalloff;
+    bool containsTexture = (*material).containsTexture;
+    unsigned int textureAssetId = (*material).diffuseMapId;
+    GLuint diffuseMapId = (*textures)[textureAssetId].textureId;
+
+    bool usesGlobalAmbient = usesGlobalAmbientM && usesGlobalAmbientE;
+    bool usesLightAmbient = usesLightAmbientM && usesLightAmbientE;
+    bool usesLightDiffuse = usesLightDiffuseM && usesLightDiffuseE;
+    bool usesLightSpecular = usesLightSpecularM && usesLightSpecularE;
+    bool usesLightFalloff = usesLightFalloffM && usesLightFalloffE;
+
+    glUniform1f(materialShininessLoc, materialShininess);
+    glUniform3fv(materialSpecularLoc, 1, &materialSpecular[0]);
+    glUniform3fv(materialAmbientLoc, 1, &materialAmbient[0]);
+    glUniform3fv(materialDiffuseLoc, 1, &materialDiffuse[0]);
+    glUniform3fv(materialEmissionLoc, 1, &materialEmission[0]);
+    glUniform1i(usesGlobalAmbientLoc, usesGlobalAmbient);
+    glUniform1i(usesLightAmbientLoc, usesLightAmbient);
+    glUniform1i(usesLightDiffuseLoc, usesLightDiffuse);
+    glUniform1i(usesLightSpecularLoc, usesLightSpecular);
+    glUniform1i(usesLightFalloffLoc, usesLightFalloff);
+
+    if (containsTexture)
     {
-      unsigned int renderUnitId = (*renderUnitIds)[nRu];
-      RenderUnit* ru = &(*rus)[renderUnitId];
-      unsigned int materialId = ru->material;
-      unsigned int vramLocation = ru->vramLocation;
-      unsigned int indexAmount = ru->vertexAmount;
-      MaterialAsset* material = &((*materials)[materialId]);
-      float materialShininess = (*material).shininess;
-      glm::vec3 materialAmbient = (*material).ambient;
-      glm::vec3 materialDiffuse = (*material).diffuse;
-      glm::vec3 materialSpecular = (*material).specular;
-      glm::vec3 materialEmission = (*material).emission;
-      bool usesGlobalAmbientM = (*material).usesGlobalAmbient;
-      bool usesLightAmbientM = (*material).usesLightAmbient;
-      bool usesLightDiffuseM = (*material).usesLightDiffuse;
-      bool usesLightSpecularM = (*material).usesLightSpecular;
-      bool usesLightFalloffM = (*material).usesLightFalloff;
-      bool containsTexture = (*material).containsTexture;
-      unsigned int textureAssetId = (*material).diffuseMapId;
-      GLuint diffuseMapId = (*textures)[textureAssetId].textureId;
+      glBindTexture(GL_TEXTURE_2D, diffuseMapId);
+      glUniform1i(usingTextureLoc, 1);
+    }
+    else
+    {
+      glUniform1i(usingTextureLoc, 0);
+    }
 
-      bool usesGlobalAmbient = usesGlobalAmbientM && usesGlobalAmbientE;
-      bool usesLightAmbient = usesLightAmbientM && usesLightAmbientE;
-      bool usesLightDiffuse = usesLightDiffuseM && usesLightDiffuseE;
-      bool usesLightSpecular = usesLightSpecularM && usesLightSpecularE;
-      bool usesLightFalloff = usesLightFalloffM && usesLightFalloffE;
-
-      glUniform1f(materialShininessLoc, materialShininess);
-      glUniform3fv(materialSpecularLoc, 1, &materialSpecular[0]);
-      glUniform3fv(materialAmbientLoc, 1, &materialAmbient[0]);
-      glUniform3fv(materialDiffuseLoc, 1, &materialDiffuse[0]);
-      glUniform3fv(materialEmissionLoc, 1, &materialEmission[0]);
-      glUniform1i(usesGlobalAmbientLoc, usesGlobalAmbient);
-      glUniform1i(usesLightAmbientLoc, usesLightAmbient);
-      glUniform1i(usesLightDiffuseLoc, usesLightDiffuse);
-      glUniform1i(usesLightSpecularLoc, usesLightSpecular);
-      glUniform1i(usesLightFalloffLoc, usesLightFalloff);
-
-      if (containsTexture)
-      {
-        glBindTexture(GL_TEXTURE_2D, diffuseMapId);
-        glUniform1i(usingTextureLoc, 1);
-      }
-      else
-      {
-        glUniform1i(usingTextureLoc, 0);
-      }
-
-      glDrawArrays(GL_TRIANGLES, vramLocation, indexAmount);
-      
-      if (containsTexture)
-      {
-        glBindTexture(GL_TEXTURE_2D, 0);
-        glUniform1i(usingTextureLoc, 0);
-      }
+    glDrawArrays(GL_TRIANGLES, vramLocation, indexAmount);
+    
+    if (containsTexture)
+    {
+      glBindTexture(GL_TEXTURE_2D, 0);
+      glUniform1i(usingTextureLoc, 0);
     }
   }
     glDisableVertexAttribArray(0);
@@ -396,11 +367,9 @@ void ie::RenderEngine::renderTexturedEntities(void)
 
 
 //TERRAIN ENTITIES RENDERER
-void ie::RenderEngine::renderTerrainEntities(void)
+void ie::RenderEngine::renderTerrainEntities(std::vector<RenderPointers>* rpsList,
+                                             ShaderAsset* shader)
 {
-
-  if ((*terrainVTNCBList).size() == 0) {return;}    
-
   unsigned int lightId = (*lightNameIdMap)["light0"];
   LightAsset* light = &(*lights)[lightId];
   glm::vec3 pointLightPos = (*light).posVector; 
@@ -412,8 +381,6 @@ void ie::RenderEngine::renderTerrainEntities(void)
   float linearFalloff = (*light).linearFalloff;
   float quadraticFalloff = (*light).quadraticFalloff;
 
-  GLuint shaderId = (*shaderNameIdMap)["terrain"];
-  ShaderAsset* shader = &(*shaders)[shaderId];
   GLuint cameraPosLoc = (*shader).uniforms["cameraPos"].location;
   GLuint mtwMatrixLoc = (*shader).uniforms["mtwMatrix"].location;
   GLuint transformationMatrixLoc = (*shader).uniforms["transformationMatrix"].location;
@@ -444,8 +411,8 @@ void ie::RenderEngine::renderTerrainEntities(void)
   GLuint texture7Loc = (*shader).uniforms["texture7"].location;
   GLuint texture8Loc = (*shader).uniforms["texture8"].location;
   GLuint textureAmountLoc = (*shader).uniforms["textureAmount"].location;
-  GLint currentBoundArrayBuffer;
 
+  GLint currentBoundArrayBuffer;
   glGetIntegerv(GL_ARRAY_BUFFER_BINDING, &currentBoundArrayBuffer);
   GLint requiredArray = (*vtncbPair).readVbo;
   if (requiredArray != currentBoundArrayBuffer)
@@ -459,14 +426,6 @@ void ie::RenderEngine::renderTerrainEntities(void)
   if (requiredIndex != currentBoundElementBuffer)
   {
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, requiredIndex); 
-  }
-
-  GLint currentProg;
-  glGetIntegerv(GL_CURRENT_PROGRAM, &currentProg);
-  GLuint requiredProg = (*shader).programId;
-  if (requiredProg != currentProg)
-  {
-    glUseProgram(requiredProg);
   }
 
   glEnableVertexAttribArray(0);
@@ -505,23 +464,17 @@ void ie::RenderEngine::renderTerrainEntities(void)
   glUniform1i(texture7Loc, 6);
   glUniform1i(texture8Loc, 7);
 
-  for (auto it = (*terrainVTNCBList).begin(); it != (*terrainVTNCBList).end(); it++)
+  for (auto it = rpsList->begin(); it != rpsList->end(); it++)
   {
-    unsigned int entityId = *it;
-    Entity* entity = &(*entities)[entityId];
-    unsigned int terrainId = (*entity).terrainId;
-    TerrainAsset* terrain = &(*terrains)[terrainId]; 
-    glm::mat4 translationMatrix = (*entity).translationMatrix;
-    glm::mat4 rotationMatrix = (*entity).rotationMatrix;
-    glm::mat4 scaleMatrix = (*entity).scaleMatrix;
-    bool usesGlobalAmbientE = (*entity).usesGlobalAmbient;
-    bool usesLightAmbientE = (*entity).usesLightAmbient;
-    bool usesLightDiffuseE = (*entity).usesLightDiffuse;
-    bool usesLightSpecularE = (*entity).usesLightSpecular;
-    bool usesLightFalloffE = (*entity).usesLightFalloff;
+    EntityNode* entity = it->entity;
+    TerrainAsset* terrain = it->ta;
+    glm::mat4 mtwMatrix = entity->getTransformationMatrix(); 
+    bool usesGlobalAmbientE = entity->usesGlobalAmbient;
+    bool usesLightAmbientE = entity->usesLightAmbient;
+    bool usesLightDiffuseE = entity->usesLightDiffuse;
+    bool usesLightSpecularE = entity->usesLightSpecular;
+    bool usesLightFalloffE = entity->usesLightFalloff;
 
-    glm::mat4 mtwMatrix = translationMatrix * rotationMatrix *
-                          scaleMatrix;
     glm::mat4 transformationMatrix = projectionMatrix *
                                      viewMatrix * mtwMatrix;
     glUniformMatrix4fv(mtwMatrixLoc, 1, GL_FALSE, &mtwMatrix[0][0]);
@@ -533,8 +486,6 @@ void ie::RenderEngine::renderTerrainEntities(void)
     glm::vec3 materialAmbient = (*terrain).ambient;
     glm::vec3 materialDiffuse = (*terrain).diffuse;
     glm::vec3 materialEmission = (*terrain).emission;
-    int texture1Id = (*terrain).textureIds[0];
-    int texture2Id = (*terrain).textureIds[1];
     short textureAmount = (*terrain).textureIds.size();
     unsigned int vramIndexLocation = (*terrain).vramIndexLocation;
     unsigned int vramIndexAmount = (*terrain).vramIndexAmount;
@@ -559,7 +510,6 @@ void ie::RenderEngine::renderTerrainEntities(void)
       GLuint diffuseMapId = (*textures)[textureAssetId].textureId;
       glBindTexture(GL_TEXTURE_2D, diffuseMapId);
     }
-
     glDrawElements(GL_TRIANGLES,
                    vramIndexAmount,
                    GL_UNSIGNED_INT,

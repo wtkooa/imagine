@@ -45,7 +45,6 @@ namespace ie
   class AssetStatusToRenderMessage 
   {
     public:
-    std::map<unsigned int, Entity>* entities;
     std::map<unsigned int, MaterialAsset>* materials;
     std::map<unsigned int, ModelAsset>* models;
     std::map<unsigned int, RenderUnit>* rus;
@@ -57,10 +56,6 @@ namespace ie
     std::map<std::string, unsigned int>* terrainNameIdMap;
     std::map<unsigned int, TextureAsset>* textures;
     std::map<std::string, unsigned int>* textureNameIdMap;
-    std::map<unsigned int, StaticQuickListElement>* staticVList;
-    std::map<unsigned int, StaticQuickListElement>* staticVNList;
-    std::map<unsigned int, StaticQuickListElement>* staticVTNList;
-    std::set<unsigned int>* terrainVTNCBList;
   };
 
   class AssetStatusToScenegraphMessage
@@ -76,14 +71,6 @@ namespace ie
     std::map<std::string, unsigned int>* materialNameIdMap;
     std::map<unsigned int, RenderUnit>* rus;
   };
-
-  class AssetStatusToPlayerMessage
-  {
-    public:
-    std::map<unsigned int, Entity>* entities;
-    std::map<std::string, unsigned int>* entityNameIdMap;
-  };
-
 
   class VramStatusToRenderMessage
   {

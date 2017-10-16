@@ -42,7 +42,7 @@ ie::GraphNode::GraphNode()
   translation = glm::vec3(0.0f);
   rotation = glm::vec3(0.0f);
   scale = glm::vec3(0.0f);
-  transformation = glm::mat4();
+  transformationMatrix = glm::mat4();
   parentNode = NULL;
 }
 
@@ -61,7 +61,7 @@ void ie::GraphNode::addChild(GraphNode* child)
 }
 
 void ie::GraphNode::update(void)
-{
+{/*
   glm::mat4 transl = glm::translate(glm::mat4(), translation);
   glm::mat4 scal = glm::scale(glm::mat4(), scale);
   glm::mat4 rotX = glm::rotate(glm::mat4(), rotation.x,
@@ -71,11 +71,12 @@ void ie::GraphNode::update(void)
   glm::mat4 rotZ = glm::rotate(glm::mat4(), rotation.z,
                                glm::vec3(0.0f, 0.0f, 1.0f));
   glm::mat4 rotate = rotX * rotY * rotZ;
-  transformation = transl * rotate * scal;
+std::cout << transformationMatrix[0][0]  << std::endl;
+  transformationMatrix = transl * rotate * scal;
   if (parentNode)
   {
-    transformation = parentNode->transformation * transl * rotate * scal;
-  }
+    transformationMatrix = parentNode->transformationMatrix * transformationMatrix;
+  }*/
   for (auto it = children.begin(); it != children.end(); it++)
   {
     (*it)->update();
@@ -98,6 +99,11 @@ void ie::GraphNode::setParentNode(GraphNode* parent)
 void ie::GraphNode::setSortTreeRoot(SortTreeNode* root)
 {
   sortTreeRoot = root; 
+}
+
+glm::mat4 ie::GraphNode::getTransformationMatrix(void)
+{
+  return transformationMatrix;
 }
 
 void ie::GraphNode::receiveMessage(ie::AssetStatusToScenegraphMessage msg)
@@ -253,6 +259,11 @@ void ie::SortStaticTypeNode::sort(EntityNode* entity)
 void ie::SortStaticTypeNode::addToStaticMaterialedChild(SortTreeNode* node) {toMaterialed = node;}
 void ie::SortStaticTypeNode::addToStaticTexturedChild(SortTreeNode* node) {toTextured = node;}
 
+ie::SortBucket::SortBucket()
+{
+  link = NULL;
+}
+
 void ie::SortBucket::sort(RenderPointers rps)
 {
   renderUnits.push_back(rps);
@@ -261,7 +272,10 @@ void ie::SortBucket::sort(RenderPointers rps)
 void ie::SortBucket::clear(void)
 {
   renderUnits.clear();
-  link->clear();
+  if (link != NULL)
+  {
+    link->clear();
+  }
 }
 
 void ie::SortBucket::setNextBucket(SortBucket* newLink) {link = newLink;}
@@ -270,9 +284,9 @@ void ie::SortBucket::setRenderInstructions(ie::RenderInstructions instruc)
 {
   instructions = instruc;
 }
-ie::RenderInstructions ie::SortBucket::getRenderInstructions(void)
+ie::RenderInstructions* ie::SortBucket::getRenderInstructions(void)
 {
-  return instructions;
+  return &instructions;
 }
 std::vector<ie::RenderPointers>* ie::SortBucket::getRenderUnits(void)
 {
@@ -297,13 +311,16 @@ ie::SceneGraph::SceneGraph()
   
   //Setting Node Status
   ie::RenderInstructions terrainInstructions;
+  terrainInstructions.renderer = "terrain";
   terrainInstructions.shader = "terrain";
   terrainBucket->setRenderInstructions(terrainInstructions);
   ie::RenderInstructions materialedInstructions;
-  materialedInstructions.shader = "materialed";
+  materialedInstructions.renderer = "materialed";
+  materialedInstructions.shader = "static";
   materialedBucket->setRenderInstructions(materialedInstructions);
   ie::RenderInstructions texturedInstructions;
-  texturedInstructions.shader = "textured";
+  texturedInstructions.renderer = "textured";
+  texturedInstructions.shader = "static";
   texturedBucket->setRenderInstructions(texturedInstructions);
   
   //Linking Nodes

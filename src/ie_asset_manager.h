@@ -52,21 +52,12 @@ namespace ie
     //SENDING MESSAGES
     AssetStatusToVramMessage sendAssetStatusToVramMessage(void); 
     AssetStatusToRenderMessage sendAssetStatusToRenderMessage(void);
-    AssetStatusToPlayerMessage sendAssetStatusToPlayerMessage(void);
     AssetStatusToScenegraphMessage sendAssetStatusToScenegraphMessage(void);
 
     //RECEIVING MESSAGES
     void receiveMessage(ie::AssetManagerInstructions);
     void receiveMessage(ie::AssetManagerInstruction);
     
-    //CREATING ENTITIES
-    void createEntity(std::string, std::string, EntityType);
-
-    //CREATING QUICK RENDER LISTS
-    void createQuickLists(void);
-    void createStaticQuickLists(void);
-    void createTerrainQuickLists(void);
-
     //ACCESSING MANANGED ASSETS
     handle getHandle(std::string);
 
@@ -85,10 +76,6 @@ namespace ie
     std::list<unsigned int> usedAssetIds; 
     unsigned int assignAssetId(void);
     
-    //ENTITIES
-    std::map<unsigned int, Entity> entities;
-    std::map<std::string, unsigned int> entityNameIdMap;
-
     //MODELS
     std::map<unsigned int, ModelAsset> modelAssets;
     std::map<std::string, unsigned int> modelNameIdMap;
@@ -125,12 +112,6 @@ namespace ie
     std::vector<glm::ivec4> indexHeap;
     template <class T, class S>
     unsigned int pushToHeap(T*, S*);
-
-    //QUICK LISTS
-    std::map<unsigned int, StaticQuickListElement> staticVList;
-    std::map<unsigned int, StaticQuickListElement> staticVNList;
-    std::map<unsigned int, StaticQuickListElement> staticVTNList;
-    std::set<unsigned int> terrainVTNCBList;
 
     //INSTRUCTION LIST
     std::vector<AssetManagerInstruction> instructions;

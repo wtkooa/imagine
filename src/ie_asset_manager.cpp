@@ -419,7 +419,6 @@ ie::AssetStatusToVramMessage ie::AssetManager::sendAssetStatusToVramMessage(void
 ie::AssetStatusToRenderMessage ie::AssetManager::sendAssetStatusToRenderMessage(void)
 {
   ie::AssetStatusToRenderMessage msg;
-  msg.entities = &entities;
   msg.materials = &materialAssets;
   msg.models = &modelAssets;
   msg.rus = &renderUnits;
@@ -431,19 +430,6 @@ ie::AssetStatusToRenderMessage ie::AssetManager::sendAssetStatusToRenderMessage(
   msg.terrainNameIdMap = &terrainNameIdMap;
   msg.textures = &textureAssets;
   msg.textureNameIdMap = &textureNameIdMap;
-  msg.staticVList = &staticVList;
-  msg.staticVNList = &staticVNList;
-  msg.staticVTNList = &staticVTNList;
-  msg.terrainVTNCBList = &terrainVTNCBList;
-  return msg;
-}
-
-
-ie::AssetStatusToPlayerMessage ie::AssetManager::sendAssetStatusToPlayerMessage(void)
-{
-  ie::AssetStatusToPlayerMessage msg;
-  msg.entities = &entities;
-  msg.entityNameIdMap = &entityNameIdMap;
   return msg;
 }
 
@@ -482,107 +468,6 @@ void ie::AssetManager::receiveMessage(ie::AssetManagerInstruction instruc)
 
 //______________________________________________________________________________
 
-//___|CREATING AND MANAGING ENTITIES|___________________________________________
-
-void ie::AssetManager::createEntity(std::string name,
-                                    std::string mesh,
-                                    EntityType type)
-{
-  ie::Entity entity;
-  entity.name = name;
-  bool entityNameTaken = entityNameIdMap.count(entity.name) == 1;
-  if (entityNameTaken)
-  {
-    std::cout << "Warning: entity with name '" << entity.name <<
-    "' already exists. Engine will use original." << std::endl;
-    return;
-  }
-  entity.assetId = assignAssetId(); 
-  entity.type = type;
-  if (type == STATIC)
-  {
-    entity.modelId = modelNameIdMap[mesh];
-  }
-  else if (type == TERRAIN)
-  {
-    entity.terrainId = terrainNameIdMap[mesh];
-  }
-  entity.hidden = false;
-  entity.translationMatrix = glm::mat4();
-  entity.rotationMatrix = glm::mat4();
-  entity.scaleMatrix = glm::mat4();
-  entity.usesGlobalAmbient = true;
-  entity.usesLightAmbient = true;
-  entity.usesLightDiffuse = true;
-  entity.usesLightSpecular = true;
-  entity.usesLightFalloff = true;
-  entityNameIdMap[entity.name] = entity.assetId;
-  entities[entity.assetId] = entity;
-}
-
-//______________________________________________________________________________
-
-//___|CREATING AND MANAGING QUICK RENDER LISTS|_________________________________
-
-void ie::AssetManager::createQuickLists(void)
-{
-  createStaticQuickLists();
-  createTerrainQuickLists();
-}
-
-void ie::AssetManager::createStaticQuickLists(void)
-{
-  for (auto entIt = entities.begin(); entIt != entities.end(); entIt++)
-  {
-    Entity* entity = &entIt->second;
-    if ((*entity).hidden == false && (*entity).type == STATIC)
-    {
-      StaticQuickListElement vElement;
-      StaticQuickListElement vnElement;
-      StaticQuickListElement vtnElement;
-      unsigned int entityId = (*entity).assetId;
-
-      ModelAsset* model = &modelAssets[(*entity).modelId];
-      for (int nUnit = 0; nUnit < (*model).renderUnits.size(); nUnit++)
-      {
-        unsigned int ruId = (*model).renderUnits[nUnit];
-        RenderUnit* ru = &renderUnits[ruId];
-        if ((*ru).hidden == false)
-        {
-          switch ((*ru).dataFormat)
-          {
-            case V:
-              vElement.renderUnitList.push_back(nUnit);
-              break;
-            case VN:
-              vnElement.renderUnitList.push_back(nUnit);
-              break;
-            case VTN:
-              vtnElement.renderUnitList.push_back(nUnit);
-              break;
-          }
-        }
-      }
-      if (vElement.renderUnitList.size() > 0) {staticVList[entityId] = vElement;}
-      if (vnElement.renderUnitList.size() > 0) {staticVNList[entityId]= vnElement;}
-      if (vtnElement.renderUnitList.size() > 0) {staticVTNList[entityId] = vtnElement;}
-    }
-  }
-}
-
-void ie::AssetManager::createTerrainQuickLists(void)
-{
-  for (auto entIt = entities.begin(); entIt != entities.end(); entIt++)
-  {
-    Entity* entity = &entIt->second;
-    if ((*entity).hidden == false && (*entity).type == TERRAIN)
-    {
-      terrainVTNCBList.insert((*entity).assetId);
-    }
-  }
-}
-
-//______________________________________________________________________________
 
 //___|ACCESSING MANAGED ASSETS|________________________________________________
 
@@ -593,12 +478,7 @@ ie::handle ie::AssetManager::getHandle(std::string line)
   std::string token = ie::split(line, '/', 0);
   ie::handle hdl;
 
-  if (token == "entities" && tokenAmount == 1)
-  {
-    hdl.entities = &entities;
-    return hdl;
-  }
-  else if (token == "models" && tokenAmount == 1)
+  if (token == "models" && tokenAmount == 1)
   {
     hdl.models = &modelAssets;
     return hdl;
@@ -818,36 +698,6 @@ ie::handle ie::AssetManager::getHandle(std::string line)
     {
       std::cout << "Warning: Unrecognized terrain path '" << line << std::endl;
       hdl.terrain = 0;
-      return hdl;
-    }
-  }
-
-  //RETURN POINTER TO AN ENTITY
-  else if (token == "entity" && tokenAmount > 1)
-  {
-    line = ie::popFrontToken(line, '/');
-    token = ie::split(line, '/', 0);
-    int tokenAmount = ie::countTokens(line, '/');  
-    auto it = entityNameIdMap.find(token);
-    if (it == entityNameIdMap.end())
-    {
-      std::cout << "Warning: Entity '" << token <<
-                     "' doesn't exist"  << std::endl;
-      hdl.entity = 0;
-      return hdl;
-    }
-
-    unsigned int id = entityNameIdMap[token];
-    Entity* e = &entities[id];
-    if (tokenAmount == 1)
-    {
-      hdl.entity = e;  
-      return hdl;
-    }
-    else
-    {
-      std::cout << "Warning: Unrecognized entity path '" << line << std::endl;
-      hdl.entity = 0;
       return hdl;
     }
   }

@@ -36,12 +36,10 @@ namespace ie
     ie::AssetManagerInstructions sendAssetManagerInstructionsMessage(void);
 
     //RECEIVING MESSAGES
-    void receiveMessage(ie::AssetStatusToPlayerMessage);
     void receiveMessage(ie::TimeStatusMessage);
 
     //SETTERS AND GETTERS
     void setWindow(SDL_Window*);
-    void setPlayerEntity(std::string);
     void setPlayerPosition(glm::vec3);
     void setPlayerRotation(glm::vec3);
 
@@ -53,11 +51,8 @@ namespace ie
     void setGrabMode(SDL_bool);
 
     std::string mode;
-    Entity* entity;
     SDL_Window * window;
     std::string linkedEntityName;
-    std::map<unsigned int, Entity>* entities;
-    std::map<std::string, unsigned int>* entityNameIdMap;
     glm::vec3 playerPosition;
     glm::vec3 playerRotation;
     glm::vec3 upVector;

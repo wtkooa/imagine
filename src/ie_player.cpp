@@ -39,14 +39,10 @@ ie::Player::Player()
 
 void ie::Player::update(void)
 {
-  unsigned int entityId = (*entityNameIdMap)[linkedEntityName];
-  entity = &(*entities)[entityId];
-
   if (mode == "firstperson")
   {
     firstPersonUpdate();
   }
-
 }
 
 void ie::Player::firstPersonUpdate(void)
@@ -78,7 +74,6 @@ void ie::Player::firstPersonUpdate(void)
     playerRotation = yRotate * playerRotation; 
 
     glm::mat4 tmat = glm::translate(glm::mat4(), playerPosition);
-    (*entity).translationMatrix = tmat;
   }
 }
 
@@ -130,13 +125,6 @@ ie::AssetManagerInstructions ie::Player::sendAssetManagerInstructionsMessage(voi
 
 //___|RECEIVING MESSAGES|_______________________________________________________
 
-void ie::Player::receiveMessage(ie::AssetStatusToPlayerMessage msg)
-{
-  entities = msg.entities;
-  entityNameIdMap = msg.entityNameIdMap;
-}
-
-
 void ie::Player::receiveMessage(ie::TimeStatusMessage msg)
 {
   frameDelta = msg.frameDelta;
@@ -147,7 +135,6 @@ void ie::Player::receiveMessage(ie::TimeStatusMessage msg)
 //___|GETTERS AND SETTERS|______________________________________________________
 
 void ie::Player::setWindow(SDL_Window* win) {window = win;}
-void ie::Player::setPlayerEntity(std::string entityName) {linkedEntityName = entityName;}
 void ie::Player::setPlayerPosition(glm::vec3 pos) {playerPosition = pos;}
 void ie::Player::setPlayerRotation(glm::vec3 rot) {playerRotation = rot;}
 
