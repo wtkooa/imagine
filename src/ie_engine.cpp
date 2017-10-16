@@ -27,6 +27,7 @@
 #include "ie_asset_manager.h"
 #include "ie_config.h"
 #include "ie_const.h"
+#include "ie_controller.h"
 #include "ie_camera.h"
 #include "ie_lighting.h"
 #include "ie_messages.h"
@@ -59,6 +60,7 @@ bool ie::Engine::init(void)
   initVram();
   initRenderers();
   initSceneGraph();
+  initController();
   initPlayer();
   initCamera();
   return true;
@@ -195,10 +197,14 @@ bool ie::Engine::initSceneGraph(void)
   sg.update();
 }
 
+bool ie::Engine::initController(void)
+{
+  control.setWindow(mainWindow);
+}
+
 
 bool ie::Engine::initPlayer(void)
 {
-  player.setWindow(mainWindow);
   player.setPlayerPosition(glm::vec3(0.0f, 0.0f, 0.0f));
   player.setPlayerRotation(glm::vec3(0.0f, 0.0f, -1.0));
 }
@@ -230,6 +236,9 @@ void ie::Engine::handleUpdates(void)
   ie::TimeStatusMessage timeStatusMsg = frameClock.sendTimeStatusMessage();
   eye.receiveMessage(timeStatusMsg);
   player.receiveMessage(timeStatusMsg);
+
+  ie::ControllerStatusMessage controlStatus = control.sendControllerStatusMessage();
+  player.receiveMessage(controlStatus);
 
   player.update();
 
@@ -299,8 +308,8 @@ void ie::Engine::handleEvents(void)
       case SDL_MOUSEMOTION:
         if (SDL_GetRelativeMouseMode() == SDL_TRUE)
         {
-          player.rotateEventVec.x += evnt.motion.xrel;  
-          player.rotateEventVec.y += evnt.motion.yrel;  
+          control.rotateEventVec.x += evnt.motion.xrel;  
+          control.rotateEventVec.y += evnt.motion.yrel;  
         }
         break;
       case SDL_KEYDOWN:
@@ -312,43 +321,43 @@ void ie::Engine::handleEvents(void)
           case SDLK_e:
             if (!evnt.key.repeat)
             {
-              player.toggleGrabMode();
+              control.toggleGrabMode();
             }
             break;
           case SDLK_w:
             if (!evnt.key.repeat)
             { 
-              player.translEventVec.z += 1.0;
+              control.translEventVec.z += 1.0;
             }
             break;
           case SDLK_s:
             if (!evnt.key.repeat)
             {
-              player.translEventVec.z -= 1.0;
+              control.translEventVec.z -= 1.0;
             }
             break;
           case SDLK_d:
             if (!evnt.key.repeat)
             {
-              player.translEventVec.x += 1.0;
+              control.translEventVec.x += 1.0;
             }
             break;
           case SDLK_a:
             if (!evnt.key.repeat)
             {
-              player.translEventVec.x -= 1.0;
+              control.translEventVec.x -= 1.0;
             }
             break;
           case SDLK_SPACE:
             if (!evnt.key.repeat)
             {
-              player.translEventVec.y += 1.0;
+              control.translEventVec.y += 1.0;
             }
             break;
           case SDLK_LSHIFT:
             if (!evnt.key.repeat)
             {
-              player.translEventVec.y -= 1.0;
+              control.translEventVec.y -= 1.0;
             }
             break;
         }
@@ -357,22 +366,22 @@ void ie::Engine::handleEvents(void)
         switch(evnt.key.keysym.sym)
         {
           case SDLK_w:
-              player.translEventVec.z -= 1.0;
+              control.translEventVec.z -= 1.0;
             break;
           case SDLK_s:
-              player.translEventVec.z += 1.0;
+              control.translEventVec.z += 1.0;
             break;
           case SDLK_d:
-              player.translEventVec.x -= 1.0;
+              control.translEventVec.x -= 1.0;
             break;
           case SDLK_a:
-              player.translEventVec.x += 1.0;
+              control.translEventVec.x += 1.0;
             break;
           case SDLK_SPACE:
-              player.translEventVec.y -= 1.0;
+              control.translEventVec.y -= 1.0;
             break;
           case SDLK_LSHIFT:
-              player.translEventVec.y += 1.0;
+              control.translEventVec.y += 1.0;
             break;
         }
         break;

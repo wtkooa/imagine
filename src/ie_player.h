@@ -15,9 +15,9 @@
 
 #include <glm/vec3.hpp>
 #include <glm/vec2.hpp>
-#include <SDL2/SDL.h>
 
 #include "ie_assets.h"
+#include "ie_controller.h"
 #include "ie_messages.h"
 
 namespace ie
@@ -28,7 +28,6 @@ namespace ie
     public:
     Player();
     void update(void);
-    void toggleGrabMode(void);
     void firstPersonUpdate(void);
 
     //SENDING MESSAGES
@@ -37,21 +36,18 @@ namespace ie
 
     //RECEIVING MESSAGES
     void receiveMessage(ie::TimeStatusMessage);
+    void receiveMessage(ie::ControllerStatusMessage);
 
     //SETTERS AND GETTERS
-    void setWindow(SDL_Window*);
     void setPlayerPosition(glm::vec3);
     void setPlayerRotation(glm::vec3);
 
-    //EVENT VECTOR
-    glm::vec3 translEventVec;
-    glm::vec2 rotateEventVec;    
 
     private:
-    void setGrabMode(SDL_bool);
-
+    glm::vec3* translEventVec;
+    glm::vec2* rotateEventVec;    
+    Controller* controller;
     std::string mode;
-    SDL_Window * window;
     std::string linkedEntityName;
     glm::vec3 playerPosition;
     glm::vec3 playerRotation;

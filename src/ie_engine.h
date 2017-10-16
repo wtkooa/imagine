@@ -16,6 +16,7 @@
 #include "ie_asset_manager.h"
 #include "ie_camera.h"
 #include "ie_config.h"
+#include "ie_controller.h"
 #include "ie_lighting.h"
 #include "ie_player.h"
 #include "ie_render_engine.h"
@@ -41,6 +42,7 @@ namespace ie
     bool initVram(void);
     bool initRenderers(void);
     bool initSceneGraph(void);
+    bool initController(void);
     bool initPlayer(void);
     bool initCamera(void);
 
@@ -62,6 +64,7 @@ namespace ie
     ie::FrameClock frameClock;
     ie::Camera eye;
     ie::Player player;
+    ie::Controller control;
     ie::RenderEngine re;
     ie::SceneGraph sg;
 

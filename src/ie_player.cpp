@@ -18,7 +18,6 @@
 #include <glm/mat4x4.hpp>
 #include <glm/vec3.hpp>
 #include <glm/vec2.hpp>
-#include <SDL2/SDL.h>
 
 #include "ie_assets.h"
 #include "ie_config.h"
@@ -31,10 +30,7 @@ ie::Player::Player()
   turnSpeed = ie::DEFAULT_PLAYER_TURNSPEED; 
   upVector = ie::UP_VECTOR;
   mode = "firstperson";
-  translEventVec = glm::vec3(0.0f, 0.0f, 0.0f);
-  rotateEventVec = glm::vec2(0.0f, 0.0f);
 
-  setGrabMode(SDL_TRUE);
 }
 
 void ie::Player::update(void)
@@ -48,10 +44,11 @@ void ie::Player::update(void)
 void ie::Player::firstPersonUpdate(void)
 {
   float refinedMoveSpeed = 0;
-  if (SDL_GetWindowGrab(window) == SDL_TRUE)
+  if (controller->getGrabMode())
   {
-    short directionality = std::abs(translEventVec.x) +
-                           std::abs(translEventVec.z);
+
+    short directionality = std::abs(translEventVec->x) +
+                           std::abs(translEventVec->z);
     if (directionality == 1)
     {
       refinedMoveSpeed = moveSpeed;
@@ -63,13 +60,13 @@ void ie::Player::firstPersonUpdate(void)
 
     float delta = frameDelta * float(refinedMoveSpeed / ie::MSECS_PER_SEC); 
     
-    playerPosition += translEventVec.z * delta * playerRotation;
-    playerPosition += translEventVec.x * delta * glm::normalize(
+    playerPosition += translEventVec->z * delta * playerRotation;
+    playerPosition += translEventVec->x * delta * glm::normalize(
                                                    glm::cross(playerRotation,
                                                    upVector));
 
     glm::mat3 yRotate = glm::mat3(glm::rotate(glm::mat4(),
-                                  -float(rotateEventVec.x * turnSpeed),
+                                  -float(rotateEventVec->x * turnSpeed),
                                   upVector));
     playerRotation = yRotate * playerRotation; 
 
@@ -78,26 +75,6 @@ void ie::Player::firstPersonUpdate(void)
 }
 
 
-void ie::Player::setGrabMode(SDL_bool mode)
-{
-  SDL_SetWindowGrab(window, mode);
-  SDL_SetRelativeMouseMode(mode);
-}
-
-
-void ie::Player::toggleGrabMode(void)
-{
-  if (SDL_GetWindowGrab(window) == SDL_FALSE) 
-  {
-    std::cout << "GrabMode On" << std::endl;
-    setGrabMode(SDL_TRUE);
-  }
-  else
-  {
-    std::cout << "GrabMode Off" << std::endl;
-    setGrabMode(SDL_FALSE);
-  } 
-}
 
 //___|SENDING MESSAGES|_________________________________________________________
 
@@ -106,9 +83,9 @@ ie::PlayerStatusToCameraMessage ie::Player::sendPlayerStatusToCameraMessage(void
   ie::PlayerStatusToCameraMessage msg;
   msg.playerPosition = playerPosition;
   msg.playerRotation = playerRotation;
-  msg.translEventVec = translEventVec;
-  msg.rotateEventVec = rotateEventVec;
-  rotateEventVec = glm::vec2(0.0f, 0.0f); //Needs to be reset after sending message
+  msg.translEventVec = *translEventVec;
+  msg.rotateEventVec = *rotateEventVec;
+  controller->clearRotateEventVec(); //Needs to be reset after sending message
   msg.mode = mode;
   return msg;
 }
@@ -130,11 +107,17 @@ void ie::Player::receiveMessage(ie::TimeStatusMessage msg)
   frameDelta = msg.frameDelta;
 }
 
+void ie::Player::receiveMessage(ie::ControllerStatusMessage msg)
+{
+  controller = msg.controller;
+  translEventVec = msg.translEventVec;
+  rotateEventVec = msg.rotateEventVec;
+}
+
 //______________________________________________________________________________
 
 //___|GETTERS AND SETTERS|______________________________________________________
 
-void ie::Player::setWindow(SDL_Window* win) {window = win;}
 void ie::Player::setPlayerPosition(glm::vec3 pos) {playerPosition = pos;}
 void ie::Player::setPlayerRotation(glm::vec3 rot) {playerRotation = rot;}
 

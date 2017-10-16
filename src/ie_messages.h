@@ -16,6 +16,7 @@
 #include <vector>
 
 #include <glm/mat4x4.hpp>
+#include <glm/vec2.hpp>
 #include <glm/vec3.hpp>
 #include <glm/vec4.hpp>
 
@@ -127,6 +128,15 @@ namespace ie
   {
     public:
     SortBucket* bucket;
+  };
+
+  class Controller; //Forward Declaration
+  class ControllerStatusMessage
+  {
+    public:
+    Controller* controller;
+    glm::vec3* translEventVec;
+    glm::vec2* rotateEventVec;    
   };
 
 }
