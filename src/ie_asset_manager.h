@@ -50,9 +50,7 @@ namespace ie
     void unwrapPackage(ie::TerrainPackage);
 
     //SENDING MESSAGES
-    AssetStatusToVramMessage sendAssetStatusToVramMessage(void); 
-    AssetStatusToRenderMessage sendAssetStatusToRenderMessage(void);
-    AssetStatusToScenegraphMessage sendAssetStatusToScenegraphMessage(void);
+    AssetStatusMessage sendAssetStatusMessage(void); 
 
     //RECEIVING MESSAGES
     void receiveMessage(ie::AssetManagerInstructions);

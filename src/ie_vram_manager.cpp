@@ -31,7 +31,7 @@
 
 //___|RECEIVING MESSAGES|_______________________________________________________
 
-void ie::VramManager::receiveMessage(ie::AssetStatusToVramMessage msg)
+void ie::VramManager::receiveMessage(ie::AssetStatusMessage msg)
 {
   models = msg.models;
   rus = msg.rus;

@@ -398,53 +398,28 @@ void ie::AssetManager::unwrapPackage(ie::TerrainPackage package)
 
 //___|SENDING MESSAGES|_________________________________________________________
 
-ie::AssetStatusToVramMessage ie::AssetManager::sendAssetStatusToVramMessage(void)
+ie::AssetStatusMessage ie::AssetManager::sendAssetStatusMessage(void)
 {
-  ie::AssetStatusToVramMessage msg;
-  msg.models = &modelAssets;
+  ie::AssetStatusMessage msg;
   msg.rus = &renderUnits;
+  msg.models = &modelAssets;
+  msg.modelNameIdMap = &modelNameIdMap;
   msg.textures = &textureAssets;
+  msg.textureNameIdMap = &textureNameIdMap;
   msg.materials = &materialAssets;
+  msg.materialNameIdMap = &materialNameIdMap;
   msg.terrains = &terrainAssets;
+  msg.terrainNameIdMap = &terrainNameIdMap;
+  msg.shaders = &shaderAssets;
+  msg.shaderNameIdMap = &shaderNameIdMap;
+  msg.lights = &lightAssets;
+  msg.lightNameIdMap = &lightNameIdMap;
   msg.vHeap = &vertexHeap;
   msg.tHeap = &textureCoordinateHeap;
   msg.nHeap = &normalVectorHeap;
   msg.cHeap = &colorHeap;
   msg.bHeap = &blendHeap;
   msg.iHeap = &indexHeap;
-  return msg;
-}
-
-
-ie::AssetStatusToRenderMessage ie::AssetManager::sendAssetStatusToRenderMessage(void)
-{
-  ie::AssetStatusToRenderMessage msg;
-  msg.materials = &materialAssets;
-  msg.models = &modelAssets;
-  msg.rus = &renderUnits;
-  msg.shaders = &shaderAssets;
-  msg.shaderNameIdMap = &shaderNameIdMap;
-  msg.lights = &lightAssets;
-  msg.lightNameIdMap = &lightNameIdMap;
-  msg.terrains = &terrainAssets;
-  msg.terrainNameIdMap = &terrainNameIdMap;
-  msg.textures = &textureAssets;
-  msg.textureNameIdMap = &textureNameIdMap;
-  return msg;
-}
-
-ie::AssetStatusToScenegraphMessage ie::AssetManager::sendAssetStatusToScenegraphMessage(void)
-{
-  ie::AssetStatusToScenegraphMessage msg;
-  msg.models = &modelAssets;
-  msg.modelNameIdMap = &modelNameIdMap;
-  msg.terrains = &terrainAssets;
-  msg.terrainNameIdMap = &terrainNameIdMap;
-  msg.materials = &materialAssets;
-  msg.materialNameIdMap = &materialNameIdMap;
-  msg.lights = &lightAssets;
-  msg.lightNameIdMap = &lightNameIdMap;
-  msg.rus = &renderUnits;
   return msg;
 }
 

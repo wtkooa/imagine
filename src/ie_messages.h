@@ -26,51 +26,28 @@
 namespace ie
 {
 
-  class AssetStatusToVramMessage
+  class AssetStatusMessage
   {
     public:
-    std::map<unsigned int, ModelAsset>* models;
     std::map<unsigned int, RenderUnit>* rus;
+    std::map<unsigned int, ModelAsset>* models;
+    std::map<std::string, unsigned int>* modelNameIdMap;
     std::map<unsigned int, TextureAsset>* textures; 
+    std::map<std::string, unsigned int>* textureNameIdMap;
     std::map<unsigned int, MaterialAsset>* materials;
+    std::map<std::string, unsigned int>* materialNameIdMap;
     std::map<unsigned int, TerrainAsset>* terrains;
+    std::map<std::string, unsigned int>* terrainNameIdMap;
+    std::map<GLuint, ShaderAsset>* shaders;
+    std::map<std::string, GLuint>* shaderNameIdMap;
+    std::map<unsigned int, LightAsset>* lights;
+    std::map<std::string, unsigned int>* lightNameIdMap;
     std::vector<glm::vec4>* vHeap;
     std::vector<glm::vec3>* tHeap;
     std::vector<glm::vec3>* nHeap;
     std::vector<glm::vec3>* cHeap;
     std::vector<glm::uvec2>* bHeap;
     std::vector<glm::ivec4>* iHeap;
-  };
-
-
-  class AssetStatusToRenderMessage 
-  {
-    public:
-    std::map<unsigned int, MaterialAsset>* materials;
-    std::map<unsigned int, ModelAsset>* models;
-    std::map<unsigned int, RenderUnit>* rus;
-    std::map<GLuint, ShaderAsset>* shaders;
-    std::map<std::string, GLuint>* shaderNameIdMap;
-    std::map<unsigned int, LightAsset>* lights;
-    std::map<std::string, unsigned int>* lightNameIdMap;
-    std::map<unsigned int, TerrainAsset>* terrains;
-    std::map<std::string, unsigned int>* terrainNameIdMap;
-    std::map<unsigned int, TextureAsset>* textures;
-    std::map<std::string, unsigned int>* textureNameIdMap;
-  };
-
-  class AssetStatusToScenegraphMessage
-  {
-    public:
-    std::map<unsigned int, ModelAsset>* models;
-    std::map<std::string, unsigned int>* modelNameIdMap;
-    std::map<unsigned int, TerrainAsset>* terrains;
-    std::map<std::string, unsigned int>* terrainNameIdMap;
-    std::map<unsigned int, LightAsset>* lights;
-    std::map<std::string, unsigned int>* lightNameIdMap;
-    std::map<unsigned int, MaterialAsset>* materials;
-    std::map<std::string, unsigned int>* materialNameIdMap;
-    std::map<unsigned int, RenderUnit>* rus;
   };
 
   class VramStatusToRenderMessage

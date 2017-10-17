@@ -36,7 +36,7 @@ namespace ie
     void renderTerrainEntities(std::vector<RenderPointers>*, ShaderAsset*);
 
     //RECEIVING MESSAGES
-    void receiveMessage(AssetStatusToRenderMessage);
+    void receiveMessage(AssetStatusMessage);
     void receiveMessage(VramStatusToRenderMessage);
     void receiveMessage(CameraStatusToRenderMessage);
     void receiveMessage(GraphStatusToRenderMessage);

@@ -44,7 +44,7 @@ namespace ie
     void loadTexture(TextureAsset*);
 
     //RECEIVING MESSAGES
-    void receiveMessage(AssetStatusToVramMessage); 
+    void receiveMessage(AssetStatusMessage); 
 
     //SENDING MESSAGES
     VramStatusToRenderMessage sendVramStatusToRenderMessage();

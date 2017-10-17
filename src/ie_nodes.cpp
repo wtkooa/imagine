@@ -109,7 +109,7 @@ glm::mat4 ie::GraphNode::getTransformationMatrix(void)
   return transformationMatrix;
 }
 
-void ie::GraphNode::receiveMessage(ie::AssetStatusToScenegraphMessage msg)
+void ie::GraphNode::receiveMessage(ie::AssetStatusMessage msg)
 {
   models = msg.models;
   modelNameIdMap = msg.modelNameIdMap;
@@ -204,7 +204,7 @@ void ie::SortTreeNode::sort(EntityNode* entity)
   }
 }
 
-void ie::SortTreeNode::receiveMessage(ie::AssetStatusToScenegraphMessage msg)
+void ie::SortTreeNode::receiveMessage(ie::AssetStatusMessage msg)
 {
   models = msg.models;
   modelNameIdMap = msg.modelNameIdMap;

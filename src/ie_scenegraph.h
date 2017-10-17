@@ -33,7 +33,7 @@ namespace ie
     SortTreeNode* sortTree;
     SortBucket* firstBucket;
     void update(void);
-    void receiveMessage(ie::AssetStatusToScenegraphMessage);
+    void receiveMessage(ie::AssetStatusMessage);
     ie::GraphStatusToRenderMessage sendGraphStatusToRenderMessage(void);
     private:
   };

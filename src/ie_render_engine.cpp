@@ -26,7 +26,7 @@
 
 //___|RECEIVING MESSAGES|_______________________________________________________
 
-void ie::RenderEngine::receiveMessage(AssetStatusToRenderMessage msg)
+void ie::RenderEngine::receiveMessage(AssetStatusMessage msg)
 {
   materials = msg.materials;
   models = msg.models;

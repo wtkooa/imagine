@@ -42,7 +42,7 @@ namespace ie
     void setSortTreeRoot(SortTreeNode*);
     glm::mat4 getTransformationMatrix(void);
     void setTranslation(glm::vec3);
-    void receiveMessage(ie::AssetStatusToScenegraphMessage);
+    void receiveMessage(ie::AssetStatusMessage);
 
 
     protected:
@@ -118,7 +118,7 @@ namespace ie
     virtual void sort(EntityNode*);
     virtual void sort(RenderPointers);
 
-    void receiveMessage(ie::AssetStatusToScenegraphMessage);
+    void receiveMessage(ie::AssetStatusMessage);
 
     protected:
     std::vector<SortTreeNode*> children;

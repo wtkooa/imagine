@@ -67,7 +67,7 @@ ie::SceneGraph::SceneGraph()
 
 }
 
-void ie::SceneGraph::receiveMessage(ie::AssetStatusToScenegraphMessage msg)
+void ie::SceneGraph::receiveMessage(ie::AssetStatusMessage msg)
 {
   root->receiveMessage(msg);
   sortTree->receiveMessage(msg);

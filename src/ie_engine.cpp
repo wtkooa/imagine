@@ -172,8 +172,8 @@ bool ie::Engine::initAssets(void)
 
 bool ie::Engine::initVram(void)
 {
-  ie::AssetStatusToVramMessage statusMsg = am.sendAssetStatusToVramMessage();
-  vram.receiveMessage(statusMsg);
+  ie::AssetStatusMessage assetStatusMsg = am.sendAssetStatusMessage();
+  vram.receiveMessage(assetStatusMsg);
   vram.setGlContext(mainGlContext);
   vram.createAndLoadVbos();
   return true;
@@ -186,8 +186,8 @@ bool ie::Engine::initRenderers(void)
 
 bool ie::Engine::initSceneGraph(void)
 {
-  ie::AssetStatusToScenegraphMessage toSG = am.sendAssetStatusToScenegraphMessage();
-  sg.receiveMessage(toSG);
+  ie::AssetStatusMessage assetStatusMsg = am.sendAssetStatusMessage();
+  sg.receiveMessage(assetStatusMsg);
 
   ie::EntityNode* terrain = new EntityNode("Terrain", "Terrain", TERRAIN);
   ie::EntityNode* cursor = new EntityNode("Player", "Cursor", STATIC);
@@ -255,14 +255,13 @@ void ie::Engine::handleUpdates(void)
   ie::CameraStatusToRenderMessage cameraToRenderMsg = eye.sendCameraStatusToRenderMessage();
   re.receiveMessage(cameraToRenderMsg);
 
-  ie::AssetStatusToVramMessage toVramMsg = am.sendAssetStatusToVramMessage();
-  vram.receiveMessage(toVramMsg);
+  ie::AssetStatusMessage assetStatusMsg = am.sendAssetStatusMessage();
+  vram.receiveMessage(assetStatusMsg);
 
   ie::VramStatusToRenderMessage vramToRenderMsg  = vram.sendVramStatusToRenderMessage();
   re.receiveMessage(vramToRenderMsg);
 
-  ie::AssetStatusToRenderMessage assetToRenderMsg = am.sendAssetStatusToRenderMessage();
-  re.receiveMessage(assetToRenderMsg);
+  re.receiveMessage(assetStatusMsg);
 
   sg.update();
 
