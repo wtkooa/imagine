@@ -375,7 +375,7 @@ void ie::Engine::handleResize(int width, int height)
   float aspectRatio = float(width) / float(height);
   SDL_SetWindowSize(mainWindow, width, height);
   glViewport(0, 0, width, height);
-  //Fix Aspect Resize issue!/////////////////////////////////////
+  sg.updateAspectRatio(aspectRatio);
 }
 
 

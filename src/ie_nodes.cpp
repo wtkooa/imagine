@@ -38,6 +38,7 @@ std::map<std::string, unsigned int>* ie::GraphNode::materialNameIdMap = NULL;
 std::map<unsigned int, ie::RenderUnit>* ie::GraphNode::rus = NULL;
 ie::SortTreeNode* ie::GraphNode::sortTreeRoot = NULL;
 ie::PhysicsSort* ie::GraphNode::physicsTreeRoot = NULL;
+float ie::GraphNode::aspectRatio = ie::ASPECT_RATIO;
 
 ie::GraphNode::GraphNode()
 {
@@ -113,6 +114,11 @@ void ie::GraphNode::setPhysicsTreeRoot(PhysicsSort* root)
 void ie::GraphNode::sendToPhysics(PhysicsPointers physicsUnit)
 {
   physicsTreeRoot->sort(physicsUnit);
+}
+
+void ie::GraphNode::setAspectRatio(float ratio)
+{
+  aspectRatio = ratio;
 }
 
 void ie::GraphNode::receiveMessage(ie::AssetStatusMessage msg)
@@ -228,6 +234,11 @@ void ie::PlayerNode::render(void)
   linkedCamera->render();
 }
 
+void ie::PlayerNode::update(void)
+{
+  linkedCamera->update();
+}
+
 //______________________________________________________________________________
 
 //___|CAMERA NODE IMPLEMENTATION|_______________________________________________
@@ -239,9 +250,13 @@ ie::CameraNode::CameraNode()
   lookSpeed = ie::DEFAULT_CAMERA_LOOKSPEED;
   offset = glm::vec3(0.0f, 2.0f, 0.0f);
   lookVector = glm::vec3(0.0f, 0.0f, -1.0f);
-  projectionMatrix = glm::perspective(ie::FIELD_OF_VIEW,
-                                      ie::ASPECT_RATIO,
-                                      ie::NEAR_PLANE, ie::FAR_PLANE);
+  fieldOfView = ie::FIELD_OF_VIEW;
+  currentAspectRatio = aspectRatio;
+  nearPlane = ie::NEAR_PLANE;
+  farPlane = ie::FAR_PLANE;
+  projectionMatrix = glm::perspective(fieldOfView,
+                                      currentAspectRatio,
+                                      nearPlane, farPlane);
 }
 
 void ie::CameraNode::render(void)
@@ -250,6 +265,17 @@ void ie::CameraNode::render(void)
   unit.type = CAMERA;
   unit.camera = this;
   sortTreeRoot->sort(unit);
+}
+
+void ie::CameraNode::update(void)
+{
+  if (currentAspectRatio != aspectRatio)
+  {
+    currentAspectRatio = aspectRatio;
+    projectionMatrix = glm::perspective(fieldOfView,
+                                        currentAspectRatio,
+                                        nearPlane, farPlane);
+  }
 }
 
 //______________________________________________________________________________

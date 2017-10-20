@@ -68,6 +68,7 @@ namespace ie
     void addChild(GraphNode*);
     void setSortTreeRoot(SortTreeNode*);
     void setPhysicsTreeRoot(PhysicsSort*);
+    void setAspectRatio(float);
     void receiveMessage(ie::AssetStatusMessage);
 
     NodeType type;
@@ -81,6 +82,7 @@ namespace ie
     protected:
     static SortTreeNode* sortTreeRoot;
     static PhysicsSort* physicsTreeRoot;
+    static float aspectRatio;
 
     //DATA FROM THE ASSET MANAGER
     static std::map<unsigned int, ModelAsset>* models;
@@ -122,6 +124,7 @@ namespace ie
   {
     public:
     CameraNode();
+    void update(void);
     void render(void);
 
     glm::vec3 offset;
@@ -130,6 +133,10 @@ namespace ie
     glm::mat4 projectionMatrix;
     glm::mat4 viewMatrix;
     float lookSpeed;
+    float fieldOfView;
+    float currentAspectRatio;
+    float nearPlane;
+    float farPlane;
 
   };
 
@@ -138,6 +145,7 @@ namespace ie
     public:
     PlayerNode();
 
+    void update(void);
     void physics(void);
     void render(void);
 
@@ -146,7 +154,6 @@ namespace ie
     float turnSpeed;
     EntityNode* linkedEntity;
     CameraNode* linkedCamera;
-
   };
 
 

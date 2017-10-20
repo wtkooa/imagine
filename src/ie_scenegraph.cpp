@@ -111,4 +111,7 @@ ie::GraphStatusMessage ie::SceneGraph::sendGraphStatusMessage(void)
 void ie::SceneGraph::physics(void) {root->physics();}
 void ie::SceneGraph::update(void) {root->update();}
 void ie::SceneGraph::render(void) {root->render();}
-
+void ie::SceneGraph::updateAspectRatio(float ratio)
+{
+  root->setAspectRatio(ratio);
+}

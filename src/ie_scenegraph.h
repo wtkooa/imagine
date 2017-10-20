@@ -35,6 +35,7 @@ namespace ie
     void physics(void);
     void update(void);
     void render(void);
+    void updateAspectRatio(float);
     void receiveMessage(ie::AssetStatusMessage);
     ie::GraphStatusMessage sendGraphStatusMessage(void);
     private:
