@@ -18,6 +18,7 @@
 #include "ie_config.h"
 #include "ie_controller.h"
 #include "ie_lighting.h"
+#include "ie_physics_engine.h"
 #include "ie_player.h"
 #include "ie_render_engine.h"
 #include "ie_scenegraph.h"
@@ -42,6 +43,7 @@ namespace ie
     bool initVram(void);
     bool initRenderers(void);
     bool initSceneGraph(void);
+    bool initPhysics(void);
     bool initController(void);
     bool initPlayer(void);
     bool initCamera(void);
@@ -66,6 +68,7 @@ namespace ie
     ie::Player player;
     ie::Controller control;
     ie::RenderEngine re;
+    ie::PhysicsEngine fizx;
     ie::SceneGraph sg;
 
     ie::OpenGlContextDependentConfigs openGlConfigs;

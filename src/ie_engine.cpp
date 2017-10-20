@@ -33,6 +33,7 @@
 #include "ie_messages.h"
 #include "ie_nodes.h"
 #include "ie_packages.h"
+#include "ie_physics_engine.h"
 #include "ie_render_engine.h"
 #include "ie_scenegraph.h"
 #include "ie_shader.h"
@@ -60,6 +61,7 @@ bool ie::Engine::init(void)
   initVram();
   initRenderers();
   initSceneGraph();
+  initPhysics();
   initController();
   initPlayer();
   initCamera();
@@ -191,10 +193,22 @@ bool ie::Engine::initSceneGraph(void)
 
   ie::EntityNode* terrain = new EntityNode("Terrain", "Terrain", TERRAIN);
   ie::EntityNode* cursor = new EntityNode("Player", "Cursor", STATIC);
+  ie::PlayerNode* player = new PlayerNode();
+  ie::CameraNode* camera = new CameraNode();
+
   sg.root->addChild(terrain);
-  terrain->addChild(cursor); 
-  cursor->setTranslation(glm::vec3(0.0f, 2.0f, 0.0f));
+  sg.root->addChild(player);
+  player->linkedCamera = camera;
+  player->linkedEntity = cursor;
+  player->translation = glm::vec3(1.0f, 0.0f, 1.0f);
   sg.update();
+}
+
+bool ie::Engine::initPhysics(void)
+{
+  ie::GraphStatusMessage graphStatusMsg = sg.sendGraphStatusMessage();
+  fizx.receiveMessage(graphStatusMsg);
+  fizx.setController(&control);
 }
 
 bool ie::Engine::initController(void)
@@ -236,6 +250,7 @@ void ie::Engine::handleUpdates(void)
   ie::TimeStatusMessage timeStatusMsg = frameClock.sendTimeStatusMessage();
   eye.receiveMessage(timeStatusMsg);
   player.receiveMessage(timeStatusMsg);
+  fizx.receiveMessage(timeStatusMsg);
 
   ie::ControllerStatusMessage controlStatus = control.sendControllerStatusMessage();
   player.receiveMessage(controlStatus);
@@ -246,11 +261,6 @@ void ie::Engine::handleUpdates(void)
   eye.receiveMessage(toCameraMsg);
 
   eye.update();
-
-  ie::AssetManagerInstructions assetInstrucMsg = player.sendAssetManagerInstructionsMessage();
-  am.receiveMessage(assetInstrucMsg);
-
-  am.update();
 
   ie::CameraStatusToRenderMessage cameraToRenderMsg = eye.sendCameraStatusToRenderMessage();
   re.receiveMessage(cameraToRenderMsg);
@@ -263,11 +273,13 @@ void ie::Engine::handleUpdates(void)
 
   re.receiveMessage(assetStatusMsg);
 
+  sg.physics();
+  fizx.update();
   sg.update();
+  sg.render();
 
-  ie::GraphStatusToRenderMessage graphToRenderMsg = sg.sendGraphStatusToRenderMessage();
-  re.receiveMessage(graphToRenderMsg);
-
+  ie::GraphStatusMessage graphStatusMsg = sg.sendGraphStatusMessage();
+  re.receiveMessage(graphStatusMsg);
 }
 
 

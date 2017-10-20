@@ -27,9 +27,6 @@
 namespace ie
 {
 
-
-  enum EntityType{NONE, STATIC, TERRAIN, WATER};
-  
   class ShaderAsset
   {
     public:

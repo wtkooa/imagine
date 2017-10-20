@@ -39,7 +39,7 @@ namespace ie
     void receiveMessage(AssetStatusMessage);
     void receiveMessage(VramStatusToRenderMessage);
     void receiveMessage(CameraStatusToRenderMessage);
-    void receiveMessage(GraphStatusToRenderMessage);
+    void receiveMessage(GraphStatusMessage);
 
     private:
     //DATA FROM ASSET MANAGER

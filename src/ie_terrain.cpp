@@ -65,10 +65,7 @@ void ie::TerrainGenerator::generateTerrain(short d, float u)
   {
     for (short x = 0; x < dim; x++)
     {
-      float xv = x - (float(dim) / 2.0);
-      float zv = z - (float(dim) / 2.0);
-      glm::vec4 vert(xv * unitSize, 0.0f, zv * unitSize, 1.0f);
-      srand(x*z);
+      glm::vec4 vert(x * unitSize, 0.0f, z * unitSize, 1.0f);
       glm::vec3 color(0.0f , 0.0f, 0.0f);
       glm::vec3 normal(0.0f, 1.0f, 0.0f);
       glm::uvec2 blend(99, 0);

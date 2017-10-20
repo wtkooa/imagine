@@ -20,6 +20,8 @@
 #include <glm/vec3.hpp>
 
 #include "ie_assets.h"
+#include "ie_config.h"
+#include "ie_const.h"
 #include "ie_messages.h"
 #include "ie_vram.h"
 
@@ -35,14 +37,16 @@ std::map<unsigned int, ie::MaterialAsset>* ie::GraphNode::materials = NULL;
 std::map<std::string, unsigned int>* ie::GraphNode::materialNameIdMap = NULL; 
 std::map<unsigned int, ie::RenderUnit>* ie::GraphNode::rus = NULL;
 ie::SortTreeNode* ie::GraphNode::sortTreeRoot = NULL;
+ie::PhysicsSort* ie::GraphNode::physicsTreeRoot = NULL;
 
 ie::GraphNode::GraphNode()
 {
   translation = glm::vec3(0.0f);
   rotation = glm::vec3(0.0f);
   scale = glm::vec3(1.0f);
-  transformationMatrix = glm::mat4();
+  mtwMatrix = glm::mat4();
   parentNode = NULL;
+  type = NONE;
 }
 
 ie::GraphNode::~GraphNode()
@@ -55,10 +59,17 @@ ie::GraphNode::~GraphNode()
 
 void ie::GraphNode::addChild(GraphNode* child)
 {
-  child->setParentNode(this); 
+  child->parentNode = this; 
   children.push_back(child);
 }
 
+void ie::GraphNode::physics(void)
+{
+  for (auto it = children.begin(); it != children.end(); it++)
+  {
+    (*it)->physics();
+  }
+}
 void ie::GraphNode::update(void)
 {
   glm::mat4 transl = glm::translate(glm::mat4(), translation);
@@ -70,10 +81,10 @@ void ie::GraphNode::update(void)
   glm::mat4 rotZ = glm::rotate(glm::mat4(), rotation.z,
                                glm::vec3(0.0f, 0.0f, 1.0f));
   glm::mat4 rotate = rotX * rotY * rotZ;
-  transformationMatrix = transl * rotate * scal;
+  mtwMatrix = transl * rotate * scal;
   if (parentNode)
   {
-    transformationMatrix = parentNode->transformationMatrix * transformationMatrix;
+    mtwMatrix = parentNode->mtwMatrix * mtwMatrix;
   }
   for (auto it = children.begin(); it != children.end(); it++)
   {
@@ -89,24 +100,19 @@ void ie::GraphNode::render(void)
   }
 }
 
-void ie::GraphNode::setParentNode(GraphNode* parent)
-{
-  parentNode = parent;
-}
-
 void ie::GraphNode::setSortTreeRoot(SortTreeNode* root)
 {
   sortTreeRoot = root; 
 }
 
-void ie::GraphNode::setTranslation(glm::vec3 transl)
+void ie::GraphNode::setPhysicsTreeRoot(PhysicsSort* root)
 {
-  translation = transl;
+  physicsTreeRoot = root; 
 }
 
-glm::mat4 ie::GraphNode::getTransformationMatrix(void)
+void ie::GraphNode::sendToPhysics(PhysicsPointers physicsUnit)
 {
-  return transformationMatrix;
+  physicsTreeRoot->sort(physicsUnit);
 }
 
 void ie::GraphNode::receiveMessage(ie::AssetStatusMessage msg)
@@ -137,11 +143,13 @@ ie::EntityNode::EntityNode()
   usesLightDiffuse = true;
   usesLightSpecular = true;
   usesLightFalloff = true;
+  usesPhysics = true;
+  collidable = true;
 }
 
 ie::EntityNode::EntityNode(std::string entityName,
                            std::string assetName,
-                           EntityType assetType)
+                           NodeType assetType)
 {
   name = entityName;
   type = assetType;
@@ -159,13 +167,29 @@ ie::EntityNode::EntityNode(std::string entityName,
   usesLightDiffuse = true;
   usesLightSpecular = true;
   usesLightFalloff = true;
+  usesPhysics = true;
+  collidable = true;
+}
+
+void ie::EntityNode::physics(void)
+{
+  if (usesPhysics == true)
+  {
+    PhysicsPointers unit;
+    unit.type = type;
+    unit.entity = this;
+    sendToPhysics(unit);
+  }
 }
 
 void ie::EntityNode::render(void)
 {
   if (hidden == false)
   {
-    sortTreeRoot->sort(this);
+    RenderPointers unit;
+    unit.type = type;
+    unit.entity = this;
+    sortTreeRoot->sort(unit);
   }
   for (auto it = children.begin(); it != children.end(); it++)
   {
@@ -173,8 +197,60 @@ void ie::EntityNode::render(void)
   }
 }
 
-ie::EntityType ie::EntityNode::getType(void) {return type;}
-unsigned int ie::EntityNode::getAssetId(void) {return assetId;}
+//______________________________________________________________________________
+
+//___|PLAYER NODE IMPLEMENTATION|_______________________________________________
+
+ie::PlayerNode::PlayerNode()
+{
+  type = PLAYER;
+  upVector = ie::UP_VECTOR;
+  moveSpeed = ie::DEFAULT_PLAYER_MOVESPEED;
+  turnSpeed = ie::DEFAULT_PLAYER_TURNSPEED;
+  rotation = glm::vec3(0.0f, 0.0f, -1.0f);
+}
+
+void ie::PlayerNode::physics(void)
+{
+  PhysicsPointers unit;
+  unit.type = PLAYER;
+  unit.player = this;
+  sendToPhysics(unit);
+}
+
+void ie::PlayerNode::render(void)
+{
+  RenderPointers unit;
+  unit.type = PLAYER;
+  unit.player = this;
+  sortTreeRoot->sort(unit);
+  linkedEntity->render();
+  linkedCamera->render();
+}
+
+//______________________________________________________________________________
+
+//___|CAMERA NODE IMPLEMENTATION|_______________________________________________
+
+ie::CameraNode::CameraNode()
+{
+  type = CAMERA;
+  upVector = ie::UP_VECTOR;
+  lookSpeed = ie::DEFAULT_CAMERA_LOOKSPEED;
+  offset = glm::vec3(0.0f);
+  lookVector = glm::vec3(0.0f, 0.0f, -1.0f);
+  projectionMatrix = glm::perspective(ie::FIELD_OF_VIEW,
+                                      ie::ASPECT_RATIO,
+                                      ie::NEAR_PLANE, ie::FAR_PLANE);
+}
+
+void ie::CameraNode::render(void)
+{
+  RenderPointers unit;
+  unit.type = CAMERA;
+  unit.camera = this;
+  sortTreeRoot->sort(unit);
+}
 
 //______________________________________________________________________________
 
@@ -196,11 +272,11 @@ void ie::SortTreeNode::addChild(SortTreeNode* child)
   children.push_back(child);
 }
 
-void ie::SortTreeNode::sort(EntityNode* entity)
+void ie::SortTreeNode::sort(RenderPointers unit)
 {
   for (auto it = children.begin(); it != children.end(); it++)
   {
-    (*it)->sort(entity);
+    (*it)->sort(unit);
   }
 }
 
@@ -217,36 +293,37 @@ void ie::SortTreeNode::receiveMessage(ie::AssetStatusMessage msg)
   rus = msg.rus;
 }
 
-void ie::SortTreeNode::sort(RenderPointers) {}
 
-void ie::SortEntityTypeNode::sort(EntityNode* entity)
+void ie::SortTypeNode::sort(RenderPointers unit)
 {
-  if (entity->getType() == TERRAIN)
+  if (unit.type == TERRAIN)
   {
-    TerrainAsset* terrain = &(*terrains)[entity->getAssetId()];
-    RenderPointers rps;
-    rps.entity = entity;
-    rps.ta = terrain;
-    toTerrain->sort(rps);
+    unit.ta = &(*terrains)[unit.entity->assetId];
+    toTerrain->sort(unit);
   }
-  else if (entity->getType() == STATIC)
+  else if (unit.type == STATIC)
   {
-    toStatic->sort(entity);
+    toStatic->sort(unit);
+  }
+  else if (unit.type == PLAYER)
+  {
+    toPlayer->sort(unit);
+  }
+  else if (unit.type == CAMERA)
+  {
+    toCamera->sort(unit);
   }
 }
 
-void ie::SortEntityTypeNode::addToTerrainChild(SortTreeNode* node) {toTerrain = node;}
-void ie::SortEntityTypeNode::addToStaticChild(SortTreeNode* node) {toStatic = node;}
-
-void ie::SortStaticTypeNode::sort(EntityNode* entity)
+void ie::SortStaticTypeNode::sort(RenderPointers unit)
 {
-  ModelAsset* model = &(*models)[entity->getAssetId()];
+  ModelAsset* model = &(*models)[unit.entity->assetId];
   std::vector<unsigned int>* ruList = &model->renderUnits;
   for (auto it = ruList->begin(); it != ruList->end(); it++)
   {
     RenderUnit* ru = &(*rus)[*it];
     RenderPointers rps;
-    rps.entity = entity;
+    rps.entity = unit.entity;
     rps.ru = ru;
     if (ru->dataFormat == VN)
     {
@@ -259,30 +336,30 @@ void ie::SortStaticTypeNode::sort(EntityNode* entity)
   }
 }
 
-void ie::SortStaticTypeNode::addToStaticMaterialedChild(SortTreeNode* node) {toMaterialed = node;}
-void ie::SortStaticTypeNode::addToStaticTexturedChild(SortTreeNode* node) {toTextured = node;}
 
 ie::SortBucket::SortBucket()
 {
-  link = NULL;
+  nextBucket = NULL;
 }
+
 
 void ie::SortBucket::sort(RenderPointers rps)
 {
   renderUnits.push_back(rps);
 }
 
+
 void ie::SortBucket::clear(void)
 {
   renderUnits.clear();
-  if (link != NULL)
+  if (nextBucket != NULL)
   {
-    link->clear();
+    nextBucket->clear();
   }
 }
 
-void ie::SortBucket::setNextBucket(SortBucket* newLink) {link = newLink;}
-ie::SortBucket* ie::SortBucket::getNextBucket(void) {return link;}
+
+ie::SortBucket* ie::SortBucket::getNextBucket(void) {return nextBucket;}
 void ie::SortBucket::setRenderInstructions(ie::RenderInstructions instruc)
 {
   instructions = instruc;
@@ -297,3 +374,45 @@ std::vector<ie::RenderPointers>* ie::SortBucket::getRenderUnits(void)
 }
 
 //______________________________________________________________________________
+
+//___|PHYSICS BUCKETS|__________________________________________________________
+
+void ie::PhysicsSort::sort(ie::PhysicsPointers physicsUnit)
+{
+  if (physicsUnit.type == TERRAIN)
+  {
+    toTerrain->sort(physicsUnit);
+  }
+  else if (physicsUnit.type == PLAYER)
+  {
+    toPlayer->sort(physicsUnit);
+  }
+  else if (physicsUnit.type == STATIC)
+  {
+    toStatic->sort(physicsUnit);
+  }
+}
+
+ie::PhysicsBucket::PhysicsBucket()
+{
+  nextBucket = NULL;
+}
+
+void ie::PhysicsBucket::clear(void)
+{
+  physicsUnits.clear();
+  if (nextBucket != NULL)
+  {
+    nextBucket->clear();
+  }
+}
+
+void ie::PhysicsBucket::sort(ie::PhysicsPointers physicsUnit)
+{
+  physicsUnits.push_back(physicsUnit);
+}
+
+ie::PhysicsBucket* ie::PhysicsBucket::getNextBucket(void)
+{
+  return nextBucket;
+}

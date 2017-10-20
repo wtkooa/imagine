@@ -70,7 +70,6 @@ void ie::Player::firstPersonUpdate(void)
                                   upVector));
     playerRotation = yRotate * playerRotation; 
 
-    glm::mat4 tmat = glm::translate(glm::mat4(), playerPosition);
   }
 }
 

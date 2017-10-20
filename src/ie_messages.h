@@ -101,10 +101,15 @@ namespace ie
 
 
   class SortBucket; //Forward Declaration
-  class GraphStatusToRenderMessage
+  class GraphNode;
+  class PhysicsBucket;
+  class GraphStatusMessage
   {
     public:
     SortBucket* bucket;
+    PhysicsBucket* phyBucket;
+    GraphNode* root;
+    
   };
 
   class Controller; //Forward Declaration

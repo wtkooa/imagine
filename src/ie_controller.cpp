@@ -23,6 +23,7 @@ ie::Controller::Controller()
   translEventVec = glm::vec3(0.0f, 0.0f, 0.0f);
   rotateEventVec = glm::vec2(0.0f, 0.0f);
   setGrabMode(SDL_TRUE);
+  mode = FIRST_PERSON;
 }
 
 void ie::Controller::setGrabMode(SDL_bool mode)

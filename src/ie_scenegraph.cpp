@@ -24,8 +24,6 @@
 #include "ie_nodes.h"
 #include "ie_vram.h"
 
-
-
 //___|SCENEGRAPH IMPLEMENTATION|________________________________________________
 
 ie::SceneGraph::SceneGraph()
@@ -33,12 +31,17 @@ ie::SceneGraph::SceneGraph()
   //Generating Nodes
   root = new GraphNode();
   sortTree = new SortTreeNode();
-  SortEntityTypeNode* entityType = new SortEntityTypeNode(); 
+  SortTypeNode* entityType = new SortTypeNode(); 
   SortStaticTypeNode* staticType = new SortStaticTypeNode();
   SortBucket* terrainBucket = new SortBucket();
   SortBucket* materialedBucket = new SortBucket();
-  SortBucket* texturedBucket = new SortBucket();;
-  firstBucket = terrainBucket;
+  SortBucket* texturedBucket = new SortBucket();
+  SortBucket* playerBucket = new SortBucket();
+  SortBucket* cameraBucket = new SortBucket();
+  PhysicsSort* physicsSort = new PhysicsSort();
+  PhysicsBucket* terrainPhyBucket = new PhysicsBucket();
+  PhysicsBucket* playerPhyBucket = new PhysicsBucket();
+  PhysicsBucket* staticPhyBucket = new PhysicsBucket();
   
   //Setting Node Status
   ie::RenderInstructions terrainInstructions;
@@ -53,19 +56,42 @@ ie::SceneGraph::SceneGraph()
   texturedInstructions.renderer = "textured";
   texturedInstructions.shader = "static";
   texturedBucket->setRenderInstructions(texturedInstructions);
+  ie::RenderInstructions playerInstructions;
+  playerInstructions.data = "player";
+  playerBucket->setRenderInstructions(playerInstructions);
+  ie::RenderInstructions cameraInstructions;
+  cameraInstructions.data = "camera";
+  cameraBucket->setRenderInstructions(cameraInstructions);
+
+  terrainPhyBucket->type = TERRAIN;
+  playerPhyBucket->type = PLAYER;
+  staticPhyBucket->type = STATIC;
   
   //Linking Nodes
   root->setSortTreeRoot(sortTree);
+  root->setPhysicsTreeRoot(physicsSort);
 
   sortTree->addChild(entityType);
-  entityType->addToStaticChild(staticType);
-  entityType->addToTerrainChild(terrainBucket);
-  staticType->addToStaticMaterialedChild(materialedBucket);
-  staticType->addToStaticTexturedChild(texturedBucket);
-  terrainBucket->setNextBucket(materialedBucket);
-  materialedBucket->setNextBucket(texturedBucket);
+  entityType->toStatic = staticType;
+  entityType->toTerrain = terrainBucket;
+  entityType->toPlayer = playerBucket;
+  entityType->toCamera = cameraBucket;
+  staticType->toMaterialed = materialedBucket;
+  staticType->toTextured = texturedBucket;
+  playerBucket->nextBucket = cameraBucket;
+  cameraBucket->nextBucket = terrainBucket;
+  terrainBucket->nextBucket = materialedBucket;
+  materialedBucket->nextBucket = texturedBucket;
+  firstBucket = playerBucket;
 
+  physicsSort->toTerrain = terrainPhyBucket;
+  physicsSort->toPlayer = playerPhyBucket;
+  physicsSort->toStatic = staticPhyBucket;
+  terrainPhyBucket->nextBucket = staticPhyBucket;
+  staticPhyBucket->nextBucket = playerPhyBucket;
+  firstPhyBucket = terrainPhyBucket;
 }
+
 
 void ie::SceneGraph::receiveMessage(ie::AssetStatusMessage msg)
 {
@@ -73,18 +99,16 @@ void ie::SceneGraph::receiveMessage(ie::AssetStatusMessage msg)
   sortTree->receiveMessage(msg);
 }
 
-
-ie::GraphStatusToRenderMessage ie::SceneGraph::sendGraphStatusToRenderMessage(void)
+ie::GraphStatusMessage ie::SceneGraph::sendGraphStatusMessage(void)
 {
-  ie::GraphStatusToRenderMessage msg;
+  ie::GraphStatusMessage msg;
   msg.bucket = firstBucket;
+  msg.root = root;
+  msg.phyBucket = firstPhyBucket; 
   return msg;
 }
 
-void ie::SceneGraph::update(void)
-{
-  root->update();
-  root->render();
-}
-
+void ie::SceneGraph::physics(void) {root->physics();}
+void ie::SceneGraph::update(void) {root->update();}
+void ie::SceneGraph::render(void) {root->render();}
 

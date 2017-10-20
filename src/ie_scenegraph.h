@@ -24,7 +24,6 @@
 
 namespace ie
 {
-
   class SceneGraph
   {
     public:
@@ -32,9 +31,12 @@ namespace ie
     GraphNode* root;
     SortTreeNode* sortTree;
     SortBucket* firstBucket;
+    PhysicsBucket* firstPhyBucket;
+    void physics(void);
     void update(void);
+    void render(void);
     void receiveMessage(ie::AssetStatusMessage);
-    ie::GraphStatusToRenderMessage sendGraphStatusToRenderMessage(void);
+    ie::GraphStatusMessage sendGraphStatusMessage(void);
     private:
   };
 

@@ -20,6 +20,9 @@
 namespace ie
 {
 
+  enum ControlMode {FIRST_PERSON, THIRD_PERSON, THIRD_PERSON_RPG, FLYAROUND,
+                    EDITING};
+
   class Controller
   {
     public:
@@ -28,7 +31,10 @@ namespace ie
     void setWindow(SDL_Window*);
     void clearRotateEventVec(void);
     bool getGrabMode(void);
+
     ie::ControllerStatusMessage sendControllerStatusMessage(void);
+
+    ControlMode mode;
 
     //EVENT VECTORS
     glm::vec3 translEventVec;

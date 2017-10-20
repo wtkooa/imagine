@@ -26,7 +26,31 @@ namespace ie
 
   //FORWARD DECLARATIONS
   class SortTreeNode;
+  class PhysicsSort;
+  class EntityNode;
+  class PlayerNode;
+  class CameraNode;
 
+  enum NodeType{NONE, PLAYER, CAMERA, STATIC, TERRAIN, WATER};
+  
+  class PhysicsPointers
+  {
+    public:
+    NodeType type;
+    EntityNode* entity;
+    PlayerNode* player;
+  };
+
+  class RenderPointers
+  {
+    public:
+    NodeType type;
+    EntityNode* entity;
+    RenderUnit* ru;
+    TerrainAsset* ta;
+    PlayerNode* player;
+    CameraNode* camera;
+  };
 
   //SCENEGRAPH NODES
   class GraphNode
@@ -35,25 +59,30 @@ namespace ie
     GraphNode();
     virtual ~GraphNode();
 
-    void addChild(GraphNode*);
-    void update(void);
+    virtual void physics(void);
+    virtual void update(void);
     virtual void render(void);
-    void setParentNode(GraphNode*);
+
+    void sendToPhysics(PhysicsPointers);
+
+    void addChild(GraphNode*);
     void setSortTreeRoot(SortTreeNode*);
-    glm::mat4 getTransformationMatrix(void);
-    void setTranslation(glm::vec3);
+    void setPhysicsTreeRoot(PhysicsSort*);
     void receiveMessage(ie::AssetStatusMessage);
 
-
-    protected:
-    glm::mat4 transformationMatrix;
+    NodeType type;
     std::vector<GraphNode*> children;
+    glm::mat4 mtwMatrix;
     glm::vec3 translation;
     glm::vec3 rotation;
     glm::vec3 scale;
+    GraphNode* parentNode;
+
+    protected:
+    static SortTreeNode* sortTreeRoot;
+    static PhysicsSort* physicsTreeRoot;
 
     //DATA FROM THE ASSET MANAGER
-    static SortTreeNode* sortTreeRoot;
     static std::map<unsigned int, ModelAsset>* models;
     static std::map<std::string, unsigned int>* modelNameIdMap;
     static std::map<unsigned int, TerrainAsset>* terrains;
@@ -63,10 +92,6 @@ namespace ie
     static std::map<unsigned int, MaterialAsset>* materials;
     static std::map<std::string, unsigned int>* materialNameIdMap;
     static std::map<unsigned int, RenderUnit>* rus;
-
-    private:
-    GraphNode* parentNode;
-
   };
 
 
@@ -74,34 +99,58 @@ namespace ie
   {
     public:
     EntityNode();
-    EntityNode(std::string, std::string, EntityType);
+    EntityNode(std::string, std::string, NodeType);
+
+    virtual void physics(void);
     virtual void render(void);
-    EntityType getType(void);
-    unsigned int getAssetId(void);
+
     bool usesGlobalAmbient;
     bool usesLightAmbient;
     bool usesLightDiffuse;
     bool usesLightSpecular;
     bool usesLightFalloff;
 
-    protected:
+    bool usesPhysics;
+    bool collidable;
+
     std::string name;
-    EntityType type;
     unsigned int assetId;
     bool hidden;
-
-    private:
   };
 
-  //SORTING BUCKET TREE NODES
-
-  class RenderPointers
+  class CameraNode : public GraphNode
   {
     public:
-    EntityNode* entity;
-    RenderUnit* ru;
-    TerrainAsset* ta;
+    CameraNode();
+    void render(void);
+
+    glm::vec3 offset;
+    glm::vec3 upVector;
+    glm::vec3 lookVector;
+    glm::mat4 projectionMatrix;
+    glm::mat4 viewMatrix;
+    float lookSpeed;
+
   };
+
+  class PlayerNode : public GraphNode
+  {
+    public:
+    PlayerNode();
+
+    void physics(void);
+    void render(void);
+
+    glm::vec3 upVector;
+    float moveSpeed;
+    float turnSpeed;
+    EntityNode* linkedEntity;
+    CameraNode* linkedCamera;
+
+  };
+
+
+  //SORTING BUCKET TREE NODES
 
 
   class RenderInstructions
@@ -109,19 +158,20 @@ namespace ie
     public:
     std::string renderer;
     std::string shader;
+    std::string data;
   };
 
   class SortTreeNode
   {
     public:
     void addChild(SortTreeNode*);
-    virtual void sort(EntityNode*);
     virtual void sort(RenderPointers);
 
     void receiveMessage(ie::AssetStatusMessage);
 
-    protected:
     std::vector<SortTreeNode*> children;
+
+    protected:
 
     //DATA FROM THE ASSET MANAGER
     static std::map<unsigned int, ModelAsset>* models;
@@ -133,18 +183,14 @@ namespace ie
     static std::map<unsigned int, MaterialAsset>* materials;
     static std::map<std::string, unsigned int>* materialNameIdMap;
     static std::map<unsigned int, RenderUnit>* rus;
-
-    private:
   };
 
-  class SortEntityTypeNode : public SortTreeNode
+  class SortTypeNode : public SortTreeNode
   {
     public:
-    void sort(EntityNode*);
-    void addToTerrainChild(SortTreeNode*);
-    void addToStaticChild(SortTreeNode*);
-
-    private:
+    virtual void sort(RenderPointers);
+    SortTreeNode* toPlayer;
+    SortTreeNode* toCamera;
     SortTreeNode* toTerrain;
     SortTreeNode* toStatic;
   };
@@ -152,11 +198,8 @@ namespace ie
   class SortStaticTypeNode : public SortTreeNode
   {
     public:
-    void sort(EntityNode*);
-    void addToStaticMaterialedChild(SortTreeNode*);
-    void addToStaticTexturedChild(SortTreeNode*);
+    virtual void sort(RenderPointers);
     
-    private:
     SortTreeNode* toMaterialed;
     SortTreeNode* toTextured;
   };
@@ -167,19 +210,43 @@ namespace ie
   {
     public:
     SortBucket();
+
     virtual void sort(RenderPointers);
     void clear();
-    void setNextBucket(SortBucket*);
+
     SortBucket* getNextBucket(void);
     void setRenderInstructions(RenderInstructions);
     RenderInstructions* getRenderInstructions(void);
     std::vector<RenderPointers>* getRenderUnits(void);
 
-    protected:
     RenderInstructions instructions;
     std::vector<RenderPointers> renderUnits;
-    SortBucket* link;
+    SortBucket* nextBucket;
   };
+
+  //PHYSICES BUCKETS
+  class PhysicsBucket
+  {
+    public:
+    PhysicsBucket();
+    void sort(PhysicsPointers);
+    PhysicsBucket* getNextBucket(void);
+    void clear(void);
+    NodeType type;
+    std::vector<PhysicsPointers> physicsUnits;
+    PhysicsBucket* nextBucket;
+  };
+
+  class PhysicsSort
+  {
+    public:
+    void sort(PhysicsPointers);
+    PhysicsBucket* toTerrain;
+    PhysicsBucket* toPlayer;
+    PhysicsBucket* toStatic;
+
+  };
+
 }
 
 #endif

@@ -59,7 +59,7 @@ void ie::RenderEngine::receiveMessage(CameraStatusToRenderMessage msg)
   cameraPos = msg.cameraPos;
 }
 
-void ie::RenderEngine::receiveMessage(GraphStatusToRenderMessage msg)
+void ie::RenderEngine::receiveMessage(GraphStatusMessage msg)
 {
   firstBucket = msg.bucket;
 }
@@ -95,6 +95,14 @@ void ie::RenderEngine::render(void)
     else if (instruct->renderer == "terrain")
     {
       renderTerrainEntities(rpsList, shader);
+    }
+    else if (instruct->data == "player")
+    {
+      //Player to data
+    }
+    else if (instruct->data == "camera")
+    {
+      //Camera to data
     }
     currentBucket = currentBucket->getNextBucket();
   }
@@ -169,7 +177,7 @@ void ie::RenderEngine::renderMaterialedEntities(std::vector<RenderPointers>* rps
   {
     EntityNode* entity = it->entity;
     RenderUnit* ru = it->ru;
-    glm::mat4 mtwMatrix = entity->getTransformationMatrix(); 
+    glm::mat4 mtwMatrix = entity->mtwMatrix; 
     bool usesGlobalAmbientE = entity->usesGlobalAmbient;
     bool usesLightAmbientE = entity->usesLightAmbient;
     bool usesLightDiffuseE = entity->usesLightDiffuse;
@@ -294,7 +302,7 @@ void ie::RenderEngine::renderTexturedEntities(std::vector<RenderPointers>* rpsLi
   {
     EntityNode* entity = it->entity;
     RenderUnit* ru = it->ru;
-    glm::mat4 mtwMatrix = entity->getTransformationMatrix(); 
+    glm::mat4 mtwMatrix = entity->mtwMatrix; 
     bool usesGlobalAmbientE = entity->usesGlobalAmbient;
     bool usesLightAmbientE = entity->usesLightAmbient;
     bool usesLightDiffuseE = entity->usesLightDiffuse;
@@ -468,7 +476,7 @@ void ie::RenderEngine::renderTerrainEntities(std::vector<RenderPointers>* rpsLis
   {
     EntityNode* entity = it->entity;
     TerrainAsset* terrain = it->ta;
-    glm::mat4 mtwMatrix = entity->getTransformationMatrix(); 
+    glm::mat4 mtwMatrix = entity->mtwMatrix; 
     bool usesGlobalAmbientE = entity->usesGlobalAmbient;
     bool usesLightAmbientE = entity->usesLightAmbient;
     bool usesLightDiffuseE = entity->usesLightDiffuse;
