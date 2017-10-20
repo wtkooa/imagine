@@ -20,6 +20,7 @@
 
 #include "ie_assets.h"
 #include "ie_messages.h"
+#include "ie_nodes.h"
 #include "ie_scenegraph.h"
 #include "ie_vram.h"
 
@@ -34,11 +35,11 @@ namespace ie
     void renderMaterialedEntities(std::vector<RenderPointers>*, ShaderAsset*);
     void renderTexturedEntities(std::vector<RenderPointers>*, ShaderAsset*);
     void renderTerrainEntities(std::vector<RenderPointers>*, ShaderAsset*);
+    void updateCamera(CameraNode*);
 
     //RECEIVING MESSAGES
     void receiveMessage(AssetStatusMessage);
     void receiveMessage(VramStatusToRenderMessage);
-    void receiveMessage(CameraStatusToRenderMessage);
     void receiveMessage(GraphStatusMessage);
 
     private:

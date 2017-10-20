@@ -21,6 +21,7 @@
 
 #include "ie_assets.h"
 #include "ie_const.h"
+#include "ie_nodes.h"
 #include "ie_scenegraph.h"
 #include "ie_vram.h"
 
@@ -51,13 +52,6 @@ void ie::RenderEngine::receiveMessage(VramStatusToRenderMessage msg)
   terrainIndexPair = msg.terrainIndexPair;
 }
 
-
-void ie::RenderEngine::receiveMessage(CameraStatusToRenderMessage msg)
-{
-  projectionMatrix = msg.projectionMatrix;
-  viewMatrix = msg.viewMatrix;
-  cameraPos = msg.cameraPos;
-}
 
 void ie::RenderEngine::receiveMessage(GraphStatusMessage msg)
 {
@@ -102,11 +96,22 @@ void ie::RenderEngine::render(void)
     }
     else if (instruct->data == "camera")
     {
-      //Camera to data
+      for (auto it = rpsList->begin(); it != rpsList->end(); it++)
+      {
+        RenderPointers cameraPointers = (*it);
+        updateCamera(cameraPointers.camera);
+      }
     }
     currentBucket = currentBucket->getNextBucket();
   }
   firstBucket->clear();
+}
+
+void ie::RenderEngine::updateCamera(CameraNode* camera)
+{
+  projectionMatrix = camera->projectionMatrix;
+  viewMatrix = camera->viewMatrix;
+  cameraPos = camera->translation;
 }
 
 //STATIC MATERIALED ENTITIES RENDERER

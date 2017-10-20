@@ -1,4 +1,4 @@
-//___|"ie_render_engine.cpp"|___________________________________________________
+//___|"ie_physics_engine.cpp"|__________________________________________________
 //
 // Project: Imagine: 3D Environment Engine
 // Version: 0.1.0
@@ -78,7 +78,7 @@ void ie::PhysicsEngine::updatePlayerFirstPerson(PlayerNode* player)
 {
   CameraNode* camera = player->linkedCamera;
   EntityNode* entity = player->linkedEntity;
-std::cout << player->rotation.z  << std::endl;
+  
   float refinedMoveSpeed = 0;
   if (control->getGrabMode())
   {
@@ -139,5 +139,7 @@ std::cout << player->rotation.z  << std::endl;
     camera->viewMatrix = glm::lookAt(camera->translation,
                          (camera->lookVector + camera->translation),
                          camera->upVector);
+
+    control->clearRotateEventVec();
   }
 }

@@ -14,12 +14,10 @@
 #include <SDL2/SDL.h>
 
 #include "ie_asset_manager.h"
-#include "ie_camera.h"
 #include "ie_config.h"
 #include "ie_controller.h"
 #include "ie_lighting.h"
 #include "ie_physics_engine.h"
-#include "ie_player.h"
 #include "ie_render_engine.h"
 #include "ie_scenegraph.h"
 #include "ie_shader.h"
@@ -45,8 +43,6 @@ namespace ie
     bool initSceneGraph(void);
     bool initPhysics(void);
     bool initController(void);
-    bool initPlayer(void);
-    bool initCamera(void);
 
     bool run(void);
     void render(void);
@@ -64,8 +60,6 @@ namespace ie
     ie::AssetManager am;
     ie::VramManager vram;
     ie::FrameClock frameClock;
-    ie::Camera eye;
-    ie::Player player;
     ie::Controller control;
     ie::RenderEngine re;
     ie::PhysicsEngine fizx;

@@ -28,7 +28,6 @@
 #include "ie_config.h"
 #include "ie_const.h"
 #include "ie_controller.h"
-#include "ie_camera.h"
 #include "ie_lighting.h"
 #include "ie_messages.h"
 #include "ie_nodes.h"
@@ -63,8 +62,6 @@ bool ie::Engine::init(void)
   initSceneGraph();
   initPhysics();
   initController();
-  initPlayer();
-  initCamera();
   return true;
 }
 
@@ -217,19 +214,6 @@ bool ie::Engine::initController(void)
 }
 
 
-bool ie::Engine::initPlayer(void)
-{
-  player.setPlayerPosition(glm::vec3(0.0f, 0.0f, 0.0f));
-  player.setPlayerRotation(glm::vec3(0.0f, 0.0f, -1.0));
-}
-
-
-bool ie::Engine::initCamera(void)
-{
-  return true;
-}
-
-
 bool ie::Engine::run(void)
 {
   engineOn = true;
@@ -248,22 +232,7 @@ void ie::Engine::handleUpdates(void)
   frameClock.measure();
 
   ie::TimeStatusMessage timeStatusMsg = frameClock.sendTimeStatusMessage();
-  eye.receiveMessage(timeStatusMsg);
-  player.receiveMessage(timeStatusMsg);
   fizx.receiveMessage(timeStatusMsg);
-
-  ie::ControllerStatusMessage controlStatus = control.sendControllerStatusMessage();
-  player.receiveMessage(controlStatus);
-
-  player.update();
-
-  ie::PlayerStatusToCameraMessage toCameraMsg = player.sendPlayerStatusToCameraMessage();
-  eye.receiveMessage(toCameraMsg);
-
-  eye.update();
-
-  ie::CameraStatusToRenderMessage cameraToRenderMsg = eye.sendCameraStatusToRenderMessage();
-  re.receiveMessage(cameraToRenderMsg);
 
   ie::AssetStatusMessage assetStatusMsg = am.sendAssetStatusMessage();
   vram.receiveMessage(assetStatusMsg);
@@ -406,9 +375,7 @@ void ie::Engine::handleResize(int width, int height)
   float aspectRatio = float(width) / float(height);
   SDL_SetWindowSize(mainWindow, width, height);
   glViewport(0, 0, width, height);
-  eye.setProjectionMatrix(glm::perspective(ie::FIELD_OF_VIEW,
-                                           aspectRatio,
-                                           ie::NEAR_PLANE, ie::FAR_PLANE));
+  //Fix Aspect Resize issue!/////////////////////////////////////
 }
 
 
