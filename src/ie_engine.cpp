@@ -151,7 +151,7 @@ bool ie::Engine::initAssets(void)
   (*cursorBG.material).usesLightAmbient = false;
   (*cursorBG.material).usesGlobalAmbient = false;
 
-  ie::TerrainGenerator terrain(120);
+  ie::TerrainGenerator terrain(120, 2.0f);
   terrain.applyPerlin(42.0f, 32.0f, 40.0f);
   terrain.applyDemoBlends();
   terrain.addTexture("data/textures/", "001_grass.png");
@@ -203,6 +203,9 @@ bool ie::Engine::initSceneGraph(void)
 
 bool ie::Engine::initPhysics(void)
 {
+  ie::AssetStatusMessage assetStatusMsg = am.sendAssetStatusMessage();
+  fizx.receiveMessage(assetStatusMsg);
+
   ie::GraphStatusMessage graphStatusMsg = sg.sendGraphStatusMessage();
   fizx.receiveMessage(graphStatusMsg);
   fizx.setController(&control);
