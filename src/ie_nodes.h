@@ -127,11 +127,13 @@ namespace ie
     void update(void);
     void render(void);
 
-    glm::vec3 offset;
+    glm::vec3 firstPersonOffset;
+    glm::vec3 thirdPersonOffset;
     glm::vec3 upVector;
     glm::vec3 lookVector;
     glm::mat4 projectionMatrix;
     glm::mat4 viewMatrix;
+    float distance;
     float lookSpeed;
     float fieldOfView;
     float currentAspectRatio;

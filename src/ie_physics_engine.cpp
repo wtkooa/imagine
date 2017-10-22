@@ -100,6 +100,7 @@ void ie::PhysicsEngine::updateTerrain(EntityNode* terrain)
 
 void ie::PhysicsEngine::updatePlayers(PhysicsBucket* players)
 {
+
   std::vector<PhysicsPointers>* playerList = &players->physicsUnits;
 
   for (auto it = playerList->begin(); it != playerList->end(); it++)
@@ -111,19 +112,23 @@ void ie::PhysicsEngine::updatePlayers(PhysicsBucket* players)
     {
       updatePlayerFirstPerson(player);
     }
+    else if (control->mode == THIRD_PERSON)
+    {
+      updatePlayerThirdPerson(player);
+    }
   }
 }
 
 void ie::PhysicsEngine::updatePlayerFirstPerson(PlayerNode* player)
 {
-  CameraNode* camera = player->linkedCamera;
-  EntityNode* entity = player->linkedEntity;
-
-  if (entity->hidden == false) {entity->hidden = true;}
-  
-  float refinedMoveSpeed = 0;
   if (control->getGrabMode())
   {
+    CameraNode* camera = player->linkedCamera;
+    EntityNode* entity = player->linkedEntity;
+
+    if (entity->hidden == false) {entity->hidden = true;}
+  
+    float refinedMoveSpeed = 0;
     short directionality = std::abs(control->translEventVec.x) +
                            std::abs(control->translEventVec.z);
     if (directionality == 1)
@@ -147,11 +152,9 @@ void ie::PhysicsEngine::updatePlayerFirstPerson(PlayerNode* player)
                                   -float(control->rotateEventVec.x * player->turnSpeed),
                                   player->upVector));
     player->rotation = yRotate * player->rotation; 
+    entity->rotation = player->rotation;
 
-    glm::mat4 entityMatrix = glm::translate(glm::mat4(), player->translation);
-    entity->mtwMatrix = entityMatrix;
-
-    camera->translation = player->translation + camera->offset;
+    camera->translation = player->translation + camera->firstPersonOffset;
 
     yRotate = glm::mat3(glm::rotate(glm::mat4(),
                                   -float(control->rotateEventVec.x * camera->lookSpeed),
@@ -162,6 +165,7 @@ void ie::PhysicsEngine::updatePlayerFirstPerson(PlayerNode* player)
                                   newXAxisVector)); 
     glm::mat3 rotation = xRotate * yRotate;
     camera->lookVector = rotation * camera->lookVector;
+    camera->thirdPersonOffset = rotation * camera->thirdPersonOffset;
 
     float xOffsetAngle = glm::angle(ie::UP_VECTOR, camera->lookVector);
     if (xOffsetAngle > glm::radians(170.0f))
@@ -171,6 +175,8 @@ void ie::PhysicsEngine::updatePlayerFirstPerson(PlayerNode* player)
                                                correctionAngle,
                                                newXAxisVector));
       camera->lookVector = correctionRotation * camera->lookVector;
+      camera->thirdPersonOffset = correctionRotation * camera->thirdPersonOffset;
+    
     }
     else if (xOffsetAngle < glm::radians(10.0f))
     {
@@ -179,6 +185,104 @@ void ie::PhysicsEngine::updatePlayerFirstPerson(PlayerNode* player)
                                                -correctionAngle,
                                                newXAxisVector));
       camera->lookVector = correctionRotation * camera->lookVector;
+      camera->thirdPersonOffset = correctionRotation * camera->thirdPersonOffset;
+    }
+
+    camera->viewMatrix = glm::lookAt(camera->translation,
+                         (camera->lookVector + camera->translation),
+                         camera->upVector);
+
+    control->clearRotateEventVec();
+    control->scrollEvent = 0;
+
+    updatePlayerTerrainInteraction(player);
+    entity->translation = player->translation;
+  }
+}
+
+
+void ie::PhysicsEngine::updatePlayerThirdPerson(PlayerNode* player)
+{
+  if (control->getGrabMode())
+  {
+    CameraNode* camera = player->linkedCamera;
+    EntityNode* entity = player->linkedEntity;
+
+    if (entity->hidden == true) {entity->hidden = false;}
+    
+    float refinedMoveSpeed = 0;
+    short directionality = std::abs(control->translEventVec.x) +
+                           std::abs(control->translEventVec.z);
+    if (directionality == 1)
+    {
+      refinedMoveSpeed = player->moveSpeed;
+    }
+    else if (directionality == 2)
+    {
+      refinedMoveSpeed = player->moveSpeed * (1 / std::sqrt(2));
+    }
+
+    float delta = frameDelta * float(refinedMoveSpeed / ie::MSECS_PER_SEC); 
+    
+    player->translation += control->translEventVec.z * delta * player->rotation;
+
+    player->translation += control->translEventVec.x * delta * glm::normalize(
+                                                   glm::cross(player->rotation,
+                                                   player->upVector));
+
+    glm::mat3 yRotate = glm::mat3(glm::rotate(glm::mat4(),
+                                  -float(control->rotateEventVec.x * player->turnSpeed),
+                                  player->upVector));
+    player->rotation = yRotate * player->rotation; 
+    entity->rotation = player->rotation;
+
+    glm::mat4 entityMatrix = glm::translate(glm::mat4(), player->translation);
+    entity->mtwMatrix = entityMatrix;
+    
+    camera->distance += (control->scrollEvent * 0.3);
+    if (camera->distance < 1.0f)
+    {
+      camera->distance = 1.0f;
+    }
+    else if (camera->distance > 50)
+    {
+      camera->distance = 50.0f;
+    }
+    camera->translation = player->translation + (camera->thirdPersonOffset *
+                                                 camera->distance) + 
+                                                 camera->firstPersonOffset;
+    control->scrollEvent = 0;
+    
+
+    yRotate = glm::mat3(glm::rotate(glm::mat4(),
+                                  -float(control->rotateEventVec.x * camera->lookSpeed),
+                                  camera->upVector));
+    glm::vec3 newXAxisVector = glm::normalize(glm::cross(player->rotation, player->upVector));
+    glm::mat3 xRotate = glm::mat3(glm::rotate(glm::mat4(),
+                                  -float(control->rotateEventVec.y * camera->lookSpeed),
+                                  newXAxisVector)); 
+    glm::mat3 rotation = xRotate * yRotate;
+    camera->lookVector = rotation * camera->lookVector;
+    camera->thirdPersonOffset = rotation * camera->thirdPersonOffset;
+
+    float xOffsetAngle = glm::angle(ie::UP_VECTOR, camera->lookVector);
+    if (xOffsetAngle > glm::radians(170.0f))
+    {
+      float correctionAngle = xOffsetAngle - glm::radians(170.0f);
+      glm::mat3 correctionRotation = glm::mat3(glm::rotate(glm::mat4(),
+                                               correctionAngle,
+                                               newXAxisVector));
+      camera->lookVector = correctionRotation * camera->lookVector;
+      camera->thirdPersonOffset = correctionRotation * camera->thirdPersonOffset;
+    }
+    else if (xOffsetAngle < glm::radians(10.0f))
+    {
+      float correctionAngle = glm::radians(10.0f) - xOffsetAngle;
+      glm::mat3 correctionRotation = glm::mat3(glm::rotate(glm::mat4(),
+                                               -correctionAngle,
+                                               newXAxisVector));
+      camera->lookVector = correctionRotation * camera->lookVector;
+      camera->thirdPersonOffset = correctionRotation * camera->thirdPersonOffset;
     }
 
     camera->viewMatrix = glm::lookAt(camera->translation,
@@ -188,8 +292,10 @@ void ie::PhysicsEngine::updatePlayerFirstPerson(PlayerNode* player)
     control->clearRotateEventVec();
 
     updatePlayerTerrainInteraction(player);
+    entity->translation = player->translation;
   }
 }
+
 
 void ie::PhysicsEngine::updatePlayerTerrainInteraction(PlayerNode* player)
 {

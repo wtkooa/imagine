@@ -32,6 +32,7 @@ namespace ie
     void updateTerrains(PhysicsBucket*);
     void updateTerrain(EntityNode*);
     void updatePlayerFirstPerson(PlayerNode*);
+    void updatePlayerThirdPerson(PlayerNode*);
     void updatePlayerTerrainInteraction(PlayerNode*);
 
     float calcBarycentric(glm::vec4, glm::vec4, glm::vec4, glm::vec2);

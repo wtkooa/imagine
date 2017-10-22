@@ -295,6 +295,16 @@ void ie::Engine::handleEvents(void)
           control.rotateEventVec.y += evnt.motion.yrel;  
         }
         break;
+      case SDL_MOUSEWHEEL:
+        if (evnt.wheel.y == 1)
+        {
+          control.scrollEvent += evnt.wheel.y;
+        }
+        else if (evnt.wheel.y == -1)
+        {
+          control.scrollEvent += evnt.wheel.y;
+        }
+        break;
       case SDL_KEYDOWN:
         switch (evnt.key.keysym.sym)
         {
@@ -305,6 +315,12 @@ void ie::Engine::handleEvents(void)
             if (!evnt.key.repeat)
             {
               control.toggleGrabMode();
+            }
+            break;
+          case SDLK_c:
+            if (!evnt.key.repeat)
+            {
+              control.togglePlayerMode();
             }
             break;
           case SDLK_w:

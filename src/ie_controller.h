@@ -28,6 +28,7 @@ namespace ie
     public:
     Controller();
     void toggleGrabMode(void);
+    void togglePlayerMode(void);
     void setWindow(SDL_Window*);
     void clearRotateEventVec(void);
     bool getGrabMode(void);
@@ -39,6 +40,7 @@ namespace ie
     //EVENT VECTORS
     glm::vec3 translEventVec;
     glm::vec2 rotateEventVec;    
+    int scrollEvent;
 
     private:
     void setGrabMode(SDL_bool);

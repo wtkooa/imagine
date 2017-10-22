@@ -248,7 +248,9 @@ ie::CameraNode::CameraNode()
   type = CAMERA;
   upVector = ie::UP_VECTOR;
   lookSpeed = ie::DEFAULT_CAMERA_LOOKSPEED;
-  offset = glm::vec3(0.0f, 2.0f, 0.0f);
+  firstPersonOffset = glm::vec3(0.0f, 2.0f, 0.0f);
+  thirdPersonOffset = glm::vec3(0.0f, 0.0f, 1.0f);
+  distance = 10.0f;
   lookVector = glm::vec3(0.0f, 0.0f, -1.0f);
   fieldOfView = ie::FIELD_OF_VIEW;
   currentAspectRatio = aspectRatio;

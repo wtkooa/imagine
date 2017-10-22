@@ -47,6 +47,23 @@ void ie::Controller::toggleGrabMode(void)
   } 
 }
 
+void ie::Controller::togglePlayerMode(void)
+{
+  if (getGrabMode())
+  {
+    if (mode == FIRST_PERSON)
+    {
+      std::cout << "Third Person"  << std::endl;
+      mode = THIRD_PERSON;
+    }
+    else if (mode == THIRD_PERSON)
+    {
+      std::cout << "First Person"  << std::endl;
+      mode = FIRST_PERSON;
+    }
+  }
+}
+
 bool ie::Controller::getGrabMode(void)
 {
   return SDL_GetWindowGrab(window) == SDL_TRUE;
