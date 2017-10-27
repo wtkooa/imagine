@@ -95,6 +95,7 @@ bool ie::Engine::initOpenGl(void)
 
 bool ie::Engine::initShaders(void)
 {
+
   GlslCompiler compiler;
   if (openGlConfigs.LOCAL_GLSL_VERSION_NUMERIC >= ie::GLSL_VERSION_450)
   {
@@ -118,7 +119,6 @@ bool ie::Engine::initShaders(void)
                              "src/glsl/", "ie_terrainFShader130.glsl");
     am.unwrapPackage(terrainPack);
   }
-
   return true;
 }
 
@@ -143,6 +143,10 @@ bool ie::Engine::initAssets(void)
   ie::WavefrontObjectFilePackage cursorPack = objReader.read("data/wavefront/",
                                                           "Cursor.obj");
   am.unwrapPackage(cursorPack);
+
+  ie::WavefrontObjectFilePackage treePack = objReader.read("data/wavefront/",
+                                                           "tree.obj");
+  am.unwrapPackage(treePack);
 
   ie::handle cursorBG = am.getHandle("material/CursorBG");
   (*cursorBG.material).usesLightFalloff = false;
@@ -181,6 +185,10 @@ bool ie::Engine::initVram(void)
 
 bool ie::Engine::initRenderers(void)
 {
+  ie::AssetStatusMessage assetStatusMsg = am.sendAssetStatusMessage();
+  re.receiveMessage(assetStatusMsg);
+  re.setShader("static", STATIC_SHADER);
+  re.setShader("terrain", TERRAIN_SHADER);
 }
 
 bool ie::Engine::initSceneGraph(void)
@@ -188,12 +196,15 @@ bool ie::Engine::initSceneGraph(void)
   ie::AssetStatusMessage assetStatusMsg = am.sendAssetStatusMessage();
   sg.receiveMessage(assetStatusMsg);
 
-  ie::EntityNode* terrain = new EntityNode("Terrain", "Terrain", TERRAIN);
-  ie::EntityNode* cursor = new EntityNode("Player", "Cursor", STATIC);
+  ie::TerrainNode* terrain = new TerrainNode("Terrain", "Terrain");
+  ie::StaticNode* cursor = new StaticNode("Cursor", "Player");
+  ie::StaticNode* tree = new StaticNode("tree", "Tree");
+  tree->translation = glm::vec3(50.0f, 2.0f, 50.0f);
   ie::PlayerNode* player = new PlayerNode();
   ie::CameraNode* camera = new CameraNode();
 
   sg.root->addChild(terrain);
+  terrain->addChild(tree);
   sg.root->addChild(player);
   player->linkedCamera = camera;
   player->linkedEntity = cursor;
@@ -208,12 +219,12 @@ bool ie::Engine::initPhysics(void)
 
   ie::GraphStatusMessage graphStatusMsg = sg.sendGraphStatusMessage();
   fizx.receiveMessage(graphStatusMsg);
-  fizx.setController(&control);
+  fizx.setController(&ctrl);
 }
 
 bool ie::Engine::initController(void)
 {
-  control.setWindow(mainWindow);
+  ctrl.setWindow(mainWindow);
 }
 
 
@@ -291,18 +302,18 @@ void ie::Engine::handleEvents(void)
       case SDL_MOUSEMOTION:
         if (SDL_GetRelativeMouseMode() == SDL_TRUE)
         {
-          control.rotateEventVec.x += evnt.motion.xrel;  
-          control.rotateEventVec.y += evnt.motion.yrel;  
+          ctrl.rotateEventVec.x += evnt.motion.xrel;  
+          ctrl.rotateEventVec.y += evnt.motion.yrel;  
         }
         break;
       case SDL_MOUSEWHEEL:
         if (evnt.wheel.y == 1)
         {
-          control.scrollEvent += evnt.wheel.y;
+          ctrl.scrollEvent += evnt.wheel.y;
         }
         else if (evnt.wheel.y == -1)
         {
-          control.scrollEvent += evnt.wheel.y;
+          ctrl.scrollEvent += evnt.wheel.y;
         }
         break;
       case SDL_KEYDOWN:
@@ -314,49 +325,49 @@ void ie::Engine::handleEvents(void)
           case SDLK_e:
             if (!evnt.key.repeat)
             {
-              control.toggleGrabMode();
+              ctrl.toggleGrabMode();
             }
             break;
           case SDLK_c:
             if (!evnt.key.repeat)
             {
-              control.togglePlayerMode();
+              ctrl.togglePlayerMode();
             }
             break;
           case SDLK_w:
             if (!evnt.key.repeat)
             { 
-              control.translEventVec.z += 1.0;
+              ctrl.translEventVec.z += 1.0;
             }
             break;
           case SDLK_s:
             if (!evnt.key.repeat)
             {
-              control.translEventVec.z -= 1.0;
+              ctrl.translEventVec.z -= 1.0;
             }
             break;
           case SDLK_d:
             if (!evnt.key.repeat)
             {
-              control.translEventVec.x += 1.0;
+              ctrl.translEventVec.x += 1.0;
             }
             break;
           case SDLK_a:
             if (!evnt.key.repeat)
             {
-              control.translEventVec.x -= 1.0;
+              ctrl.translEventVec.x -= 1.0;
             }
             break;
           case SDLK_SPACE:
             if (!evnt.key.repeat)
             {
-              control.translEventVec.y += 1.0;
+              ctrl.translEventVec.y += 1.0;
             }
             break;
           case SDLK_LSHIFT:
             if (!evnt.key.repeat)
             {
-              control.translEventVec.y -= 1.0;
+              ctrl.translEventVec.y -= 1.0;
             }
             break;
         }
@@ -365,22 +376,22 @@ void ie::Engine::handleEvents(void)
         switch(evnt.key.keysym.sym)
         {
           case SDLK_w:
-              control.translEventVec.z -= 1.0;
+              ctrl.translEventVec.z -= 1.0;
             break;
           case SDLK_s:
-              control.translEventVec.z += 1.0;
+              ctrl.translEventVec.z += 1.0;
             break;
           case SDLK_d:
-              control.translEventVec.x -= 1.0;
+              ctrl.translEventVec.x -= 1.0;
             break;
           case SDLK_a:
-              control.translEventVec.x += 1.0;
+              ctrl.translEventVec.x += 1.0;
             break;
           case SDLK_SPACE:
-              control.translEventVec.y -= 1.0;
+              ctrl.translEventVec.y -= 1.0;
             break;
           case SDLK_LSHIFT:
-              control.translEventVec.y += 1.0;
+              ctrl.translEventVec.y += 1.0;
             break;
         }
         break;

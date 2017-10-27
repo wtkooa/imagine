@@ -32,15 +32,19 @@ namespace ie
     public:
     //RENDERING
     void render(void);
-    void renderMaterialedEntities(std::vector<RenderPointers>*, ShaderAsset*);
-    void renderTexturedEntities(std::vector<RenderPointers>*, ShaderAsset*);
-    void renderTerrainEntities(std::vector<RenderPointers>*, ShaderAsset*);
+    void renderMaterialedEntities(std::vector<NodePacket>*);
+    void renderTexturedEntities(std::vector<NodePacket>*);
+    void renderTerrainEntities(std::vector<NodePacket>*);
     void updateCamera(CameraNode*);
+    void setState(RenderState*);
 
     //RECEIVING MESSAGES
     void receiveMessage(AssetStatusMessage);
     void receiveMessage(VramStatusToRenderMessage);
     void receiveMessage(GraphStatusMessage);
+
+    //SETTERS AND GETTERS
+    void setShader(std::string, ShaderType);
 
     private:
     //DATA FROM ASSET MANAGER
@@ -69,7 +73,12 @@ namespace ie
     glm::vec3 cameraPos;
 
     //DATA FROM SCENEGRAPH
-    SortBucket* firstBucket;
+    RenderBucket* firstBucket;
+    
+    //SHADERS
+    ShaderAsset* staticShader;
+    ShaderAsset* terrainShader;
+    ShaderAsset* currentShader;
   };
 
 }

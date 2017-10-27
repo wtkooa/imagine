@@ -29,8 +29,8 @@ namespace ie
     public:
     SceneGraph();
     GraphNode* root;
-    SortTreeNode* sortTree;
-    SortBucket* firstBucket;
+    RenderTreeNode* renderTree;
+    RenderBucket* firstBucket;
     PhysicsBucket* firstPhyBucket;
     void physics(void);
     void update(void);

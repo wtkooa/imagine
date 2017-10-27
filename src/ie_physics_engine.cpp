@@ -52,7 +52,7 @@ void ie::PhysicsEngine::receiveMessage(ie::AssetStatusMessage msg)
   vHeap = msg.vHeap;
 }
 
-void ie::PhysicsEngine::setController(ie::Controller* ctrl) {control = ctrl;}
+void ie::PhysicsEngine::setController(ie::Controller* control) {ctrl = control;}
 
 void ie::PhysicsEngine::update(void)
 {
@@ -60,15 +60,15 @@ void ie::PhysicsEngine::update(void)
   PhysicsBucket* currentBucket = firstBucket;
   while (currentBucket != NULL)
   {
-    if (currentBucket->type == TERRAIN)
+    if (currentBucket->type == TERRAIN_NODE)
     {
       updateTerrains(currentBucket);
     }
-    else if (currentBucket->type == PLAYER)
+    else if (currentBucket->type == PLAYER_NODE)
     {
       updatePlayers(currentBucket);
     }
-    else if (currentBucket->type == STATIC)
+    else if (currentBucket->type == STATIC_NODE)
     {
       //std::cout << "static"  << std::endl;
     }
@@ -80,17 +80,17 @@ void ie::PhysicsEngine::update(void)
 
 void ie::PhysicsEngine::updateTerrains(PhysicsBucket* terrains)
 {
-  std::vector<PhysicsPointers>* terrainList = &terrains->physicsUnits;
+  std::vector<NodePacket>* terrainList = &terrains->packets;
 
   for (auto it = terrainList->begin(); it != terrainList->end(); it++)
   {
-    PhysicsPointers terrainPointers = (*it);
-    EntityNode* terrain = terrainPointers.entity;
+    NodePacket packet = (*it);
+    TerrainNode* terrain = packet.node.terrain;
     updateTerrain(terrain);
   }
 }
 
-void ie::PhysicsEngine::updateTerrain(EntityNode* terrain)
+void ie::PhysicsEngine::updateTerrain(TerrainNode* terrain)
 {
   if (terrain->collidable == true)
   {
@@ -101,18 +101,18 @@ void ie::PhysicsEngine::updateTerrain(EntityNode* terrain)
 void ie::PhysicsEngine::updatePlayers(PhysicsBucket* players)
 {
 
-  std::vector<PhysicsPointers>* playerList = &players->physicsUnits;
+  std::vector<NodePacket>* playerList = &players->packets;
 
   for (auto it = playerList->begin(); it != playerList->end(); it++)
   {
-    PhysicsPointers playerPointers = (*it);  
-    PlayerNode* player = playerPointers.player;
+    NodePacket packet = (*it);  
+    PlayerNode* player = packet.node.player;
 
-    if (control->mode == FIRST_PERSON)
+    if (ctrl->mode == FIRST_PERSON)
     {
       updatePlayerFirstPerson(player);
     }
-    else if (control->mode == THIRD_PERSON)
+    else if (ctrl->mode == THIRD_PERSON)
     {
       updatePlayerThirdPerson(player);
     }
@@ -121,16 +121,16 @@ void ie::PhysicsEngine::updatePlayers(PhysicsBucket* players)
 
 void ie::PhysicsEngine::updatePlayerFirstPerson(PlayerNode* player)
 {
-  if (control->getGrabMode())
+  if (ctrl->getGrabMode())
   {
     CameraNode* camera = player->linkedCamera;
-    EntityNode* entity = player->linkedEntity;
+    StaticNode* entity = player->linkedEntity;
 
     if (entity->hidden == false) {entity->hidden = true;}
   
     float refinedMoveSpeed = 0;
-    short directionality = std::abs(control->translEventVec.x) +
-                           std::abs(control->translEventVec.z);
+    short directionality = std::abs(ctrl->translEventVec.x) +
+                           std::abs(ctrl->translEventVec.z);
     if (directionality == 1)
     {
       refinedMoveSpeed = player->moveSpeed;
@@ -142,14 +142,14 @@ void ie::PhysicsEngine::updatePlayerFirstPerson(PlayerNode* player)
 
     float delta = frameDelta * float(refinedMoveSpeed / ie::MSECS_PER_SEC); 
     
-    player->translation += control->translEventVec.z * delta * player->rotation;
+    player->translation += ctrl->translEventVec.z * delta * player->rotation;
 
-    player->translation += control->translEventVec.x * delta * glm::normalize(
+    player->translation += ctrl->translEventVec.x * delta * glm::normalize(
                                                    glm::cross(player->rotation,
                                                    player->upVector));
 
     glm::mat3 yRotate = glm::mat3(glm::rotate(glm::mat4(),
-                                  -float(control->rotateEventVec.x * player->turnSpeed),
+                                  -float(ctrl->rotateEventVec.x * player->turnSpeed),
                                   player->upVector));
     player->rotation = yRotate * player->rotation; 
     entity->rotation = player->rotation;
@@ -157,11 +157,11 @@ void ie::PhysicsEngine::updatePlayerFirstPerson(PlayerNode* player)
     camera->translation = player->translation + camera->firstPersonOffset;
 
     yRotate = glm::mat3(glm::rotate(glm::mat4(),
-                                  -float(control->rotateEventVec.x * camera->lookSpeed),
+                                  -float(ctrl->rotateEventVec.x * camera->lookSpeed),
                                   camera->upVector));
     glm::vec3 newXAxisVector = glm::normalize(glm::cross(player->rotation, player->upVector));
     glm::mat3 xRotate = glm::mat3(glm::rotate(glm::mat4(),
-                                  -float(control->rotateEventVec.y * camera->lookSpeed),
+                                  -float(ctrl->rotateEventVec.y * camera->lookSpeed),
                                   newXAxisVector)); 
     glm::mat3 rotation = xRotate * yRotate;
     camera->lookVector = rotation * camera->lookVector;
@@ -192,8 +192,8 @@ void ie::PhysicsEngine::updatePlayerFirstPerson(PlayerNode* player)
                          (camera->lookVector + camera->translation),
                          camera->upVector);
 
-    control->clearRotateEventVec();
-    control->scrollEvent = 0;
+    ctrl->clearRotateEventVec();
+    ctrl->scrollEvent = 0;
 
     updatePlayerTerrainInteraction(player);
     entity->translation = player->translation;
@@ -203,16 +203,16 @@ void ie::PhysicsEngine::updatePlayerFirstPerson(PlayerNode* player)
 
 void ie::PhysicsEngine::updatePlayerThirdPerson(PlayerNode* player)
 {
-  if (control->getGrabMode())
+  if (ctrl->getGrabMode())
   {
     CameraNode* camera = player->linkedCamera;
-    EntityNode* entity = player->linkedEntity;
+    StaticNode* entity = player->linkedEntity;
 
     if (entity->hidden == true) {entity->hidden = false;}
     
     float refinedMoveSpeed = 0;
-    short directionality = std::abs(control->translEventVec.x) +
-                           std::abs(control->translEventVec.z);
+    short directionality = std::abs(ctrl->translEventVec.x) +
+                           std::abs(ctrl->translEventVec.z);
     if (directionality == 1)
     {
       refinedMoveSpeed = player->moveSpeed;
@@ -224,14 +224,14 @@ void ie::PhysicsEngine::updatePlayerThirdPerson(PlayerNode* player)
 
     float delta = frameDelta * float(refinedMoveSpeed / ie::MSECS_PER_SEC); 
     
-    player->translation += control->translEventVec.z * delta * player->rotation;
+    player->translation += ctrl->translEventVec.z * delta * player->rotation;
 
-    player->translation += control->translEventVec.x * delta * glm::normalize(
+    player->translation += ctrl->translEventVec.x * delta * glm::normalize(
                                                    glm::cross(player->rotation,
                                                    player->upVector));
 
     glm::mat3 yRotate = glm::mat3(glm::rotate(glm::mat4(),
-                                  -float(control->rotateEventVec.x * player->turnSpeed),
+                                  -float(ctrl->rotateEventVec.x * player->turnSpeed),
                                   player->upVector));
     player->rotation = yRotate * player->rotation; 
     entity->rotation = player->rotation;
@@ -239,7 +239,7 @@ void ie::PhysicsEngine::updatePlayerThirdPerson(PlayerNode* player)
     glm::mat4 entityMatrix = glm::translate(glm::mat4(), player->translation);
     entity->mtwMatrix = entityMatrix;
     
-    camera->distance += (control->scrollEvent * 0.3);
+    camera->distance += (ctrl->scrollEvent * 0.3);
     if (camera->distance < 1.0f)
     {
       camera->distance = 1.0f;
@@ -251,15 +251,15 @@ void ie::PhysicsEngine::updatePlayerThirdPerson(PlayerNode* player)
     camera->translation = player->translation + (camera->thirdPersonOffset *
                                                  camera->distance) + 
                                                  camera->firstPersonOffset;
-    control->scrollEvent = 0;
+    ctrl->scrollEvent = 0;
     
 
     yRotate = glm::mat3(glm::rotate(glm::mat4(),
-                                  -float(control->rotateEventVec.x * camera->lookSpeed),
+                                  -float(ctrl->rotateEventVec.x * camera->lookSpeed),
                                   camera->upVector));
     glm::vec3 newXAxisVector = glm::normalize(glm::cross(player->rotation, player->upVector));
     glm::mat3 xRotate = glm::mat3(glm::rotate(glm::mat4(),
-                                  -float(control->rotateEventVec.y * camera->lookSpeed),
+                                  -float(ctrl->rotateEventVec.y * camera->lookSpeed),
                                   newXAxisVector)); 
     glm::mat3 rotation = xRotate * yRotate;
     camera->lookVector = rotation * camera->lookVector;
@@ -289,7 +289,7 @@ void ie::PhysicsEngine::updatePlayerThirdPerson(PlayerNode* player)
                          (camera->lookVector + camera->translation),
                          camera->upVector);
 
-    control->clearRotateEventVec();
+    ctrl->clearRotateEventVec();
 
     updatePlayerTerrainInteraction(player);
     entity->translation = player->translation;
@@ -302,7 +302,7 @@ void ie::PhysicsEngine::updatePlayerTerrainInteraction(PlayerNode* player)
   glm::vec3 playerTransl = player->translation;
   for (auto it = collidableTerrain.begin(); it != collidableTerrain.end(); it++)
   {
-    EntityNode* terrain = (*it);
+    TerrainNode* terrain = (*it);
     TerrainAsset* terrainAsset = &(*terrains)[terrain->assetId];
     short dim = terrainAsset->dim;
     float unitSize = terrainAsset->unitSize;

@@ -60,7 +60,7 @@ namespace ie
     ie::AssetManager am;
     ie::VramManager vram;
     ie::FrameClock frameClock;
-    ie::Controller control;
+    ie::Controller ctrl;
     ie::RenderEngine re;
     ie::PhysicsEngine fizx;
     ie::SceneGraph sg;

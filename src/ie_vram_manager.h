@@ -29,7 +29,9 @@
 
 namespace ie
 {
-  
+  //FORWARD DECLARATIONS 
+  class AssetManager;
+
   class VramManager
   {
     public:

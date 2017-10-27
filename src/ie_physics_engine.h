@@ -30,7 +30,7 @@ namespace ie
     void update(void);
     void updatePlayers(PhysicsBucket*);
     void updateTerrains(PhysicsBucket*);
-    void updateTerrain(EntityNode*);
+    void updateTerrain(TerrainNode*);
     void updatePlayerFirstPerson(PlayerNode*);
     void updatePlayerThirdPerson(PlayerNode*);
     void updatePlayerTerrainInteraction(PlayerNode*);
@@ -47,8 +47,8 @@ namespace ie
     private:
     float frameDelta;
     PhysicsBucket* firstBucket;
-    Controller* control;
-    std::vector<EntityNode*> collidableTerrain;
+    Controller* ctrl;
+    std::vector<TerrainNode*> collidableTerrain;
     
     //DATA FROM THE ASSET MANAGER
     std::map<unsigned int, ModelAsset>* models;

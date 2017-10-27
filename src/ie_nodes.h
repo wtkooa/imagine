@@ -25,34 +25,45 @@ namespace ie
 {
 
   //FORWARD DECLARATIONS
-  class SortTreeNode;
-  class PhysicsSort;
+  class RenderTreeNode;
+  class PhysicsTreeNode;
   class EntityNode;
+  class TerrainNode;
+  class StaticNode;
   class PlayerNode;
   class CameraNode;
 
-  enum NodeType{NONE, PLAYER, CAMERA, STATIC, TERRAIN, WATER};
-  
-  class PhysicsPointers
-  {
-    public:
-    NodeType type;
-    EntityNode* entity;
-    PlayerNode* player;
-  };
 
-  class RenderPointers
+  enum NodeType{NONE_NODE, PLAYER_NODE, CAMERA_NODE, STATIC_NODE,
+                TERRAIN_NODE, WATER_NODE};
+  
+
+  union NodePointer
   {
-    public:
-    NodeType type;
-    EntityNode* entity;
-    RenderUnit* ru;
-    TerrainAsset* ta;
+    StaticNode* stat;
+    TerrainNode* terrain;
     PlayerNode* player;
     CameraNode* camera;
   };
 
-  //SCENEGRAPH NODES
+
+  union AssetPointer
+  {
+    TerrainAsset* ta;
+    RenderUnit* ru;
+  };
+
+
+  class NodePacket
+  {
+    public:
+    NodeType type;
+    NodePointer node;
+    AssetPointer asset;
+  };
+
+
+  //SCENEGRAPH BASE NODE
   class GraphNode
   {
     public:
@@ -63,28 +74,25 @@ namespace ie
     virtual void update(void);
     virtual void render(void);
 
-    void sendToPhysics(PhysicsPointers);
-
     void addChild(GraphNode*);
-    void setSortTreeRoot(SortTreeNode*);
-    void setPhysicsTreeRoot(PhysicsSort*);
+
+    void setSortTreeRoot(RenderTreeNode*);
+    void setPhysicsTreeNodeRoot(PhysicsTreeNode*);
     void setAspectRatio(float);
+
     void receiveMessage(ie::AssetStatusMessage);
 
     NodeType type;
     std::vector<GraphNode*> children;
-    glm::mat4 mtwMatrix;
-    glm::vec3 translation;
-    glm::vec3 rotation;
-    glm::vec3 scale;
     GraphNode* parentNode;
+    glm::mat4 mtwMatrix;
 
     protected:
-    static SortTreeNode* sortTreeRoot;
-    static PhysicsSort* physicsTreeRoot;
+    static RenderTreeNode* renderTreeRoot;
+    static PhysicsTreeNode* physicsTreeRoot;
     static float aspectRatio;
 
-    //DATA FROM THE ASSET MANAGER
+    //Data from the asset manager
     static std::map<unsigned int, ModelAsset>* models;
     static std::map<std::string, unsigned int>* modelNameIdMap;
     static std::map<unsigned int, TerrainAsset>* terrains;
@@ -97,14 +105,33 @@ namespace ie
   };
 
 
+  //ENTITY BASE NODE
   class EntityNode : public GraphNode
   {
     public:
     EntityNode();
-    EntityNode(std::string, std::string, NodeType);
+
+    virtual void update(void);
+
+    std::string name;
+    
+    bool hidden;
+
+    glm::vec3 translation;
+    glm::vec3 rotation;
+    glm::vec3 scale;
+  };
+
+
+  class TerrainNode : public EntityNode
+  {
+    public:
+    TerrainNode(std::string, std::string);
 
     virtual void physics(void);
     virtual void render(void);
+
+    unsigned int assetId;
 
     bool usesGlobalAmbient;
     bool usesLightAmbient;
@@ -112,35 +139,53 @@ namespace ie
     bool usesLightSpecular;
     bool usesLightFalloff;
 
-    bool usesPhysics;
     bool collidable;
-
-    std::string name;
-    unsigned int assetId;
-    bool hidden;
   };
+
+
+  class StaticNode : public EntityNode
+  {
+    public:
+    StaticNode(std::string, std::string);
+
+    virtual void render(void);
+    
+    unsigned int assetId;
+
+    bool usesGlobalAmbient;
+    bool usesLightAmbient;
+    bool usesLightDiffuse;
+    bool usesLightSpecular;
+    bool usesLightFalloff;
+    
+    bool usesPhysics;
+  };
+
 
   class CameraNode : public GraphNode
   {
     public:
     CameraNode();
+
     void update(void);
     void render(void);
 
+    glm::vec3 translation;
     glm::vec3 firstPersonOffset;
     glm::vec3 thirdPersonOffset;
+    float distance;
     glm::vec3 upVector;
     glm::vec3 lookVector;
-    glm::mat4 projectionMatrix;
     glm::mat4 viewMatrix;
-    float distance;
     float lookSpeed;
+
+    glm::mat4 projectionMatrix;
     float fieldOfView;
     float currentAspectRatio;
     float nearPlane;
     float farPlane;
-
   };
+
 
   class PlayerNode : public GraphNode
   {
@@ -151,38 +196,29 @@ namespace ie
     void physics(void);
     void render(void);
 
+    glm::vec3 translation;
+    glm::vec3 rotation;
     glm::vec3 upVector;
     float moveSpeed;
     float turnSpeed;
-    EntityNode* linkedEntity;
+
+    StaticNode* linkedEntity;
     CameraNode* linkedCamera;
   };
 
 
-  //SORTING BUCKET TREE NODES
-
-
-  class RenderInstructions
+  //RENDER TREE NODES
+  class RenderTreeNode
   {
     public:
-    std::string renderer;
-    std::string shader;
-    std::string data;
-  };
-
-  class SortTreeNode
-  {
-    public:
-    void addChild(SortTreeNode*);
-    virtual void sort(RenderPointers);
+    virtual void sort(NodePacket);
 
     void receiveMessage(ie::AssetStatusMessage);
 
-    std::vector<SortTreeNode*> children;
+    RenderTreeNode* child;
 
     protected:
-
-    //DATA FROM THE ASSET MANAGER
+    //Data from the asset manager
     static std::map<unsigned int, ModelAsset>* models;
     static std::map<std::string, unsigned int>* modelNameIdMap;
     static std::map<unsigned int, TerrainAsset>* terrains;
@@ -194,66 +230,84 @@ namespace ie
     static std::map<unsigned int, RenderUnit>* rus;
   };
 
-  class SortTypeNode : public SortTreeNode
-  {
-    public:
-    virtual void sort(RenderPointers);
-    SortTreeNode* toPlayer;
-    SortTreeNode* toCamera;
-    SortTreeNode* toTerrain;
-    SortTreeNode* toStatic;
-  };
 
-  class SortStaticTypeNode : public SortTreeNode
+  class SortTypeNode : public RenderTreeNode
   {
     public:
-    virtual void sort(RenderPointers);
-    
-    SortTreeNode* toMaterialed;
-    SortTreeNode* toTextured;
+    virtual void sort(NodePacket);
+    RenderTreeNode* toPlayer;
+    RenderTreeNode* toCamera;
+    RenderTreeNode* toTerrain;
+    RenderTreeNode* toStatic;
   };
 
 
-  //SORT TREE BUCKETS
-  class SortBucket : public SortTreeNode
+  class SortStaticTypeNode : public RenderTreeNode
   {
     public:
-    SortBucket();
+    virtual void sort(NodePacket);
+    RenderTreeNode* toMaterialed;
+    RenderTreeNode* toTextured;
+  };
 
-    virtual void sort(RenderPointers);
+
+  //RENDER TREE BUCKETS
+  enum RenderBucketType{NONE_RENDER, PLAYER_RENDER, CAMERA_RENDER,
+                        MATERIAL_RENDER, TEXTURE_RENDER, TERRAIN_RENDER};
+  enum ShaderType{NONE_SHADER, STATIC_SHADER, TERRAIN_SHADER};
+
+  class RenderState
+  {
+    public:
+    ShaderType shader;
+  };
+
+
+  class RenderBucket : public RenderTreeNode
+  {
+    public:
+    RenderBucket();
+
+    virtual void sort(NodePacket);
     void clear();
 
-    SortBucket* getNextBucket(void);
-    void setRenderInstructions(RenderInstructions);
-    RenderInstructions* getRenderInstructions(void);
-    std::vector<RenderPointers>* getRenderUnits(void);
+    RenderBucketType type;
 
-    RenderInstructions instructions;
-    std::vector<RenderPointers> renderUnits;
-    SortBucket* nextBucket;
+    RenderBucket* getNextBucket(void);
+    void setRenderState(RenderState);
+    RenderState* getRenderState(void);
+    std::vector<NodePacket>* getPackets(void);
+
+    RenderState state;
+    std::vector<NodePacket> packets;
+    RenderBucket* nextBucket;
   };
 
-  //PHYSICES BUCKETS
+
+  //PHYSICS TREE BUCKETS
   class PhysicsBucket
   {
     public:
     PhysicsBucket();
-    void sort(PhysicsPointers);
+
+    void sort(NodePacket);
     PhysicsBucket* getNextBucket(void);
     void clear(void);
+
     NodeType type;
-    std::vector<PhysicsPointers> physicsUnits;
+    std::vector<NodePacket> packets;
     PhysicsBucket* nextBucket;
   };
 
-  class PhysicsSort
+
+  //PHYSICS TREE NODES
+  class PhysicsTreeNode
   {
     public:
-    void sort(PhysicsPointers);
+    void sort(NodePacket);
     PhysicsBucket* toTerrain;
     PhysicsBucket* toPlayer;
     PhysicsBucket* toStatic;
-
   };
 
 }

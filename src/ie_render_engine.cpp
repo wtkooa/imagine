@@ -64,47 +64,62 @@ void ie::RenderEngine::receiveMessage(GraphStatusMessage msg)
 
 void ie::RenderEngine::render(void)
 {
-  SortBucket* currentBucket = firstBucket;
+  RenderBucket* currentBucket = firstBucket;
   while (currentBucket != NULL)
   {
-    RenderInstructions* instruct = currentBucket->getRenderInstructions();
-    std::vector<RenderPointers>* rpsList = currentBucket->getRenderUnits();
-    GLuint shaderId = (*shaderNameIdMap)[instruct->shader];
-    ShaderAsset* shader = &(*shaders)[shaderId];
-    GLint currentProg;
-    glGetIntegerv(GL_CURRENT_PROGRAM, &currentProg);
-    if (shader->programId != currentProg)
+    std::vector<NodePacket>* packets = currentBucket->getPackets();
+
+    if (currentBucket->type == PLAYER_RENDER)
     {
-      glUseProgram(shader->programId);
+      //Placeholder
+    }
+    else if (currentBucket->type == CAMERA_RENDER)
+    {
+      for (auto it = packets->begin(); it != packets->end(); it++)
+      {
+        NodePacket packet = (*it);
+        updateCamera(packet.node.camera);
+      }
+    }
+    else
+    {
+      RenderState* state = currentBucket->getRenderState();
+      setState(state);
     }
 
-    if (instruct->renderer == "materialed")
+    if (currentBucket->type == MATERIAL_RENDER)
     {
-      renderMaterialedEntities(rpsList, shader);
+      renderMaterialedEntities(packets);
     }
-    else if (instruct->renderer == "textured")
+    else if (currentBucket->type == TEXTURE_RENDER)
     {
-      renderTexturedEntities(rpsList, shader);
+      renderTexturedEntities(packets);
     }
-    else if (instruct->renderer == "terrain")
+    else if (currentBucket->type == TERRAIN_RENDER)
     {
-      renderTerrainEntities(rpsList, shader);
-    }
-    else if (instruct->data == "player")
-    {
-      //Player to data
-    }
-    else if (instruct->data == "camera")
-    {
-      for (auto it = rpsList->begin(); it != rpsList->end(); it++)
-      {
-        RenderPointers cameraPointers = (*it);
-        updateCamera(cameraPointers.camera);
-      }
+      renderTerrainEntities(packets);
     }
     currentBucket = currentBucket->getNextBucket();
   }
   firstBucket->clear();
+}
+
+void ie::RenderEngine::setState(RenderState* state)
+{
+  if (state->shader == STATIC_SHADER)
+  {
+    currentShader = staticShader;
+  }
+  else if (state->shader == TERRAIN_SHADER)
+  {
+    currentShader = terrainShader;
+  }
+  GLint currentProg;
+  glGetIntegerv(GL_CURRENT_PROGRAM, &currentProg);
+  if (currentShader->programId != currentProg)
+  {
+    glUseProgram(currentShader->programId);
+  }
 }
 
 void ie::RenderEngine::updateCamera(CameraNode* camera)
@@ -115,8 +130,7 @@ void ie::RenderEngine::updateCamera(CameraNode* camera)
 }
 
 //STATIC MATERIALED ENTITIES RENDERER
-void ie::RenderEngine::renderMaterialedEntities(std::vector<RenderPointers>* rpsList,
-                                                ShaderAsset* shader)
+void ie::RenderEngine::renderMaterialedEntities(std::vector<NodePacket>* packets)
 {
   unsigned int lightId = (*lightNameIdMap)["light0"];
   LightAsset* light = &(*lights)[lightId];
@@ -129,28 +143,28 @@ void ie::RenderEngine::renderMaterialedEntities(std::vector<RenderPointers>* rps
   float linearFalloff = (*light).linearFalloff;
   float quadraticFalloff = (*light).quadraticFalloff;
 
-  GLuint cameraPosLoc = (*shader).uniforms["cameraPos"].location;
-  GLuint mtwMatrixLoc = (*shader).uniforms["mtwMatrix"].location;
-  GLuint transformationMatrixLoc = (*shader).uniforms["transformationMatrix"].location;
-  GLuint pointLightPosLoc = (*shader).uniforms["pointLightPos"].location;
-  GLuint globalAmbientLoc = (*shader).uniforms["globalAmbient"].location;
-  GLuint lightAmbientLoc = (*shader).uniforms["lightAmbient"].location;
-  GLuint lightSpecularLoc = (*shader).uniforms["lightSpecular"].location;
-  GLuint lightDiffuseLoc = (*shader).uniforms["lightDiffuse"].location;
-  GLuint lightConstantLoc = (*shader).uniforms["lightConstantFalloff"].location;
-  GLuint lightLinearLoc = (*shader).uniforms["lightLinearFalloff"].location;
-  GLuint lightQuadraticLoc = (*shader).uniforms["lightQuadraticFalloff"].location;
-  GLuint usesGlobalAmbientLoc = (*shader).uniforms["usesGlobalAmbient"].location;
-  GLuint usesLightAmbientLoc = (*shader).uniforms["usesLightAmbient"].location;
-  GLuint usesLightDiffuseLoc = (*shader).uniforms["usesLightDiffuse"].location;
-  GLuint usesLightSpecularLoc = (*shader).uniforms["usesLightSpecular"].location;
-  GLuint usesLightFalloffLoc = (*shader).uniforms["usesLightFalloff"].location;
-  GLuint materialSpecularLoc = (*shader).uniforms["materialSpecular"].location;
-  GLuint materialShininessLoc = (*shader).uniforms["materialShininess"].location;
-  GLuint materialDiffuseLoc = (*shader).uniforms["materialDiffuse"].location;
-  GLuint materialAmbientLoc = (*shader).uniforms["materialAmbient"].location;
-  GLuint materialEmissionLoc = (*shader).uniforms["materialEmission"].location;
-  GLuint usingTextureLoc = (*shader).uniforms["usingTexture"].location;
+  GLuint cameraPosLoc = currentShader->uniforms["cameraPos"].location;
+  GLuint mtwMatrixLoc = currentShader->uniforms["mtwMatrix"].location;
+  GLuint transformationMatrixLoc = currentShader->uniforms["transformationMatrix"].location;
+  GLuint pointLightPosLoc = currentShader->uniforms["pointLightPos"].location;
+  GLuint globalAmbientLoc = currentShader->uniforms["globalAmbient"].location;
+  GLuint lightAmbientLoc = currentShader->uniforms["lightAmbient"].location;
+  GLuint lightSpecularLoc = currentShader->uniforms["lightSpecular"].location;
+  GLuint lightDiffuseLoc = currentShader->uniforms["lightDiffuse"].location;
+  GLuint lightConstantLoc = currentShader->uniforms["lightConstantFalloff"].location;
+  GLuint lightLinearLoc = currentShader->uniforms["lightLinearFalloff"].location;
+  GLuint lightQuadraticLoc = currentShader->uniforms["lightQuadraticFalloff"].location;
+  GLuint usesGlobalAmbientLoc = currentShader->uniforms["usesGlobalAmbient"].location;
+  GLuint usesLightAmbientLoc = currentShader->uniforms["usesLightAmbient"].location;
+  GLuint usesLightDiffuseLoc = currentShader->uniforms["usesLightDiffuse"].location;
+  GLuint usesLightSpecularLoc = currentShader->uniforms["usesLightSpecular"].location;
+  GLuint usesLightFalloffLoc = currentShader->uniforms["usesLightFalloff"].location;
+  GLuint materialSpecularLoc = currentShader->uniforms["materialSpecular"].location;
+  GLuint materialShininessLoc = currentShader->uniforms["materialShininess"].location;
+  GLuint materialDiffuseLoc = currentShader->uniforms["materialDiffuse"].location;
+  GLuint materialAmbientLoc = currentShader->uniforms["materialAmbient"].location;
+  GLuint materialEmissionLoc = currentShader->uniforms["materialEmission"].location;
+  GLuint usingTextureLoc = currentShader->uniforms["usingTexture"].location;
 
   GLint currentBoundVbo;
   glGetIntegerv(GL_ARRAY_BUFFER_BINDING, &currentBoundVbo);
@@ -178,10 +192,10 @@ void ie::RenderEngine::renderMaterialedEntities(std::vector<RenderPointers>* rps
   glUniform1f(lightLinearLoc, linearFalloff);
   glUniform1f(lightQuadraticLoc, quadraticFalloff);
 
-  for (auto it = rpsList->begin(); it != rpsList->end(); it++)
+  for (auto it = packets->begin(); it != packets->end(); it++)
   {
-    EntityNode* entity = it->entity;
-    RenderUnit* ru = it->ru;
+    StaticNode* entity = it->node.stat;
+    RenderUnit* ru = it->asset.ru;
     glm::mat4 mtwMatrix = entity->mtwMatrix; 
     bool usesGlobalAmbientE = entity->usesGlobalAmbient;
     bool usesLightAmbientE = entity->usesLightAmbient;
@@ -236,8 +250,7 @@ void ie::RenderEngine::renderMaterialedEntities(std::vector<RenderPointers>* rps
 
 
 //STATIC TEXTURED ENTITIES RENDERER
-void ie::RenderEngine::renderTexturedEntities(std::vector<RenderPointers>* rpsList,
-                                              ShaderAsset* shader)
+void ie::RenderEngine::renderTexturedEntities(std::vector<NodePacket>* packets)
 {
   unsigned int lightId = (*lightNameIdMap)["light0"];
   LightAsset* light = &(*lights)[lightId];
@@ -250,28 +263,28 @@ void ie::RenderEngine::renderTexturedEntities(std::vector<RenderPointers>* rpsLi
   float linearFalloff = (*light).linearFalloff;
   float quadraticFalloff = (*light).quadraticFalloff;
 
-  GLuint cameraPosLoc = (*shader).uniforms["cameraPos"].location;
-  GLuint mtwMatrixLoc = (*shader).uniforms["mtwMatrix"].location;
-  GLuint transformationMatrixLoc = (*shader).uniforms["transformationMatrix"].location;
-  GLuint pointLightPosLoc = (*shader).uniforms["pointLightPos"].location;
-  GLuint globalAmbientLoc = (*shader).uniforms["globalAmbient"].location;
-  GLuint lightAmbientLoc = (*shader).uniforms["lightAmbient"].location;
-  GLuint lightSpecularLoc = (*shader).uniforms["lightSpecular"].location;
-  GLuint lightDiffuseLoc = (*shader).uniforms["lightDiffuse"].location;
-  GLuint lightConstantLoc = (*shader).uniforms["lightConstantFalloff"].location;
-  GLuint lightLinearLoc = (*shader).uniforms["lightLinearFalloff"].location;
-  GLuint lightQuadraticLoc = (*shader).uniforms["lightQuadraticFalloff"].location;
-  GLuint usesGlobalAmbientLoc = (*shader).uniforms["usesGlobalAmbient"].location;
-  GLuint usesLightAmbientLoc = (*shader).uniforms["usesLightAmbient"].location;
-  GLuint usesLightDiffuseLoc = (*shader).uniforms["usesLightDiffuse"].location;
-  GLuint usesLightSpecularLoc = (*shader).uniforms["usesLightSpecular"].location;
-  GLuint usesLightFalloffLoc = (*shader).uniforms["usesLightFalloff"].location;
-  GLuint materialSpecularLoc = (*shader).uniforms["materialSpecular"].location;
-  GLuint materialShininessLoc = (*shader).uniforms["materialShininess"].location;
-  GLuint materialDiffuseLoc = (*shader).uniforms["materialDiffuse"].location;
-  GLuint materialAmbientLoc = (*shader).uniforms["materialAmbient"].location;
-  GLuint materialEmissionLoc = (*shader).uniforms["materialEmission"].location;
-  GLuint usingTextureLoc = (*shader).uniforms["usingTexture"].location;
+  GLuint cameraPosLoc = currentShader->uniforms["cameraPos"].location;
+  GLuint mtwMatrixLoc = currentShader->uniforms["mtwMatrix"].location;
+  GLuint transformationMatrixLoc = currentShader->uniforms["transformationMatrix"].location;
+  GLuint pointLightPosLoc = currentShader->uniforms["pointLightPos"].location;
+  GLuint globalAmbientLoc = currentShader->uniforms["globalAmbient"].location;
+  GLuint lightAmbientLoc = currentShader->uniforms["lightAmbient"].location;
+  GLuint lightSpecularLoc = currentShader->uniforms["lightSpecular"].location;
+  GLuint lightDiffuseLoc = currentShader->uniforms["lightDiffuse"].location;
+  GLuint lightConstantLoc = currentShader->uniforms["lightConstantFalloff"].location;
+  GLuint lightLinearLoc = currentShader->uniforms["lightLinearFalloff"].location;
+  GLuint lightQuadraticLoc = currentShader->uniforms["lightQuadraticFalloff"].location;
+  GLuint usesGlobalAmbientLoc = currentShader->uniforms["usesGlobalAmbient"].location;
+  GLuint usesLightAmbientLoc = currentShader->uniforms["usesLightAmbient"].location;
+  GLuint usesLightDiffuseLoc = currentShader->uniforms["usesLightDiffuse"].location;
+  GLuint usesLightSpecularLoc = currentShader->uniforms["usesLightSpecular"].location;
+  GLuint usesLightFalloffLoc = currentShader->uniforms["usesLightFalloff"].location;
+  GLuint materialSpecularLoc = currentShader->uniforms["materialSpecular"].location;
+  GLuint materialShininessLoc = currentShader->uniforms["materialShininess"].location;
+  GLuint materialDiffuseLoc = currentShader->uniforms["materialDiffuse"].location;
+  GLuint materialAmbientLoc = currentShader->uniforms["materialAmbient"].location;
+  GLuint materialEmissionLoc = currentShader->uniforms["materialEmission"].location;
+  GLuint usingTextureLoc = currentShader->uniforms["usingTexture"].location;
 
 
   GLint currentBoundVbo;
@@ -303,10 +316,10 @@ void ie::RenderEngine::renderTexturedEntities(std::vector<RenderPointers>* rpsLi
   glUniform1f(lightLinearLoc, linearFalloff);
   glUniform1f(lightQuadraticLoc, quadraticFalloff);
 
-  for (auto it = rpsList->begin(); it != rpsList->end(); it++)
+  for (auto it = packets->begin(); it != packets->end(); it++)
   {
-    EntityNode* entity = it->entity;
-    RenderUnit* ru = it->ru;
+    StaticNode* entity = it->node.stat;
+    RenderUnit* ru = it->asset.ru;
     glm::mat4 mtwMatrix = entity->mtwMatrix; 
     bool usesGlobalAmbientE = entity->usesGlobalAmbient;
     bool usesLightAmbientE = entity->usesLightAmbient;
@@ -380,8 +393,7 @@ void ie::RenderEngine::renderTexturedEntities(std::vector<RenderPointers>* rpsLi
 
 
 //TERRAIN ENTITIES RENDERER
-void ie::RenderEngine::renderTerrainEntities(std::vector<RenderPointers>* rpsList,
-                                             ShaderAsset* shader)
+void ie::RenderEngine::renderTerrainEntities(std::vector<NodePacket>* packets)
 {
   unsigned int lightId = (*lightNameIdMap)["light0"];
   LightAsset* light = &(*lights)[lightId];
@@ -394,36 +406,36 @@ void ie::RenderEngine::renderTerrainEntities(std::vector<RenderPointers>* rpsLis
   float linearFalloff = (*light).linearFalloff;
   float quadraticFalloff = (*light).quadraticFalloff;
 
-  GLuint cameraPosLoc = (*shader).uniforms["cameraPos"].location;
-  GLuint mtwMatrixLoc = (*shader).uniforms["mtwMatrix"].location;
-  GLuint transformationMatrixLoc = (*shader).uniforms["transformationMatrix"].location;
-  GLuint pointLightPosLoc = (*shader).uniforms["pointLightPos"].location;
-  GLuint globalAmbientLoc = (*shader).uniforms["globalAmbient"].location;
-  GLuint lightAmbientLoc = (*shader).uniforms["lightAmbient"].location;
-  GLuint lightSpecularLoc = (*shader).uniforms["lightSpecular"].location;
-  GLuint lightDiffuseLoc = (*shader).uniforms["lightDiffuse"].location;
-  GLuint lightConstantLoc = (*shader).uniforms["lightConstantFalloff"].location;
-  GLuint lightLinearLoc = (*shader).uniforms["lightLinearFalloff"].location;
-  GLuint lightQuadraticLoc = (*shader).uniforms["lightQuadraticFalloff"].location;
-  GLuint usesGlobalAmbientLoc = (*shader).uniforms["usesGlobalAmbient"].location;
-  GLuint usesLightAmbientLoc = (*shader).uniforms["usesLightAmbient"].location;
-  GLuint usesLightDiffuseLoc = (*shader).uniforms["usesLightDiffuse"].location;
-  GLuint usesLightSpecularLoc = (*shader).uniforms["usesLightSpecular"].location;
-  GLuint usesLightFalloffLoc = (*shader).uniforms["usesLightFalloff"].location;
-  GLuint materialSpecularLoc = (*shader).uniforms["materialSpecular"].location;
-  GLuint materialShininessLoc = (*shader).uniforms["materialShininess"].location;
-  GLuint materialDiffuseLoc = (*shader).uniforms["materialDiffuse"].location;
-  GLuint materialAmbientLoc = (*shader).uniforms["materialAmbient"].location;
-  GLuint materialEmissionLoc = (*shader).uniforms["materialEmission"].location;
-  GLuint texture1Loc = (*shader).uniforms["texture1"].location;
-  GLuint texture2Loc = (*shader).uniforms["texture2"].location;
-  GLuint texture3Loc = (*shader).uniforms["texture3"].location;
-  GLuint texture4Loc = (*shader).uniforms["texture4"].location;
-  GLuint texture5Loc = (*shader).uniforms["texture5"].location;
-  GLuint texture6Loc = (*shader).uniforms["texture6"].location;
-  GLuint texture7Loc = (*shader).uniforms["texture7"].location;
-  GLuint texture8Loc = (*shader).uniforms["texture8"].location;
-  GLuint textureAmountLoc = (*shader).uniforms["textureAmount"].location;
+  GLuint cameraPosLoc = currentShader->uniforms["cameraPos"].location;
+  GLuint mtwMatrixLoc = currentShader->uniforms["mtwMatrix"].location;
+  GLuint transformationMatrixLoc = currentShader->uniforms["transformationMatrix"].location;
+  GLuint pointLightPosLoc = currentShader->uniforms["pointLightPos"].location;
+  GLuint globalAmbientLoc = currentShader->uniforms["globalAmbient"].location;
+  GLuint lightAmbientLoc = currentShader->uniforms["lightAmbient"].location;
+  GLuint lightSpecularLoc = currentShader->uniforms["lightSpecular"].location;
+  GLuint lightDiffuseLoc = currentShader->uniforms["lightDiffuse"].location;
+  GLuint lightConstantLoc = currentShader->uniforms["lightConstantFalloff"].location;
+  GLuint lightLinearLoc = currentShader->uniforms["lightLinearFalloff"].location;
+  GLuint lightQuadraticLoc = currentShader->uniforms["lightQuadraticFalloff"].location;
+  GLuint usesGlobalAmbientLoc = currentShader->uniforms["usesGlobalAmbient"].location;
+  GLuint usesLightAmbientLoc = currentShader->uniforms["usesLightAmbient"].location;
+  GLuint usesLightDiffuseLoc = currentShader->uniforms["usesLightDiffuse"].location;
+  GLuint usesLightSpecularLoc = currentShader->uniforms["usesLightSpecular"].location;
+  GLuint usesLightFalloffLoc = currentShader->uniforms["usesLightFalloff"].location;
+  GLuint materialSpecularLoc = currentShader->uniforms["materialSpecular"].location;
+  GLuint materialShininessLoc = currentShader->uniforms["materialShininess"].location;
+  GLuint materialDiffuseLoc = currentShader->uniforms["materialDiffuse"].location;
+  GLuint materialAmbientLoc = currentShader->uniforms["materialAmbient"].location;
+  GLuint materialEmissionLoc = currentShader->uniforms["materialEmission"].location;
+  GLuint texture1Loc = currentShader->uniforms["texture1"].location;
+  GLuint texture2Loc = currentShader->uniforms["texture2"].location;
+  GLuint texture3Loc = currentShader->uniforms["texture3"].location;
+  GLuint texture4Loc = currentShader->uniforms["texture4"].location;
+  GLuint texture5Loc = currentShader->uniforms["texture5"].location;
+  GLuint texture6Loc = currentShader->uniforms["texture6"].location;
+  GLuint texture7Loc = currentShader->uniforms["texture7"].location;
+  GLuint texture8Loc = currentShader->uniforms["texture8"].location;
+  GLuint textureAmountLoc = currentShader->uniforms["textureAmount"].location;
 
   GLint currentBoundArrayBuffer;
   glGetIntegerv(GL_ARRAY_BUFFER_BINDING, &currentBoundArrayBuffer);
@@ -477,10 +489,10 @@ void ie::RenderEngine::renderTerrainEntities(std::vector<RenderPointers>* rpsLis
   glUniform1i(texture7Loc, 6);
   glUniform1i(texture8Loc, 7);
 
-  for (auto it = rpsList->begin(); it != rpsList->end(); it++)
+  for (auto it = packets->begin(); it != packets->end(); it++)
   {
-    EntityNode* entity = it->entity;
-    TerrainAsset* terrain = it->ta;
+    TerrainNode* entity = it->node.terrain;
+    TerrainAsset* terrain = it->asset.ta;
     glm::mat4 mtwMatrix = entity->mtwMatrix; 
     bool usesGlobalAmbientE = entity->usesGlobalAmbient;
     bool usesLightAmbientE = entity->usesLightAmbient;
@@ -523,6 +535,7 @@ void ie::RenderEngine::renderTerrainEntities(std::vector<RenderPointers>* rpsLis
       GLuint diffuseMapId = (*textures)[textureAssetId].textureId;
       glBindTexture(GL_TEXTURE_2D, diffuseMapId);
     }
+
     glDrawElements(GL_TRIANGLES,
                    vramIndexAmount,
                    GL_UNSIGNED_INT,
@@ -543,3 +556,20 @@ void ie::RenderEngine::renderTerrainEntities(std::vector<RenderPointers>* rpsLis
 }
 
 //______________________________________________________________________________
+
+//___|SETTERS AND GETTERS|______________________________________________________
+
+void ie::RenderEngine::setShader(std::string shaderName, ShaderType type)
+{
+  unsigned int assetId = (*shaderNameIdMap)[shaderName];
+  ShaderAsset* shader  = &(*shaders)[assetId];
+  if (type == STATIC_SHADER)
+  {
+    staticShader = shader;
+  }
+  else if (type == TERRAIN_SHADER)
+  {
+    terrainShader = shader;
+  }
+
+}

@@ -74,13 +74,4 @@ void ie::Controller::clearRotateEventVec(void)
   rotateEventVec = glm::vec2(0.0f);
 }
 
-ie::ControllerStatusMessage ie::Controller::sendControllerStatusMessage(void)
-{
-  ie::ControllerStatusMessage msg;
-  msg.controller = this;
-  msg.translEventVec = &translEventVec;
-  msg.rotateEventVec = &rotateEventVec;
-  return msg;
-}
-
 void ie::Controller::setWindow(SDL_Window* win) {window = win;}

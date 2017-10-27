@@ -15,8 +15,6 @@
 #include <glm/vec2.hpp>
 #include <SDL2/SDL.h>
 
-#include "ie_messages.h"
-
 namespace ie
 {
 
@@ -32,8 +30,6 @@ namespace ie
     void setWindow(SDL_Window*);
     void clearRotateEventVec(void);
     bool getGrabMode(void);
-
-    ie::ControllerStatusMessage sendControllerStatusMessage(void);
 
     ControlMode mode;
 

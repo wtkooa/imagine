@@ -61,29 +61,10 @@ namespace ie
   }; 
 
 
-  class CameraStatusToRenderMessage
-  {
-    public:
-    glm::vec3 cameraPos;
-    glm::mat4 projectionMatrix;
-    glm::mat4 viewMatrix;
-  };
-
-
   class TimeStatusMessage
   {
     public:
     float frameDelta;
-  };
-
-  class PlayerStatusToCameraMessage
-  {
-    public:
-    glm::vec3 playerPosition;
-    glm::vec3 playerRotation;
-    glm::vec3 translEventVec;
-    glm::vec2 rotateEventVec;    
-    std::string mode;
   };
 
   class AssetManagerInstruction 
@@ -100,13 +81,13 @@ namespace ie
   };
 
 
-  class SortBucket; //Forward Declaration
+  class RenderBucket; //Forward Declaration
   class GraphNode;
   class PhysicsBucket;
   class GraphStatusMessage
   {
     public:
-    SortBucket* bucket;
+    RenderBucket* bucket;
     PhysicsBucket* phyBucket;
     GraphNode* root;
     

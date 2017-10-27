@@ -25,7 +25,7 @@
 #include "ie_messages.h"
 #include "ie_vram.h"
 
-//___|BASE GRAPH NODE IMPLEMENTATION|___________________________________________
+//___|SCENEGRAPH BASE NODE|_____________________________________________________
 
 std::map<unsigned int, ie::ModelAsset>* ie::GraphNode::models = NULL;
 std::map<std::string, unsigned int>* ie::GraphNode::modelNameIdMap = NULL; 
@@ -36,18 +36,15 @@ std::map<std::string, unsigned int>* ie::GraphNode::lightNameIdMap = NULL;
 std::map<unsigned int, ie::MaterialAsset>* ie::GraphNode::materials = NULL;
 std::map<std::string, unsigned int>* ie::GraphNode::materialNameIdMap = NULL; 
 std::map<unsigned int, ie::RenderUnit>* ie::GraphNode::rus = NULL;
-ie::SortTreeNode* ie::GraphNode::sortTreeRoot = NULL;
-ie::PhysicsSort* ie::GraphNode::physicsTreeRoot = NULL;
+ie::RenderTreeNode* ie::GraphNode::renderTreeRoot = NULL;
+ie::PhysicsTreeNode* ie::GraphNode::physicsTreeRoot = NULL;
 float ie::GraphNode::aspectRatio = ie::ASPECT_RATIO;
 
 ie::GraphNode::GraphNode()
 {
-  translation = glm::vec3(0.0f);
-  rotation = glm::vec3(0.0f);
-  scale = glm::vec3(1.0f);
-  mtwMatrix = glm::mat4();
   parentNode = NULL;
-  type = NONE;
+  type = NONE_NODE;
+  mtwMatrix = glm::mat4();
 }
 
 ie::GraphNode::~GraphNode()
@@ -73,20 +70,6 @@ void ie::GraphNode::physics(void)
 }
 void ie::GraphNode::update(void)
 {
-  glm::mat4 transl = glm::translate(glm::mat4(), translation);
-  glm::mat4 scal = glm::scale(glm::mat4(), scale);
-  glm::mat4 rotX = glm::rotate(glm::mat4(), rotation.x,
-                               glm::vec3(1.0f, 0.0f, 0.0f));
-  glm::mat4 rotY = glm::rotate(glm::mat4(), rotation.y,
-                               glm::vec3(0.0f, 1.0f, 0.0f));
-  glm::mat4 rotZ = glm::rotate(glm::mat4(), rotation.z,
-                               glm::vec3(0.0f, 0.0f, 1.0f));
-  glm::mat4 rotate = rotX * rotY * rotZ;
-  mtwMatrix = transl * rotate * scal;
-  if (parentNode)
-  {
-    mtwMatrix = parentNode->mtwMatrix * mtwMatrix;
-  }
   for (auto it = children.begin(); it != children.end(); it++)
   {
     (*it)->update();
@@ -101,19 +84,14 @@ void ie::GraphNode::render(void)
   }
 }
 
-void ie::GraphNode::setSortTreeRoot(SortTreeNode* root)
+void ie::GraphNode::setSortTreeRoot(RenderTreeNode* root)
 {
-  sortTreeRoot = root; 
+  renderTreeRoot = root; 
 }
 
-void ie::GraphNode::setPhysicsTreeRoot(PhysicsSort* root)
+void ie::GraphNode::setPhysicsTreeNodeRoot(PhysicsTreeNode* root)
 {
   physicsTreeRoot = root; 
-}
-
-void ie::GraphNode::sendToPhysics(PhysicsPointers physicsUnit)
-{
-  physicsTreeRoot->sort(physicsUnit);
 }
 
 void ie::GraphNode::setAspectRatio(float ratio)
@@ -136,67 +114,122 @@ void ie::GraphNode::receiveMessage(ie::AssetStatusMessage msg)
 
 //______________________________________________________________________________
 
-//___|ENTITY GRAPH NODE IMPLEMENTATION|_________________________________________
+//___|BASE ENTITY GRAPH NODE|___________________________________________________
 
 ie::EntityNode::EntityNode()
 {
-  name = "None";
-  type = NONE;
-  assetId = 0;
+  name = "none";
   hidden = false;
+  translation = glm::vec3(0.0f);
+  rotation = glm::vec3(0.0f);
+  scale = glm::vec3(1.0f);
+}
+
+
+void ie::EntityNode::update(void)
+{
+  glm::mat4 transl = glm::translate(glm::mat4(), translation);
+  glm::mat4 scal = glm::scale(glm::mat4(), scale);
+  glm::mat4 rotX = glm::rotate(glm::mat4(), rotation.x,
+                               glm::vec3(1.0f, 0.0f, 0.0f));
+  glm::mat4 rotY = glm::rotate(glm::mat4(), rotation.y,
+                               glm::vec3(0.0f, 1.0f, 0.0f));
+  glm::mat4 rotZ = glm::rotate(glm::mat4(), rotation.z,
+                               glm::vec3(0.0f, 0.0f, 1.0f));
+  glm::mat4 rotate = rotX * rotY * rotZ;
+  mtwMatrix = transl * rotate * scal;
+  if (parentNode)
+  {
+    mtwMatrix = parentNode->mtwMatrix * mtwMatrix;
+  }
+
+  for (auto it = children.begin(); it != children.end(); it++)
+  {
+    (*it)->update();
+  }
+}
+
+//______________________________________________________________________________
+
+//___|TERRAIN NODE|_____________________________________________________________
+
+ie::TerrainNode::TerrainNode(std::string asset, std::string n)
+{
+  type = TERRAIN_NODE;
+  name = n;
+  assetId = (*terrainNameIdMap)[asset];
   usesGlobalAmbient = true;
   usesLightAmbient = true;
   usesLightDiffuse = true;
   usesLightSpecular = true;
   usesLightFalloff = true;
-  usesPhysics = true;
   collidable = true;
 }
 
-ie::EntityNode::EntityNode(std::string entityName,
-                           std::string assetName,
-                           NodeType assetType)
-{
-  name = entityName;
-  type = assetType;
-  if (type == STATIC)
-  {
-    assetId = (*modelNameIdMap)[assetName];
-  }
-  else if (type == TERRAIN)
-  {
-    assetId = (*terrainNameIdMap)[assetName];
-  }
-  hidden = false;
-  usesGlobalAmbient = true;
-  usesLightAmbient = true;
-  usesLightDiffuse = true;
-  usesLightSpecular = true;
-  usesLightFalloff = true;
-  usesPhysics = true;
-  collidable = true;
-}
 
-void ie::EntityNode::physics(void)
+void ie::TerrainNode::physics(void)
 {
-  if (usesPhysics == true)
+  if (collidable == true)
   {
-    PhysicsPointers unit;
-    unit.type = type;
-    unit.entity = this;
-    sendToPhysics(unit);
+    NodePacket packet;
+    packet.type = type;
+    packet.node.terrain = this;
+    packet.asset.ta = &(*terrains)[assetId];
+    physicsTreeRoot->sort(packet);
+  }
+  
+  for (auto it = children.begin(); it != children.end(); it++)
+  {
+    (*it)->physics();
   }
 }
 
-void ie::EntityNode::render(void)
+
+void ie::TerrainNode::render(void)
 {
   if (hidden == false)
   {
-    RenderPointers unit;
-    unit.type = type;
-    unit.entity = this;
-    sortTreeRoot->sort(unit);
+    NodePacket packet;
+    packet.type = type;
+    packet.node.terrain = this;
+    packet.asset.ta = &(*terrains)[assetId];
+    renderTreeRoot->sort(packet);
   }
+
+  for (auto it = children.begin(); it != children.end(); it++)
+  {
+    (*it)->render();
+  }
+}
+
+//______________________________________________________________________________
+
+//___|STATIC NODE|______________________________________________________________
+
+ie::StaticNode::StaticNode(std::string asset, std::string n)
+{
+  type = STATIC_NODE;
+  name = n;
+  assetId = (*modelNameIdMap)[asset];
+  usesGlobalAmbient = true;
+  usesLightAmbient = true;
+  usesLightDiffuse = true;
+  usesLightSpecular = true;
+  usesLightFalloff = true;
+  usesPhysics = false;
+}
+
+
+void ie::StaticNode::render(void)
+{
+  if (hidden == false)
+  {
+    NodePacket packet;
+    packet.type = type;
+    packet.node.stat = this;
+    renderTreeRoot->sort(packet);
+  }
+
   for (auto it = children.begin(); it != children.end(); it++)
   {
     (*it)->render();
@@ -209,35 +242,52 @@ void ie::EntityNode::render(void)
 
 ie::PlayerNode::PlayerNode()
 {
-  type = PLAYER;
+  type = PLAYER_NODE;
   upVector = ie::UP_VECTOR;
   moveSpeed = ie::DEFAULT_PLAYER_MOVESPEED;
   turnSpeed = ie::DEFAULT_PLAYER_TURNSPEED;
+  translation = glm::vec3(0.0f);
   rotation = glm::vec3(0.0f, 0.0f, -1.0f);
 }
 
 void ie::PlayerNode::physics(void)
 {
-  PhysicsPointers unit;
-  unit.type = PLAYER;
-  unit.player = this;
-  sendToPhysics(unit);
-}
+  NodePacket packet;
+  packet.type = type;
+  packet.node.player = this;
+  physicsTreeRoot->sort(packet);
 
-void ie::PlayerNode::render(void)
-{
-  RenderPointers unit;
-  unit.type = PLAYER;
-  unit.player = this;
-  sortTreeRoot->sort(unit);
-  linkedEntity->render();
-  linkedCamera->render();
+  for (auto it = children.begin(); it != children.end(); it++)
+  {
+    (*it)->physics();
+  }
 }
 
 void ie::PlayerNode::update(void)
 {
   linkedCamera->update();
+  
+  for (auto it = children.begin(); it != children.end(); it++)
+  {
+    (*it)->update();
+  }
 }
+
+void ie::PlayerNode::render(void)
+{
+  NodePacket packet;
+  packet.type = type;
+  packet.node.player = this;
+  renderTreeRoot->sort(packet);
+  linkedEntity->render();
+  linkedCamera->render();
+
+  for (auto it = children.begin(); it != children.end(); it++)
+  {
+    (*it)->render();
+  }
+}
+
 
 //______________________________________________________________________________
 
@@ -245,11 +295,12 @@ void ie::PlayerNode::update(void)
 
 ie::CameraNode::CameraNode()
 {
-  type = CAMERA;
+  type = CAMERA_NODE;
   upVector = ie::UP_VECTOR;
   lookSpeed = ie::DEFAULT_CAMERA_LOOKSPEED;
   firstPersonOffset = glm::vec3(0.0f, 2.0f, 0.0f);
   thirdPersonOffset = glm::vec3(0.0f, 0.0f, 1.0f);
+  translation = glm::vec3(0.0f);
   distance = 10.0f;
   lookVector = glm::vec3(0.0f, 0.0f, -1.0f);
   fieldOfView = ie::FIELD_OF_VIEW;
@@ -263,10 +314,15 @@ ie::CameraNode::CameraNode()
 
 void ie::CameraNode::render(void)
 {
-  RenderPointers unit;
-  unit.type = CAMERA;
-  unit.camera = this;
-  sortTreeRoot->sort(unit);
+  NodePacket packet;
+  packet.type = type;
+  packet.node.camera = this;
+  renderTreeRoot->sort(packet);
+
+  for (auto it = children.begin(); it != children.end(); it++)
+  {
+    (*it)->render();
+  }
 }
 
 void ie::CameraNode::update(void)
@@ -277,38 +333,35 @@ void ie::CameraNode::update(void)
     projectionMatrix = glm::perspective(fieldOfView,
                                         currentAspectRatio,
                                         nearPlane, farPlane);
+
+    for (auto it = children.begin(); it != children.end(); it++)
+    {
+      (*it)->update();
+    }
   }
 }
 
 //______________________________________________________________________________
 
-//___|SORTING BUCKET TREE IMPLEMENTATION|_______________________________________
+//___|RENDER TREE|______________________________________________________________
 
-std::map<unsigned int, ie::ModelAsset>* ie::SortTreeNode::models = NULL;
-std::map<std::string, unsigned int>* ie::SortTreeNode::modelNameIdMap = NULL; 
-std::map<unsigned int, ie::TerrainAsset>* ie::SortTreeNode::terrains = NULL;
-std::map<std::string, unsigned int>* ie::SortTreeNode::terrainNameIdMap = NULL; 
-std::map<unsigned int, ie::LightAsset>* ie::SortTreeNode::lights = NULL;
-std::map<std::string, unsigned int>* ie::SortTreeNode::lightNameIdMap = NULL;
-std::map<unsigned int, ie::MaterialAsset>* ie::SortTreeNode::materials = NULL;
-std::map<std::string, unsigned int>* ie::SortTreeNode::materialNameIdMap = NULL; 
-std::map<unsigned int, ie::RenderUnit>* ie::SortTreeNode::rus = NULL;
+std::map<unsigned int, ie::ModelAsset>* ie::RenderTreeNode::models = NULL;
+std::map<std::string, unsigned int>* ie::RenderTreeNode::modelNameIdMap = NULL; 
+std::map<unsigned int, ie::TerrainAsset>* ie::RenderTreeNode::terrains = NULL;
+std::map<std::string, unsigned int>* ie::RenderTreeNode::terrainNameIdMap = NULL; 
+std::map<unsigned int, ie::LightAsset>* ie::RenderTreeNode::lights = NULL;
+std::map<std::string, unsigned int>* ie::RenderTreeNode::lightNameIdMap = NULL;
+std::map<unsigned int, ie::MaterialAsset>* ie::RenderTreeNode::materials = NULL;
+std::map<std::string, unsigned int>* ie::RenderTreeNode::materialNameIdMap = NULL; 
+std::map<unsigned int, ie::RenderUnit>* ie::RenderTreeNode::rus = NULL;
 
 
-void ie::SortTreeNode::addChild(SortTreeNode* child)
+void ie::RenderTreeNode::sort(NodePacket packet)
 {
-  children.push_back(child);
+    child->sort(packet);
 }
 
-void ie::SortTreeNode::sort(RenderPointers unit)
-{
-  for (auto it = children.begin(); it != children.end(); it++)
-  {
-    (*it)->sort(unit);
-  }
-}
-
-void ie::SortTreeNode::receiveMessage(ie::AssetStatusMessage msg)
+void ie::RenderTreeNode::receiveMessage(ie::AssetStatusMessage msg)
 {
   models = msg.models;
   modelNameIdMap = msg.modelNameIdMap;
@@ -322,64 +375,65 @@ void ie::SortTreeNode::receiveMessage(ie::AssetStatusMessage msg)
 }
 
 
-void ie::SortTypeNode::sort(RenderPointers unit)
+void ie::SortTypeNode::sort(NodePacket packet)
 {
-  if (unit.type == TERRAIN)
+  if (packet.type == TERRAIN_NODE)
   {
-    unit.ta = &(*terrains)[unit.entity->assetId];
-    toTerrain->sort(unit);
+    packet.asset.ta = &(*terrains)[packet.node.terrain->assetId];
+    toTerrain->sort(packet);
   }
-  else if (unit.type == STATIC)
+  else if (packet.type == STATIC_NODE)
   {
-    toStatic->sort(unit);
+    toStatic->sort(packet);
   }
-  else if (unit.type == PLAYER)
+  else if (packet.type == PLAYER_NODE)
   {
-    toPlayer->sort(unit);
+    toPlayer->sort(packet);
   }
-  else if (unit.type == CAMERA)
+  else if (packet.type == CAMERA_NODE)
   {
-    toCamera->sort(unit);
+    toCamera->sort(packet);
   }
 }
 
-void ie::SortStaticTypeNode::sort(RenderPointers unit)
+void ie::SortStaticTypeNode::sort(NodePacket packet)
 {
-  ModelAsset* model = &(*models)[unit.entity->assetId];
+  ModelAsset* model = &(*models)[packet.node.stat->assetId];
   std::vector<unsigned int>* ruList = &model->renderUnits;
   for (auto it = ruList->begin(); it != ruList->end(); it++)
   {
     RenderUnit* ru = &(*rus)[*it];
-    RenderPointers rps;
-    rps.entity = unit.entity;
-    rps.ru = ru;
+    NodePacket np;
+    np.node.stat = packet.node.stat;
+    np.asset.ru = ru;
     if (ru->dataFormat == VN)
     {
-      toMaterialed->sort(rps);
+      toMaterialed->sort(np);
     }
     else if (ru->dataFormat == VTN)
     {
-      toTextured->sort(rps);
+      toTextured->sort(np);
     }
   }
 }
 
 
-ie::SortBucket::SortBucket()
+ie::RenderBucket::RenderBucket()
 {
   nextBucket = NULL;
+  type = NONE_RENDER;
 }
 
 
-void ie::SortBucket::sort(RenderPointers rps)
+void ie::RenderBucket::sort(NodePacket packet)
 {
-  renderUnits.push_back(rps);
+  packets.push_back(packet);
 }
 
 
-void ie::SortBucket::clear(void)
+void ie::RenderBucket::clear(void)
 {
-  renderUnits.clear();
+  packets.clear();
   if (nextBucket != NULL)
   {
     nextBucket->clear();
@@ -387,37 +441,37 @@ void ie::SortBucket::clear(void)
 }
 
 
-ie::SortBucket* ie::SortBucket::getNextBucket(void) {return nextBucket;}
-void ie::SortBucket::setRenderInstructions(ie::RenderInstructions instruc)
+ie::RenderBucket* ie::RenderBucket::getNextBucket(void) {return nextBucket;}
+void ie::RenderBucket::setRenderState(ie::RenderState s)
 {
-  instructions = instruc;
+  state = s;
 }
-ie::RenderInstructions* ie::SortBucket::getRenderInstructions(void)
+ie::RenderState* ie::RenderBucket::getRenderState(void)
 {
-  return &instructions;
+  return &state;
 }
-std::vector<ie::RenderPointers>* ie::SortBucket::getRenderUnits(void)
+std::vector<ie::NodePacket>* ie::RenderBucket::getPackets(void)
 {
-  return &renderUnits;
+  return &packets;
 }
 
 //______________________________________________________________________________
 
 //___|PHYSICS BUCKETS|__________________________________________________________
 
-void ie::PhysicsSort::sort(ie::PhysicsPointers physicsUnit)
+void ie::PhysicsTreeNode::sort(ie::NodePacket packet)
 {
-  if (physicsUnit.type == TERRAIN)
+  if (packet.type == TERRAIN_NODE)
   {
-    toTerrain->sort(physicsUnit);
+    toTerrain->sort(packet);
   }
-  else if (physicsUnit.type == PLAYER)
+  else if (packet.type == PLAYER_NODE)
   {
-    toPlayer->sort(physicsUnit);
+    toPlayer->sort(packet);
   }
-  else if (physicsUnit.type == STATIC)
+  else if (packet.type == STATIC_NODE)
   {
-    toStatic->sort(physicsUnit);
+    toStatic->sort(packet);
   }
 }
 
@@ -428,16 +482,16 @@ ie::PhysicsBucket::PhysicsBucket()
 
 void ie::PhysicsBucket::clear(void)
 {
-  physicsUnits.clear();
+  packets.clear();
   if (nextBucket != NULL)
   {
     nextBucket->clear();
   }
 }
 
-void ie::PhysicsBucket::sort(ie::PhysicsPointers physicsUnit)
+void ie::PhysicsBucket::sort(ie::NodePacket packet)
 {
-  physicsUnits.push_back(physicsUnit);
+  packets.push_back(packet);
 }
 
 ie::PhysicsBucket* ie::PhysicsBucket::getNextBucket(void)
