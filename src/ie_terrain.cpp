@@ -215,6 +215,9 @@ void ie::TerrainGenerator::addTexture(std::string filepath,
     texture.filepath = filepath;
     texture.filename = filename;
     texture.type = BUMP_MAP;
+    texture.mipmapped = true;
+    texture.anisotropy = true;
+    texture.repeating = true;
     textures.push_back(texture);
   }
   else

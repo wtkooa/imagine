@@ -186,7 +186,6 @@ void ie::AssetManager::unwrapPackage(ie::WavefrontObjectFilePackage filePackage)
         }
         renderUnit.assetId = assignAssetId();
         renderUnit.material = materialNameIdMap[usingMaterialName];
-        renderUnit.shaderProgram = "static";
         renderUnit.heapIndexOffset = indexOffset + groupIndexBegin;
         renderUnit.vertexAmount = groupVertexAmount;
         renderUnit.hidden = false;
@@ -303,6 +302,9 @@ GLuint ie::AssetManager::unwrapPackage(ie::TexturePackage package)
   asset.textureType = package.type;
   asset.tobeVramLoaded = true;
   asset.vramLoaded = false;
+  asset.mipmapped = package.mipmapped; 
+  asset.anisotropy = package.anisotropy;
+  asset.repeating = package.repeating;
   textureNameIdMap[asset.name] = asset.assetId;
   textureAssets[asset.assetId] = asset;
   return asset.assetId;

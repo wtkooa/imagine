@@ -25,6 +25,7 @@
 #include <SDL2/SDL.h>
 
 #include "ie_assets.h"
+#include "ie_const.h"
 #include "ie_vram.h"
 #include "ie_messages.h"
 
@@ -225,13 +226,29 @@ void ie::VramManager::loadTexture(ie::TextureAsset* texture)
   else if (surface->format->BytesPerPixel = 3) {mode = GL_RGB;}
   glTexImage2D(GL_TEXTURE_2D, 0, mode, surface->w, surface->h,
                0, mode, GL_UNSIGNED_BYTE, surface->pixels);
-  glGenerateMipmap(GL_TEXTURE_2D);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+
+  if (texture->mipmapped)
+  {
+    glGenerateMipmap(GL_TEXTURE_2D);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_LOD_BIAS, ie::TEXTURE_LOD_BIAS); 
+    if (texture->anisotropy)
+    {
+      glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAX_ANISOTROPY_EXT, ie::TEXTURE_MAX_ANISOTROPY);
+    }
+  }
+  else
+  {
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+  }
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-  glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_LOD_BIAS, 0); 
-  glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAX_ANISOTROPY_EXT, 4.0f);// Un-hard code this;
+
+  if (texture->repeating)
+  {
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+  }
+
   glBindTexture(GL_TEXTURE_2D, 0);
   SDL_FreeSurface(surface);
   (*texture).tobeVramLoaded = false;

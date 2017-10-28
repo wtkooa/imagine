@@ -32,6 +32,8 @@ namespace ie
   extern const void* OFFSET_3VEC3_1VEC2;
   extern const glm::vec3 UP_VECTOR;
   extern const short MAX_TERRAIN_TEXTURES;
+  extern const float TEXTURE_LOD_BIAS;
+  extern const float TEXTURE_MAX_ANISOTROPY;
 }
 
 #endif

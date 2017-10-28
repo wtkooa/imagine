@@ -35,6 +35,9 @@ namespace ie
     std::string filename;
     std::string filepath;
     TextureType type;
+    bool mipmapped;
+    bool anisotropy;
+    bool repeating;
   };
 
 

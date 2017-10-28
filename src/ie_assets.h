@@ -45,7 +45,6 @@ namespace ie
     unsigned int assetId;
     unsigned int material;
     VboDataFormat dataFormat;
-    std::string shaderProgram;
     unsigned int heapIndexOffset;
     unsigned int vertexAmount;
     unsigned int vramLocation;
@@ -107,6 +106,9 @@ namespace ie
     TextureType textureType; 
     bool tobeVramLoaded;
     bool vramLoaded;
+    bool mipmapped;
+    bool anisotropy;
+    bool repeating;
   };
 
 

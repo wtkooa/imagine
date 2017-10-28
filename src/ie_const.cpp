@@ -30,3 +30,5 @@ const void* ie::OFFSET_2VEC3_1VEC2 = (void*)(sizeof(float) * 8);
 const void* ie::OFFSET_3VEC3_1VEC2 = (void*)(sizeof(float) * 11);
 const glm::vec3 ie::UP_VECTOR = glm::vec3(0.0f, 1.0f, 0.0f);
 const short ie::MAX_TERRAIN_TEXTURES = 8; 
+const float ie::TEXTURE_LOD_BIAS = 0.0f;
+const float ie::TEXTURE_MAX_ANISOTROPY = 4.0f;

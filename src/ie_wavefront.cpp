@@ -355,6 +355,9 @@ ie::WavefrontMaterialFilePackage ie::WavefrontMaterialFileReader::read(std::stri
         size_t start = line.find(" ") + 1;
         tex.filename = line.substr(start);
         tex.type = ie::TextureType::DIFFUSE_MAP;
+        tex.mipmapped = true;
+        tex.anisotropy = true;
+        tex.repeating = true;
         filePackage.materials[materialOffset].texturePackages.push_back(tex);
       }
 
@@ -364,6 +367,9 @@ ie::WavefrontMaterialFilePackage ie::WavefrontMaterialFileReader::read(std::stri
         size_t start = line.find(" ") + 1;
         tex.filename = line.substr(start);
         tex.type = ie::TextureType::BUMP_MAP;
+        tex.mipmapped = true;
+        tex.anisotropy = true;
+        tex.repeating = true;
         filePackage.materials[materialOffset].texturePackages.push_back(tex);
       }
 
@@ -373,6 +379,9 @@ ie::WavefrontMaterialFilePackage ie::WavefrontMaterialFileReader::read(std::stri
         size_t start = line.find(" ") + 1;
         tex.filename = line.substr(start);
         tex.type = ie::TextureType::AMBIENT_MAP;
+        tex.mipmapped = true;
+        tex.anisotropy = true;
+        tex.repeating = true;
         filePackage.materials[materialOffset].texturePackages.push_back(tex);
       }
 
@@ -382,6 +391,9 @@ ie::WavefrontMaterialFilePackage ie::WavefrontMaterialFileReader::read(std::stri
         size_t start = line.find(" ") + 1;
         tex.filename = line.substr(start);
         tex.type = ie::TextureType::SPECULAR_MAP;
+        tex.mipmapped = true;
+        tex.anisotropy = true;
+        tex.repeating = true;
         filePackage.materials[materialOffset].texturePackages.push_back(tex);
       }
 
@@ -391,6 +403,9 @@ ie::WavefrontMaterialFilePackage ie::WavefrontMaterialFileReader::read(std::stri
         size_t start = line.find(" ") + 1;
         tex.filename = line.substr(start);
         tex.type = ie::TextureType::HIGHLIGHT_MAP;
+        tex.mipmapped = true;
+        tex.anisotropy = true;
+        tex.repeating = true;
         filePackage.materials[materialOffset].texturePackages.push_back(tex);
       }
 
@@ -400,6 +415,9 @@ ie::WavefrontMaterialFilePackage ie::WavefrontMaterialFileReader::read(std::stri
         size_t start = line.find(" ") + 1;
         tex.filename = line.substr(start);
         tex.type = ie::TextureType::ALPHA_MAP;
+        tex.mipmapped = true;
+        tex.anisotropy = true;
+        tex.repeating = true;
         filePackage.materials[materialOffset].texturePackages.push_back(tex);
       }
 

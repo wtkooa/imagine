@@ -145,7 +145,7 @@ bool ie::Engine::initAssets(void)
   am.unwrapPackage(cursorPack);
 
   ie::WavefrontObjectFilePackage treePack = objReader.read("data/wavefront/",
-                                                           "tree.obj");
+                                                           "AcaciaTree.obj");
   am.unwrapPackage(treePack);
 
   ie::handle cursorBG = am.getHandle("material/CursorBG");
@@ -198,8 +198,8 @@ bool ie::Engine::initSceneGraph(void)
 
   ie::TerrainNode* terrain = new TerrainNode("Terrain", "Terrain");
   ie::StaticNode* cursor = new StaticNode("Cursor", "Player");
-  ie::StaticNode* tree = new StaticNode("tree", "Tree");
-  tree->translation = glm::vec3(50.0f, 2.0f, 50.0f);
+  ie::StaticNode* tree = new StaticNode("Acacia", "AcaciaTree");
+  tree->translation = glm::vec3(12.0f, -3.2f, 12.0f);
   ie::PlayerNode* player = new PlayerNode();
   ie::CameraNode* camera = new CameraNode();
 
