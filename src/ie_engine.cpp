@@ -216,6 +216,7 @@ bool ie::Engine::initSceneGraph(void)
   sign->usesLightSpecular = false;
   sign->usesLightFalloff = false;
   sign->usesLightAmbient = false;
+  sign->usesCullFace = false;
   tree->translation = glm::vec3(12.0f, -3.2f, 12.0f);
   ie::PlayerNode* player = new PlayerNode();
   ie::CameraNode* camera = new CameraNode();

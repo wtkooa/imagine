@@ -216,6 +216,7 @@ ie::StaticNode::StaticNode(std::string asset, std::string n)
   usesLightDiffuse = true;
   usesLightSpecular = true;
   usesLightFalloff = true;
+  usesCullFace = true;
   usesPhysics = false;
 }
 
@@ -345,6 +346,11 @@ void ie::CameraNode::update(void)
 
 //___|RENDER TREE|______________________________________________________________
 
+ie::RenderState::RenderState()
+{
+  cullFace = true;
+}
+
 std::map<unsigned int, ie::ModelAsset>* ie::RenderTreeNode::models = NULL;
 std::map<std::string, unsigned int>* ie::RenderTreeNode::modelNameIdMap = NULL; 
 std::map<unsigned int, ie::TerrainAsset>* ie::RenderTreeNode::terrains = NULL;
@@ -414,6 +420,20 @@ void ie::SortStaticTypeNode::sort(NodePacket packet)
     {
       toTextured->sort(np);
     }
+  }
+}
+
+
+void ie::SortCullFaceNode::sort(NodePacket packet)
+{
+  if (packet.node.stat->usesCullFace)
+  {
+
+    toCulled->sort(packet);
+  }
+  else
+  {
+    toUnCulled->sort(packet);
   }
 }
 

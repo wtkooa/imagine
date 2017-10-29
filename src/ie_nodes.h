@@ -158,6 +158,7 @@ namespace ie
     bool usesLightSpecular;
     bool usesLightFalloff;
      
+    bool usesCullFace;
     bool usesPhysics;
   };
 
@@ -251,6 +252,15 @@ namespace ie
   };
 
 
+  class SortCullFaceNode : public RenderTreeNode
+  {
+    public:
+    virtual void sort(NodePacket);
+    RenderTreeNode* toCulled;
+    RenderTreeNode* toUnCulled;
+  };
+
+
   //RENDER TREE BUCKETS
   enum RenderBucketType{NONE_RENDER, PLAYER_RENDER, CAMERA_RENDER,
                         MATERIAL_RENDER, TEXTURE_RENDER, TERRAIN_RENDER};
@@ -259,7 +269,9 @@ namespace ie
   class RenderState
   {
     public:
+    RenderState();
     ShaderType shader;
+    bool cullFace;
   };
 
 

@@ -120,6 +120,15 @@ void ie::RenderEngine::setState(RenderState* state)
   {
     glUseProgram(currentShader->programId);
   }
+
+  if (state->cullFace == true)
+  {
+    glEnable(GL_CULL_FACE);
+  }
+  else
+  {
+    glDisable(GL_CULL_FACE);
+  }
 }
 
 void ie::RenderEngine::updateCamera(CameraNode* camera)

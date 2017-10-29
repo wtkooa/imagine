@@ -33,11 +33,14 @@ ie::SceneGraph::SceneGraph()
   renderTree = new RenderTreeNode();
   SortTypeNode* entityType = new SortTypeNode(); 
   SortStaticTypeNode* staticType = new SortStaticTypeNode();
+  SortCullFaceNode* cullType = new SortCullFaceNode();
   RenderBucket* terrainBucket = new RenderBucket();
   RenderBucket* materialedBucket = new RenderBucket();
   RenderBucket* texturedBucket = new RenderBucket();
+  RenderBucket* texturedUnCullBucket = new RenderBucket();
   RenderBucket* playerBucket = new RenderBucket();
   RenderBucket* cameraBucket = new RenderBucket();
+
   PhysicsTreeNode* physicsTree = new PhysicsTreeNode();
   PhysicsBucket* terrainPhyBucket = new PhysicsBucket();
   PhysicsBucket* playerPhyBucket = new PhysicsBucket();
@@ -56,6 +59,11 @@ ie::SceneGraph::SceneGraph()
   texturedState.shader = STATIC_SHADER;
   texturedBucket->setRenderState(texturedState);
   texturedBucket->type = TEXTURE_RENDER;
+  ie::RenderState texturedUnCullState;
+  texturedUnCullState.cullFace = false;
+  texturedUnCullState.shader = STATIC_SHADER;
+  texturedUnCullBucket->type = TEXTURE_RENDER;
+  texturedUnCullBucket->setRenderState(texturedUnCullState);
   playerBucket->type = PLAYER_RENDER;
   cameraBucket->type = CAMERA_RENDER;
 
@@ -73,11 +81,14 @@ ie::SceneGraph::SceneGraph()
   entityType->toPlayer = playerBucket;
   entityType->toCamera = cameraBucket;
   staticType->toMaterialed = materialedBucket;
-  staticType->toTextured = texturedBucket;
+  staticType->toTextured = cullType;
+  cullType->toCulled = texturedBucket;
+  cullType->toUnCulled = texturedUnCullBucket;
   playerBucket->nextBucket = cameraBucket;
   cameraBucket->nextBucket = terrainBucket;
   terrainBucket->nextBucket = materialedBucket;
   materialedBucket->nextBucket = texturedBucket;
+  texturedBucket->nextBucket = texturedUnCullBucket;
   firstBucket = playerBucket;
 
   physicsTree->toTerrain = terrainPhyBucket;
