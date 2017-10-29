@@ -12,6 +12,7 @@
 
 #include <iostream>
 #include <string>
+#include <cstring>
 #include <sstream>
 
 #define GL_GLEXT_PROTOTYPES //Needs to be define for some GL func to work.
@@ -39,6 +40,8 @@ unsigned int ie::ACTIVEBUFFERS = GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT;
 bool ie::WIREFRAME_ON = false;
 bool ie::DEPTHTEST_ON = true;
 bool ie::CULLFACE_ON = true;
+bool ie::SDL_MULTISAMPLING_ON = true;
+int ie::SDL_MULTISAMPLING_SAMPLE_AMOUNT = 4;
 glm::vec4 ie::DEFAULT_CLEAR_COLOR = glm::vec4(0.466f, 0.709f, 0.996, 1.0);
 float ie::DEFAULT_PLAYER_MOVESPEED = 6.0; //Meters Per Second
 float ie::DEFAULT_PLAYER_TURNSPEED = glm::radians(0.05f); //Degrees per rel mouse movement 
@@ -88,4 +91,9 @@ void ie::OpenGlContextDependentConfigs::fetchOpenGlConfigs(void)
   glsls = ie::split(glsls, ' ', 0);
   glsls = ie::removeChar(glsls, '.');
   LOCAL_GLSL_VERSION_NUMERIC = stoi(glsls);
+
+  const GLubyte* str;
+  str = glGetString(GL_EXTENSIONS);
+  ANISOTROPIC_AVAILABLE = (strstr((const char *)str,
+                           "GL_EXT_texture_filter_anisotropic") != NULL);
 }

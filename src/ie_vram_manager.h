@@ -24,6 +24,7 @@
 #include <SDL2/SDL.h>
 
 #include "ie_assets.h"
+#include "ie_config.h"
 #include "ie_vram.h"
 #include "ie_messages.h"
 
@@ -55,11 +56,11 @@ namespace ie
     void quit(void);
 
     //GETTERS AND SETTERS
-    void setGlContext(SDL_GLContext);
+    void setGlConfig(OpenGlContextDependentConfigs*);
 
     private:
     //DATA FOR INIT
-    SDL_GLContext mainGlContext;
+    OpenGlContextDependentConfigs* glConfig;
 
     //VBO ID PAIRS
     VboPair vPair;

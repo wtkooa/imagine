@@ -70,6 +70,12 @@ bool ie::Engine::initSdl(void)
 {
   SDL_Init(ie::REQUIRED_SDL_MODULES);
   SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
+  if (ie::SDL_MULTISAMPLING_ON)
+  {
+    SDL_GL_SetAttribute(SDL_GL_MULTISAMPLEBUFFERS, 1);
+    SDL_GL_SetAttribute(SDL_GL_MULTISAMPLESAMPLES,
+                        ie::SDL_MULTISAMPLING_SAMPLE_AMOUNT);
+  }
   mainWindow = SDL_CreateWindow(ie::WINDOW_TITLE.c_str(),
                 SDL_WINDOWPOS_CENTERED,
                 SDL_WINDOWPOS_CENTERED,
@@ -177,7 +183,7 @@ bool ie::Engine::initVram(void)
 {
   ie::AssetStatusMessage assetStatusMsg = am.sendAssetStatusMessage();
   vram.receiveMessage(assetStatusMsg);
-  vram.setGlContext(mainGlContext);
+  vram.setGlConfig(&openGlConfigs);
   vram.createAndLoadVbos();
   return true;
 }

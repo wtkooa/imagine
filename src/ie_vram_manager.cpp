@@ -10,6 +10,7 @@
 
 #include "ie_vram_manager.h"
 
+#include <algorithm>
 #include <iostream>
 #include <map>
 #include <string>
@@ -232,9 +233,13 @@ void ie::VramManager::loadTexture(ie::TextureAsset* texture)
     glGenerateMipmap(GL_TEXTURE_2D);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
     glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_LOD_BIAS, ie::TEXTURE_LOD_BIAS); 
-    if (texture->anisotropy)
+    if (texture->anisotropy && glConfig->ANISOTROPIC_AVAILABLE)
     {
-      glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAX_ANISOTROPY_EXT, ie::TEXTURE_MAX_ANISOTROPY);
+      float aniso = 0.0f;
+      glGetFloatv(GL_MAX_TEXTURE_MAX_ANISOTROPY_EXT, &aniso);
+      aniso = std::min(aniso, ie::TEXTURE_ANISOTROPY_LEVEL);
+      glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAX_ANISOTROPY_EXT, aniso);
+      glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_LOD_BIAS, 0); 
     }
   }
   else
@@ -311,9 +316,9 @@ void ie::VramManager::createAndLoadVbos(void)
 
 //___|GETTERS AND SETTERS|______________________________________________________
 
-void ie::VramManager::setGlContext(SDL_GLContext context)
+void ie::VramManager::setGlConfig(OpenGlContextDependentConfigs* config)
 {
-  mainGlContext = context;
+  glConfig = config;
 }
 
 //______________________________________________________________________________

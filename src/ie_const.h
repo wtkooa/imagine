@@ -33,7 +33,7 @@ namespace ie
   extern const glm::vec3 UP_VECTOR;
   extern const short MAX_TERRAIN_TEXTURES;
   extern const float TEXTURE_LOD_BIAS;
-  extern const float TEXTURE_MAX_ANISOTROPY;
+  extern const float TEXTURE_ANISOTROPY_LEVEL;
 }
 
 #endif

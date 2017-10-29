@@ -32,6 +32,8 @@ namespace ie
   extern bool WIREFRAME_ON;
   extern bool DEPTHTEST_ON;
   extern bool CULLFACE_ON;
+  extern bool SDL_MULTISAMPLING_ON;
+  extern int SDL_MULTISAMPLING_SAMPLE_AMOUNT;
   extern float DEFAULT_PLAYER_MOVESPEED;
   extern float DEFAULT_PLAYER_TURNSPEED;
   extern float DEFAULT_CAMERA_LOOKSPEED; 
@@ -48,6 +50,7 @@ namespace ie
     int LOCAL_GL_VERSION_NUMERIC;
     std::string LOCAL_GLSL_VERSION;
     int LOCAL_GLSL_VERSION_NUMERIC;
+    bool ANISOTROPIC_AVAILABLE;
   };
 
 }
