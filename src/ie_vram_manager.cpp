@@ -26,7 +26,7 @@
 #include <SDL2/SDL.h>
 
 #include "ie_assets.h"
-#include "ie_const.h"
+#include "ie_config.h"
 #include "ie_vram.h"
 #include "ie_messages.h"
 
@@ -232,14 +232,14 @@ void ie::VramManager::loadTexture(ie::TextureAsset* texture)
   {
     glGenerateMipmap(GL_TEXTURE_2D);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
-    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_LOD_BIAS, ie::TEXTURE_LOD_BIAS); 
+    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_LOD_BIAS, ie::TEXTURE_MIPMAP_LOD_BIAS); 
     if (texture->anisotropy && glConfig->ANISOTROPIC_AVAILABLE)
     {
       float aniso = 0.0f;
       glGetFloatv(GL_MAX_TEXTURE_MAX_ANISOTROPY_EXT, &aniso);
       aniso = std::min(aniso, ie::TEXTURE_ANISOTROPY_LEVEL);
       glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAX_ANISOTROPY_EXT, aniso);
-      glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_LOD_BIAS, 0); 
+      glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_LOD_BIAS, ie::TEXTURE_ANISO_LOD_BIAS); 
     }
   }
   else

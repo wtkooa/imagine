@@ -46,9 +46,15 @@ void main()
 
   //SAMPLING TEXTURE
   vec4 textureColor = vec4(0.0);
+  float textureAlpha;
   if (usingTexture == 1)
   {
     textureColor = texture(textureId, texturePipe.xy);
+    textureAlpha = textureColor.a;
+    if (textureAlpha == 0)
+    {
+      discard; 
+    }
   }
 
   //CALCULATING DIFFUSE LIGHT COSINE 

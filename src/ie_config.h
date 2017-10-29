@@ -34,9 +34,13 @@ namespace ie
   extern bool CULLFACE_ON;
   extern bool SDL_MULTISAMPLING_ON;
   extern int SDL_MULTISAMPLING_SAMPLE_AMOUNT;
+  extern const float TEXTURE_ANISOTROPY_LEVEL;
+  extern const float TEXTURE_MIPMAP_LOD_BIAS;
+  extern const float TEXTURE_ANISO_LOD_BIAS;
   extern float DEFAULT_PLAYER_MOVESPEED;
   extern float DEFAULT_PLAYER_TURNSPEED;
   extern float DEFAULT_CAMERA_LOOKSPEED; 
+  extern const short MAX_TERRAIN_TEXTURES;
   
 
   class OpenGlContextDependentConfigs

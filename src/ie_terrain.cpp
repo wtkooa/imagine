@@ -18,7 +18,7 @@
 #include <glm/vec3.hpp>
 #include <glm/gtx/vector_angle.hpp>
 
-#include "ie_const.h"
+#include "ie_config.h"
 #include "ie_packages.h"
 
 ie::TerrainGenerator::TerrainGenerator(void)

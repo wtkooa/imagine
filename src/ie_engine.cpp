@@ -154,6 +154,10 @@ bool ie::Engine::initAssets(void)
                                                            "AcaciaTree.obj");
   am.unwrapPackage(treePack);
 
+  ie::WavefrontObjectFilePackage signPack = objReader.read("data/wavefront/",
+                                                           "Arrow.obj");
+  am.unwrapPackage(signPack);
+
   ie::handle cursorBG = am.getHandle("material/CursorBG");
   (*cursorBG.material).usesLightFalloff = false;
   (*cursorBG.material).usesLightDiffuse = false;
@@ -205,12 +209,20 @@ bool ie::Engine::initSceneGraph(void)
   ie::TerrainNode* terrain = new TerrainNode("Terrain", "Terrain");
   ie::StaticNode* cursor = new StaticNode("Cursor", "Player");
   ie::StaticNode* tree = new StaticNode("Acacia", "AcaciaTree");
+  ie::StaticNode* sign = new StaticNode("Sign", "Sign");
+  sign->translation = glm::vec3(5.0f, 0.0f, 5.0f);
+  sign->rotation = glm::vec3(0.0f, glm::radians(90.0f), 0.0f);
+  sign->usesLightDiffuse = false;
+  sign->usesLightSpecular = false;
+  sign->usesLightFalloff = false;
+  sign->usesLightAmbient = false;
   tree->translation = glm::vec3(12.0f, -3.2f, 12.0f);
   ie::PlayerNode* player = new PlayerNode();
   ie::CameraNode* camera = new CameraNode();
 
   sg.root->addChild(terrain);
   terrain->addChild(tree);
+  terrain->addChild(sign);
   sg.root->addChild(player);
   player->linkedCamera = camera;
   player->linkedEntity = cursor;

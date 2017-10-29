@@ -157,7 +157,7 @@ namespace ie
     bool usesLightDiffuse;
     bool usesLightSpecular;
     bool usesLightFalloff;
-    
+     
     bool usesPhysics;
   };
 

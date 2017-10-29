@@ -46,9 +46,15 @@ void main()
 
   //SAMPLING TEXTURE
   vec4 textureColor = vec4(0.0);
+  float textureAlpha;
   if (usingTexture == 1)
   {
     textureColor = texture(textureId, texturePipe.xy);
+    textureAlpha = textureColor.a;
+    if (textureAlpha == 0)
+    {
+      discard; 
+    }
   }
 
   //CALCULATING DIFFUSE LIGHT COSINE 
@@ -88,7 +94,7 @@ void main()
   }
   if (usesLightDiffuse != 1)
   {
-    diffuse = vec4(materialDiffuse, 1.0) + textureColor;
+    diffuse = combinedDiffuse;
   }
   if (usesLightSpecular != 1)
   {
