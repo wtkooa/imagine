@@ -428,7 +428,6 @@ void ie::SortCullFaceNode::sort(NodePacket packet)
 {
   if (packet.node.stat->usesCullFace)
   {
-
     toCulled->sort(packet);
   }
   else

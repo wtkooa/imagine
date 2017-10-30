@@ -252,7 +252,6 @@ void ie::PhysicsEngine::updatePlayerThirdPerson(PlayerNode* player)
                                                  camera->distance) + 
                                                  camera->firstPersonOffset;
     ctrl->scrollEvent = 0;
-    
 
     yRotate = glm::mat3(glm::rotate(glm::mat4(),
                                   -float(ctrl->rotateEventVec.x * camera->lookSpeed),
@@ -262,8 +261,9 @@ void ie::PhysicsEngine::updatePlayerThirdPerson(PlayerNode* player)
                                   -float(ctrl->rotateEventVec.y * camera->lookSpeed),
                                   newXAxisVector)); 
     glm::mat3 rotation = xRotate * yRotate;
-    camera->lookVector = rotation * camera->lookVector;
     camera->thirdPersonOffset = rotation * camera->thirdPersonOffset;
+    camera->lookVector = glm::normalize((player->translation + camera->firstPersonOffset) -
+                                         camera->translation);
 
     float xOffsetAngle = glm::angle(ie::UP_VECTOR, camera->lookVector);
     if (xOffsetAngle > glm::radians(170.0f))
