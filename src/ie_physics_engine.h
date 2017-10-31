@@ -33,8 +33,8 @@ namespace ie
     void updateTerrain(TerrainNode*);
     void updatePlayerFirstPerson(PlayerNode*);
     void updatePlayerThirdPerson(PlayerNode*);
-    void updatePlayerTerrainInteraction(PlayerNode*);
 
+    float calcTerrainInteraction(glm::vec3);
     float calcBarycentric(glm::vec4, glm::vec4, glm::vec4, glm::vec2);
 
     void setController(Controller*);

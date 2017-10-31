@@ -195,7 +195,8 @@ void ie::PhysicsEngine::updatePlayerFirstPerson(PlayerNode* player)
     ctrl->clearRotateEventVec();
     ctrl->scrollEvent = 0;
 
-    updatePlayerTerrainInteraction(player);
+    float height = calcTerrainInteraction(player->translation);
+    player->translation.y = height;
     entity->translation = player->translation;
   }
 }
@@ -291,15 +292,15 @@ void ie::PhysicsEngine::updatePlayerThirdPerson(PlayerNode* player)
 
     ctrl->clearRotateEventVec();
 
-    updatePlayerTerrainInteraction(player);
+    float height = calcTerrainInteraction(player->translation);
+    player->translation.y = height;
     entity->translation = player->translation;
   }
 }
 
 
-void ie::PhysicsEngine::updatePlayerTerrainInteraction(PlayerNode* player)
+float ie::PhysicsEngine::calcTerrainInteraction(glm::vec3 position)
 {
-  glm::vec3 playerTransl = player->translation;
   for (auto it = collidableTerrain.begin(); it != collidableTerrain.end(); it++)
   {
     TerrainNode* terrain = (*it);
@@ -310,12 +311,12 @@ void ie::PhysicsEngine::updatePlayerTerrainInteraction(PlayerNode* player)
     glm::vec3 startTransl = terrain->translation;
     glm::vec3 endTransl((startTransl.x + terrainSize) , startTransl.y,
                           (startTransl.z + terrainSize));
-    bool withinX = (playerTransl.x > startTransl.x) && (playerTransl.x < endTransl.x);
-    bool withinZ = (playerTransl.z > startTransl.z) && (playerTransl.z < endTransl.z);
+    bool withinX = (position.x > startTransl.x) && (position.x < endTransl.x);
+    bool withinZ = (position.z > startTransl.z) && (position.z < endTransl.z);
     if (withinX && withinZ)
     {
-      glm::vec2 terrainRelPos(playerTransl.x - startTransl.x,
-                              playerTransl.z - startTransl.z);
+      glm::vec2 terrainRelPos(position.x - startTransl.x,
+                              position.z - startTransl.z);
       glm::vec2 terrainRelFloorPos(floor(terrainRelPos.x / unitSize),
                                    floor(terrainRelPos.y /unitSize));
       glm::vec2 terrainRelModPos(fmod(terrainRelPos.x, unitSize),
@@ -338,10 +339,10 @@ void ie::PhysicsEngine::updatePlayerTerrainInteraction(PlayerNode* player)
       glm::vec4 v2 = (*vHeap)[vertexHeapOffset + index.y];
       glm::vec4 v3 = (*vHeap)[vertexHeapOffset + index.z];
       float height = calcBarycentric(v1, v2, v3, terrainRelPos);
-      player->translation.y = height;
+      return height;
     }
+    return position.y;
   }
-  
 }
 
 
