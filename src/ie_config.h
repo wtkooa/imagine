@@ -17,6 +17,8 @@
 
 namespace ie
 {
+  extern int DEFAULT_GL_MAJOR_VERSION;
+  extern int DEFAULT_GL_MINOR_VERSION;
   extern std::string HOME_PATH;
   extern std::string WINDOW_TITLE;
   extern glm::vec4 DEFAULT_CLEAR_COLOR;
@@ -51,9 +53,9 @@ namespace ie
     std::string LOCAL_GL_VENDOR;
     std::string LOCAL_GL_RENDERER;
     std::string LOCAL_GL_VERSION;
-    int LOCAL_GL_VERSION_NUMERIC;
-    std::string LOCAL_GLSL_VERSION;
-    int LOCAL_GLSL_VERSION_NUMERIC;
+    std::string LOCAL_SHADING_LANGUAGE_VERSION;
+    int LOCAL_GL_MAJOR_VERSION;
+    int LOCAL_GL_MINOR_VERSION;
     bool ANISOTROPIC_AVAILABLE;
   };
 

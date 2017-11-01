@@ -36,6 +36,10 @@ namespace ie
   class VramManager
   {
     public:
+
+    //CREATING VAO
+    void createVao(void);
+
     //BUILDING CPU SIDE VBOS
     void createVbos(void);
     void createStaticVbos(void);

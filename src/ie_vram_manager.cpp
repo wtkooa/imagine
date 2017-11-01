@@ -67,6 +67,13 @@ ie::VramStatusToRenderMessage ie::VramManager::sendVramStatusToRenderMessage()
 
 //___|BUILDING AND MANAGING CPU SIDE VBOS|______________________________________
 
+void ie::VramManager::createVao(void)
+{
+  GLuint vao;
+  glGenVertexArrays(1, &vao);
+  glBindVertexArray(vao);
+}
+
 void ie::VramManager::createVbos(void)
 {
   createStaticVbos();

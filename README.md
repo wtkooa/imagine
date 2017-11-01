@@ -20,17 +20,22 @@ Note: This project is a primarily a learning tool developed for fun, in my free 
 ### Getting things to run
 The project is still in development and will be for some time. However, if you'd like to try to build the project and checkout the progress, here is some information that might be helpful.
 
-Currently, the project has been compiled using g++ on Linux Mint 18.1 Serena 64-bit with nVIDIA GeForce GTX 970 graphics cards. Compilation on Mac and Windows is undefined; although, feel free to give it a try and let me know how it goes... In the future, the goal is to make the project Linux/Windows/Mac compatible. The libraries/APIs I've chosen thus far should be compatible to the best of my knowledge.
+Currently, the project has been successfully built on the following systems...
+
+1. Linux Mint 18.1 Serena 64-bit | nVIDIA GeForce GTX 970/PCIe/SSE2 | 4.5.0 NVIDIA 375.66
+2. Linux Mint 18.1 Serena 64-bit | Mesa DRI Intel HD Graphics 620 (Kabylake GT2) | 4.5 (Core Profile) Mesa 17.0.7
+
+In the future, the goal is to make the project Linux/Windows/Mac compatible.
 
 #### Controls
-**This is somewhat important! Pay Attention!** By default the engine hides and locks the mouse into the window for camera use, even if nothing renders to the screen. **To get your mouse back simply press "e".** You can also press "Esc" to quit at any time. By default, move with WASD and look around with the mouse. Movement can only take place in "grab mode" when the program has control of the mouse. To toggle grab mode press "e".
+**This is somewhat important!** By default the engine hides and locks the mouse into the window for camera use, even if nothing renders to the screen. **To get your mouse back simply press "e".** You can also press "Esc" to quit at any time. By default, move with WASD and look around with the mouse. Movement can only take place in "grab mode" when the program has control of the mouse. To toggle grab mode press "e". To toggle First Person/Third Person mode press "c".
 
 #### Dependencies:
 
 C++ Version: C++11   
-GLSL Version: 450 *See note below...
+GLSL Version: 330 core (or above)
 
-OpenGL 4.5 - *Note: So far, the project should still support OpenGL 3.0, but it may not in the future. The Engine checks the locally supported GLSL version and uses an appropriate shader program (currently v. 450 or 130).  
+OpenGL 3.3 core (or above)  
 https://www.opengl.org/
 
 OpenGL Mathematics v. 0.9.7.2-1 or higher  

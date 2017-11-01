@@ -69,6 +69,16 @@ bool ie::Engine::init(void)
 bool ie::Engine::initSdl(void)
 {
   SDL_Init(ie::REQUIRED_SDL_MODULES);
+  SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, ie::DEFAULT_GL_MAJOR_VERSION);
+  SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, ie::DEFAULT_GL_MINOR_VERSION);
+  SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
+
+  int major;
+  int minor;
+  SDL_GL_GetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, &major);
+  SDL_GL_GetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, &minor);
+  std::cout << "Imagine OpenGL Default Version: " << major << " " << minor << std::endl;
+
   SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
   if (ie::SDL_MULTISAMPLING_ON)
   {
@@ -103,28 +113,15 @@ bool ie::Engine::initShaders(void)
 {
 
   GlslCompiler compiler;
-  if (openGlConfigs.LOCAL_GLSL_VERSION_NUMERIC >= ie::GLSL_VERSION_450)
-  {
-    ie::ShaderProgramPackage statPack = compiler.compile("static",
-                             "src/glsl/", "ie_staticVShader450.glsl",
-                             "src/glsl/", "ie_staticFShader450.glsl");
-    am.unwrapPackage(statPack);
-    ie::ShaderProgramPackage terrainPack = compiler.compile("terrain",
-                             "src/glsl/", "ie_terrainVShader450.glsl",
-                             "src/glsl/", "ie_terrainFShader450.glsl");
-    am.unwrapPackage(terrainPack);
-  }
-  else
-  {
-    ie::ShaderProgramPackage statPack = compiler.compile("static",
-                             "src/glsl/", "ie_staticVShader130.glsl",
-                             "src/glsl/", "ie_staticFShader130.glsl");
-    am.unwrapPackage(statPack);
-    ie::ShaderProgramPackage terrainPack = compiler.compile("terrain",
-                             "src/glsl/", "ie_terrainVShader130.glsl",
-                             "src/glsl/", "ie_terrainFShader130.glsl");
-    am.unwrapPackage(terrainPack);
-  }
+
+  ie::ShaderProgramPackage statPack = compiler.compile("static",
+                           "src/glsl/", "ie_staticVShader330c.glsl",
+                           "src/glsl/", "ie_staticFShader330c.glsl");
+  am.unwrapPackage(statPack);
+  ie::ShaderProgramPackage terrainPack = compiler.compile("terrain",
+                           "src/glsl/", "ie_terrainVShader330c.glsl",
+                           "src/glsl/", "ie_terrainFShader330c.glsl");
+  am.unwrapPackage(terrainPack);
   return true;
 }
 
@@ -192,6 +189,7 @@ bool ie::Engine::initVram(void)
   ie::AssetStatusMessage assetStatusMsg = am.sendAssetStatusMessage();
   vram.receiveMessage(assetStatusMsg);
   vram.setGlConfig(&openGlConfigs);
+  vram.createVao();
   vram.createAndLoadVbos();
   return true;
 }

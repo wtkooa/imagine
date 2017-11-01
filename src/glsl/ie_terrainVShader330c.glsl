@@ -8,7 +8,7 @@
 // Copyright (c) 2017 David E Lipps
 //______________________________________________________________________________
 
-#version 450
+#version 330 core
 
 in layout(location=0) vec3 position;
 in layout(location=1) vec2 texture;

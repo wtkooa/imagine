@@ -8,7 +8,7 @@
 // Copyright (c) 2017 David E Lipps
 //______________________________________________________________________________
 
-#version 450
+#version 330 core
 
 in vec3 mtwPosition;
 in vec2 texturePipe;

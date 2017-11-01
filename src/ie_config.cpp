@@ -25,6 +25,8 @@
 #include "ie_utils.h"
 
 
+int ie::DEFAULT_GL_MAJOR_VERSION = 3;
+int ie::DEFAULT_GL_MINOR_VERSION = 3;
 char* homePath = SDL_GetBasePath();
 std::string ie::HOME_PATH = std::string(homePath); 
 std::string ie::WINDOW_TITLE = "Imagine Engine";
@@ -52,52 +54,71 @@ const float ie::TEXTURE_ANISO_LOD_BIAS = 0.0f;
 const float ie::TEXTURE_ANISOTROPY_LEVEL = 4.0f;
 
 
+bool checkForExtension(std::string extension)
+{
+  std::stringstream ss;
+  int extAmount;
+  glGetIntegerv(GL_NUM_EXTENSIONS, &extAmount);
+
+  for (int n = 0; n < extAmount; n++)
+  {
+    const GLubyte* str = glGetStringi(GL_EXTENSIONS, n);
+    ss <<str;
+    std::string newStr = ss.str();
+    if (newStr == extension)
+    {
+      return true;
+    }
+    ss.str("");
+    ss.clear();
+  }
+  return false;
+}
+
 //FETCHING LOCAL OPENGL VERSIONING INFO FROM VIDEO HARDWARE
 void ie::OpenGlContextDependentConfigs::fetchOpenGlConfigs(void)
 {
+
   const unsigned char* local_gl_vendor = glGetString(GL_VENDOR);
   std::stringstream ss;
   ss << local_gl_vendor;
   LOCAL_GL_VENDOR = ss.str(); 
+  std::cout << "Local Vendor: " << LOCAL_GL_VENDOR  << std::endl;
 
   ss.str("");
   ss.clear();
   const unsigned char* local_gl_renderer = glGetString(GL_RENDERER);
   ss << local_gl_renderer;
   LOCAL_GL_RENDERER = ss.str();
+  std::cout << "Local Renderer: " << LOCAL_GL_RENDERER  << std::endl;
 
   ss.str("");
   ss.clear();
   const unsigned char* local_gl_version = glGetString(GL_VERSION);
   ss << local_gl_version;
   LOCAL_GL_VERSION = ss.str();
+  std::cout << "Local Version: " << LOCAL_GL_VERSION  << std::endl;
 
   ss.str("");
   ss.clear();
-  const unsigned char* local_gl_version_numeric = glGetString(GL_SHADING_LANGUAGE_VERSION);
-  ss << local_gl_version_numeric;
-  std::string gls = ss.str();
-  gls = ie::split(gls, ' ', 0);
-  gls = ie::removeChar(gls, '.');
-  LOCAL_GL_VERSION_NUMERIC = stoi(gls);
+  const unsigned char* local_shading_version = glGetString(GL_SHADING_LANGUAGE_VERSION);
+  ss << local_shading_version;
+  LOCAL_SHADING_LANGUAGE_VERSION = ss.str();
+std::cout << LOCAL_SHADING_LANGUAGE_VERSION  << std::endl;
 
-  ss.str("");
-  ss.clear();
-  const unsigned char* local_glsl_version = glGetString(GL_SHADING_LANGUAGE_VERSION);
-  ss << local_glsl_version;
-  LOCAL_GLSL_VERSION = ss.str();
+  glGetIntegerv(GL_MAJOR_VERSION, &LOCAL_GL_MAJOR_VERSION);
+  glGetIntegerv(GL_MINOR_VERSION, &LOCAL_GL_MINOR_VERSION);
+  std::cout << "Local GL Context Version: " <<
+  LOCAL_GL_MAJOR_VERSION << " " << LOCAL_GL_MINOR_VERSION << std::endl;
 
-  ss.str("");
-  ss.clear();
-  const unsigned char* local_glsl_version_numeric = glGetString(GL_SHADING_LANGUAGE_VERSION);
-  ss << local_glsl_version_numeric;
-  std::string glsls = ss.str();
-  glsls = ie::split(glsls, ' ', 0);
-  glsls = ie::removeChar(glsls, '.');
-  LOCAL_GLSL_VERSION_NUMERIC = stoi(glsls);
 
-  const GLubyte* str;
-  str = glGetString(GL_EXTENSIONS);
-  ANISOTROPIC_AVAILABLE = (strstr((const char *)str,
-                           "GL_EXT_texture_filter_anisotropic") != NULL);
+  ANISOTROPIC_AVAILABLE = checkForExtension("GL_EXT_texture_filter_anisotropic");
+  if (ANISOTROPIC_AVAILABLE)
+  {
+    std::cout << "Anisotropic Filtering: Available"  << std::endl;
+  }
+  else
+  {
+    std::cout << "Anisotropic Filtering: Unavailable"  << std::endl;
+  }
 }

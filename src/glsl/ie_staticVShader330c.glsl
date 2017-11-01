@@ -1,4 +1,4 @@
-//___|"staticVShader130.glsl"|__________________________________________________
+//___|"staticVShader450.glsl"|__________________________________________________
 //
 // Project: Imagine: 3D Environment Engine
 // Version: 0.1.0
@@ -8,11 +8,11 @@
 // Copyright (c) 2017 David E Lipps
 //______________________________________________________________________________
 
-#version 130
+#version 330 core
 
-in vec3 position;
-in vec2 texture;
-in vec3 normal;
+in layout(location=0) vec3 position;
+in layout(location=1) vec2 texture;
+in layout(location=2) vec3 normal;
 
 uniform mat4 mtwMatrix;
 uniform mat4 transformationMatrix;
