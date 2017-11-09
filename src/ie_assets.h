@@ -27,6 +27,7 @@
 namespace ie
 {
 
+
   class ShaderAsset
   {
     public:

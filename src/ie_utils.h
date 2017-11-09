@@ -13,6 +13,9 @@
 
 #include <string>
 
+#include <glm/gtc/type_precision.hpp>
+#include <glm/vec3.hpp>
+
 namespace ie
 {
 
@@ -26,6 +29,13 @@ namespace ie
   std::string popFrontToken(std::string, char);
   std::string popFrontToken(std::string, char, int);
 
+  unsigned int packNormalAttrib(glm::vec3);
+  glm::vec3 unpackNormalAttrib(unsigned int);
+
+  glm::u8vec4 packColorAttrib(glm::vec3);
+  glm::vec3 unpackColorAttrib(glm::u8vec4);
+
+  unsigned int spatialHash(glm::vec3, float);
 }
 
 #endif

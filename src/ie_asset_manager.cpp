@@ -174,15 +174,15 @@ void ie::AssetManager::unwrapPackage(ie::WavefrontObjectFilePackage filePackage)
         ie::RenderUnit renderUnit;
         if (sampleFaceElement.y == -1 && sampleFaceElement.z == -1)
         {
-          renderUnit.dataFormat = VboDataFormat::V;
+          renderUnit.dataFormat = P_FORMAT;
         }
         else if (sampleFaceElement.y == -1)
         {
-          renderUnit.dataFormat = VboDataFormat::VN;
+          renderUnit.dataFormat = PN_FORMAT;
         }
         else
         {
-          renderUnit.dataFormat = VboDataFormat::VTN;
+          renderUnit.dataFormat = PMN_FORMAT;
         }
         renderUnit.assetId = assignAssetId();
         renderUnit.material = materialNameIdMap[usingMaterialName];

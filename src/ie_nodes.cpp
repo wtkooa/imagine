@@ -412,11 +412,11 @@ void ie::SortStaticTypeNode::sort(NodePacket packet)
     NodePacket np;
     np.node.stat = packet.node.stat;
     np.asset.ru = ru;
-    if (ru->dataFormat == VN)
+    if (ru->dataFormat == PN_FORMAT)
     {
       toMaterialed->sort(np);
     }
-    else if (ru->dataFormat == VTN)
+    else if (ru->dataFormat == PMN_FORMAT)
     {
       toTextured->sort(np);
     }

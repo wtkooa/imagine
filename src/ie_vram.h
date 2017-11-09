@@ -20,14 +20,14 @@
 namespace ie
 {
 
-  class VFormat
+  class PFormat
   {
     public:
     glm::vec3 vertex;
   };
 
 
-  class VNFormat
+  class PNFormat
   {
     public:
     glm::vec3 vertex;
@@ -35,7 +35,7 @@ namespace ie
   };
 
 
-  class VTNFormat
+  class PMNFormat
   {
     public:
     glm::vec3 vertex;
@@ -43,7 +43,7 @@ namespace ie
     glm::vec3 normal;
   };
 
-  class VTNCBFormat
+  class PMNCBFormat
   {
     public:
     glm::vec3 vertex;
@@ -64,8 +64,11 @@ namespace ie
     void release(void);
   };
 
+  enum VertexAttribute {NULL_ATTRIB, E_ATTRIB, P_ATTRIB, N_ATTRIB,
+                        M_ATTRIB, C_ATTRIB, D1_ATTRIB, D2_ATTRIB};
 
-  enum VboDataFormat {V, VN, VTN, VTNCB};
+  enum VboDataFormat {NULL_FORMAT, P_FORMAT, PN_FORMAT,
+                      PMN_FORMAT, PMNCD_FORMAT, PMNCDD_FORMAT};
 
 
   class StaticRenderUnitLocation 

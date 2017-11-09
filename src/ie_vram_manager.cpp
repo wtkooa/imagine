@@ -97,12 +97,12 @@ void ie::VramManager::createStaticVbos()
     ie::TextureAsset* textureAsset = &(*textures)[(*material).diffuseMapId];
     switch (ru->dataFormat)
     {
-      case V:
+      case P_FORMAT:
         (*ru).vramLocation = vboV.size(); 
 
         for (unsigned int n = 0; n < ru->vertexAmount; n++)
         {
-          ie::VFormat vboDataUnit;
+          ie::PFormat vboDataUnit;
           glm::ivec4 faceElement = (*iHeap)[ru->heapIndexOffset + n];
           unsigned int vertexIndex = faceElement.x;
           glm::vec4 vertex = (*vHeap)[vertexIndex];
@@ -110,12 +110,12 @@ void ie::VramManager::createStaticVbos()
           vboV.push_back(vboDataUnit);
         }
         break;
-      case VN:
+      case PN_FORMAT:
         (*ru).vramLocation = vboVN.size(); 
 
         for (unsigned int n = 0; n < ru->vertexAmount; n++)
         {
-          ie::VNFormat vboDataUnit;
+          ie::PNFormat vboDataUnit;
           glm::ivec4 faceElement = (*iHeap)[ru->heapIndexOffset + n];
           unsigned int vertexIndex = faceElement.x;
           unsigned int normalIndex = faceElement.z;
@@ -126,12 +126,12 @@ void ie::VramManager::createStaticVbos()
           vboVN.push_back(vboDataUnit);
         }
         break;
-      case VTN:
+      case PMN_FORMAT:
         (*ru).vramLocation = vboVTN.size(); 
 
         for (unsigned int n = 0; n < ru->vertexAmount; n++)
         {
-          ie::VTNFormat vboDataUnit;
+          ie::PMNFormat vboDataUnit;
           glm::ivec4 faceElement = (*iHeap)[ru->heapIndexOffset + n];
           unsigned int vertexIndex = faceElement.x;
           unsigned int textureIndex = faceElement.y;
@@ -198,7 +198,7 @@ void ie::VramManager::createTerrainVbos(void)
 
     for (unsigned int n = 0; n < vHeapA; n++)
     {
-      ie::VTNCBFormat vboDataUnit;
+      ie::PMNCBFormat vboDataUnit;
       glm::vec4 vertex4 = (*vHeap)[vHeapO + n];
       vboDataUnit.vertex = glm::vec3(vertex4.x, vertex4.y, vertex4.z);
       vboDataUnit.texture = tCoords[n];
@@ -270,7 +270,7 @@ void ie::VramManager::loadTexture(ie::TextureAsset* texture)
 
 void ie::VramManager::loadVbos(void)
 {
-  short dataSize = sizeof(VFormat);
+  short dataSize = sizeof(PFormat);
   glBindBuffer(GL_ARRAY_BUFFER, vPair.readVbo);
   glBufferData(GL_ARRAY_BUFFER, vboV.size() * dataSize,
                vboV.data(), GL_STATIC_DRAW);
@@ -278,7 +278,7 @@ void ie::VramManager::loadVbos(void)
   glBufferData(GL_ARRAY_BUFFER, vboV.size() * dataSize,
                vboV.data(), GL_STATIC_DRAW);
 
-  dataSize = sizeof(VNFormat);
+  dataSize = sizeof(PNFormat);
   glBindBuffer(GL_ARRAY_BUFFER, vnPair.readVbo);
   glBufferData(GL_ARRAY_BUFFER, vboVN.size() * dataSize,
                vboVN.data(), GL_STATIC_DRAW);
@@ -286,7 +286,7 @@ void ie::VramManager::loadVbos(void)
   glBufferData(GL_ARRAY_BUFFER, vboVN.size() * dataSize,
                vboVN.data(), GL_STATIC_DRAW);
 
-  dataSize = sizeof(VTNFormat);
+  dataSize = sizeof(PMNFormat);
   glBindBuffer(GL_ARRAY_BUFFER, vtnPair.readVbo);
   glBufferData(GL_ARRAY_BUFFER, vboVTN.size() * dataSize,
                vboVTN.data(), GL_STATIC_DRAW);
@@ -295,7 +295,7 @@ void ie::VramManager::loadVbos(void)
                vboVTN.data(), GL_STATIC_DRAW);
   glBindBuffer(GL_ARRAY_BUFFER, 0);
 
-  dataSize = sizeof(VTNCBFormat);
+  dataSize = sizeof(PMNCBFormat);
   glBindBuffer(GL_ARRAY_BUFFER, vtncbPair.readVbo);
   glBufferData(GL_ARRAY_BUFFER, vboVTNCB.size() * dataSize,
                vboVTNCB.data(), GL_STATIC_DRAW);

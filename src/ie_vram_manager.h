@@ -87,10 +87,10 @@ namespace ie
     std::vector<glm::ivec4>* iHeap;
 
     //CPU SIDE VBO DATA
-    std::vector<VFormat> vboV;
-    std::vector<VNFormat> vboVN;
-    std::vector<VTNFormat> vboVTN;
-    std::vector<VTNCBFormat> vboVTNCB;
+    std::vector<PFormat> vboV;
+    std::vector<PNFormat> vboVN;
+    std::vector<PMNFormat> vboVTN;
+    std::vector<PMNCBFormat> vboVTNCB;
     std::vector<unsigned int> vboTerrainIndex;
   };
 

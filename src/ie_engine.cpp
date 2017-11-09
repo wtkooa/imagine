@@ -152,12 +152,16 @@ bool ie::Engine::initAssets(void)
   am.unwrapPackage(treePack);
 
   ie::WavefrontObjectFilePackage signPack = objReader.read("data/wavefront/",
-                                                           "Arrow.obj");
+                                                           "Face.obj");
   am.unwrapPackage(signPack);
 
   ie::WavefrontObjectFilePackage chestPack = objReader.read("data/wavefront/",
                                                            "TreasureChest.obj");
   am.unwrapPackage(chestPack);
+
+  ie::WavefrontObjectFilePackage pinePack = objReader.read("data/wavefront/",
+                                                           "PineTree.obj");
+  am.unwrapPackage(pinePack);
 
   ie::handle cursorBG = am.getHandle("material/CursorBG");
   (*cursorBG.material).usesLightFalloff = false;
@@ -211,9 +215,10 @@ bool ie::Engine::initSceneGraph(void)
   ie::TerrainNode* terrain = new TerrainNode("Terrain", "Terrain");
   ie::StaticNode* cursor = new StaticNode("Cursor", "Player");
   ie::StaticNode* tree = new StaticNode("Acacia", "AcaciaTree");
-  ie::StaticNode* sign = new StaticNode("Sign", "Sign");
+  ie::StaticNode* sign = new StaticNode("Face", "Face");
   ie::StaticNode* chest = new StaticNode("TreasureChest", "Chest");
   ie::StaticNode* lid = new StaticNode("TreasureChestLid", "Lid");
+  ie::StaticNode* pinetree = new StaticNode("PineTree", "PineTree");
   sign->translation = glm::vec3(5.0f, 0.0f, 5.0f);
   sign->rotation = glm::vec3(0.0f, glm::radians(90.0f), 0.0f);
   sign->usesLightDiffuse = false;
@@ -229,9 +234,11 @@ bool ie::Engine::initSceneGraph(void)
   terrain->addChild(tree);
   terrain->addChild(sign);
   terrain->addChild(chest);
+  terrain->addChild(pinetree);
   chest->addChild(lid);
-  chest->translation = glm::vec3(11.5, -3.2, 11.0f);
+  chest->translation = glm::vec3(11.5f, -3.2f, 11.0f);
   chest->rotation = glm::vec3(0.0f, glm::radians(210.0f), 0.0f);
+  pinetree->translation = glm::vec3(5.0f, -3.0f, 11.0f);
   sg.root->addChild(player);
   player->linkedCamera = camera;
   player->linkedEntity = cursor;
@@ -321,9 +328,9 @@ void ie::Engine::handleEvents(void)
       case SDL_WINDOWEVENT:
         switch (evnt.window.event)
         {
-        case SDL_WINDOWEVENT_RESIZED:
-          handleResize(evnt.window.data1, evnt.window.data2);
-          break;
+          case SDL_WINDOWEVENT_RESIZED:
+            handleResize(evnt.window.data1, evnt.window.data2);
+            break;
         }
         break;
       case SDL_MOUSEMOTION:
