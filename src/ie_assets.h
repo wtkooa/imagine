@@ -100,13 +100,13 @@ namespace ie
   {
     public:
     unsigned int assetId;
-    GLuint textureId;
     std::string filename;
     std::string filepath;
     std::string name;
     TextureType textureType; 
     bool tobeVramLoaded;
     bool vramLoaded;
+    GLuint textureId;
     bool mipmapped;
     bool anisotropy;
     bool repeating;

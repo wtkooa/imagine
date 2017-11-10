@@ -39,20 +39,8 @@ ie::Mesh::~Mesh()
 
 void ie::Mesh::factoryReset(void)
 {
-  assetId = 0;
-  name = "none";
-  filename = "none";
-  filepath = "none";
   deleteAllRenderUnits();
 }
-
-
-void ie::Mesh::setFilename(std::string fn) {filename = fn;}
-std::string ie::Mesh::getFilename(void) {return filename;}
-
-
-void ie::Mesh::setFilepath(std::string fp) {filename = fp;}
-std::string ie::Mesh::getFilepath(void) {return filepath;}
 
 
 void ie::Mesh::addRenderUnit(RenderUnit* ru)

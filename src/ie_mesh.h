@@ -38,14 +38,8 @@ namespace ie
     Mesh();
     ~Mesh();
 
-    void factoryReset(void);
-
     //GETTERS AND SETTERS
-    void setFilename(std::string);
-    void setFilepath(std::string);
     void addRenderUnit(RenderUnit*);
-    std::string getFilename(void);
-    std::string getFilepath(void);
     unsigned int getRenderUnitAmount(void);
     RenderUnit* getRenderUnit(unsigned int);
     std::vector<RenderUnit*>* getRenderUnits(void);
@@ -56,10 +50,9 @@ namespace ie
     void removeMeshDuplicates(float);
     void removeRenderUnitDuplicates(unsigned int, float);
 
-    private:
-    std::string filename; 
-    std::string filepath;
+    virtual void factoryReset(void);
 
+    private:
     std::vector<RenderUnit*> renderUnits;
   };
 
