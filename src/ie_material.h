@@ -15,6 +15,7 @@
 
 #include <glm/vec3.hpp>
 
+#include "ie_asset.h"
 #include "ie_texture.h"
 
 namespace ie
@@ -49,6 +50,8 @@ namespace ie
     bool getUseLightFalloff(void);
     Texture* getDiffuseTexture(void);
     Texture* getNormalTexture(void);
+
+    virtual void reset(void);
 
     private:
     float shininess;

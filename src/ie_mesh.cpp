@@ -25,7 +25,7 @@
 
 ie::Mesh::Mesh()
 {
-  factoryReset();
+  reset();
 }
 
 ie::Mesh::~Mesh()
@@ -37,7 +37,7 @@ ie::Mesh::~Mesh()
 }
 
 
-void ie::Mesh::factoryReset(void)
+void ie::Mesh::reset(void)
 {
   deleteAllRenderUnits();
 }

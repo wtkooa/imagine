@@ -25,8 +25,8 @@
 #include "ie_utils.h"
 
 
-int ie::DEFAULT_GL_MAJOR_VERSION = 3;
-int ie::DEFAULT_GL_MINOR_VERSION = 3;
+int ie::DEFAULT_GL_MAJOR_VERSION = 4;
+int ie::DEFAULT_GL_MINOR_VERSION = 5;
 char* homePath = SDL_GetBasePath();
 std::string ie::HOME_PATH = std::string(homePath); 
 std::string ie::WINDOW_TITLE = "Imagine Engine";
@@ -48,7 +48,7 @@ glm::vec4 ie::DEFAULT_CLEAR_COLOR = glm::vec4(0.466f, 0.709f, 0.996, 1.0);
 float ie::DEFAULT_PLAYER_MOVESPEED = 6.0; //Meters Per Second
 float ie::DEFAULT_PLAYER_TURNSPEED = glm::radians(0.05f); //Degrees per rel mouse movement 
 float ie::DEFAULT_CAMERA_LOOKSPEED = glm::radians(0.05f); //Degrees per rel mouse  movment
-const short ie::MAX_TERRAIN_TEXTURES = 8; 
+const short ie::MAX_TERRAIN_MATERIALS = 8; 
 const float ie::TEXTURE_MIPMAP_LOD_BIAS = -1.0f;
 const float ie::TEXTURE_ANISO_LOD_BIAS = 0.0f;
 const float ie::TEXTURE_ANISOTROPY_LEVEL = 4.0f;

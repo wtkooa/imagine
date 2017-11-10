@@ -14,10 +14,10 @@
 
 ie::Asset::Asset()
 {
-  factoryReset();
+  reset();
 }
 
-void ie::Asset::factoryReset(void)
+void ie::Asset::reset(void)
 {
   assetId = 0;
   name = "none";

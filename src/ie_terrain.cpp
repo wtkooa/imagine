@@ -19,7 +19,52 @@
 #include <glm/gtx/vector_angle.hpp>
 
 #include "ie_config.h"
+//#include "ie_material.h"
+//#include "ie_mesh.h"
 #include "ie_packages.h"
+
+//___|TERRAIN|__________________________________________________________________
+/*
+ie::Terrain::Terrain()
+{
+  reset();
+}
+
+void ie::Terrain::reset(void)
+{
+  mesh = NULL;
+  dim = 0;
+  unitSize = 0;
+  materials.clear();
+}
+
+
+void ie::Terrain::setMesh(Mesh* m) {mesh = m;}
+Mesh* ie::Terrain::getMesh(void) {return mesh;}
+
+void ie::Terrain::setDim(unsigned int d) {dim = d;}
+unsigned int ie::Terrain::getDim(void) {return dim;}
+
+void ie::Terrain::setUnitSize(unsigned int u) {unitSize = u;}
+unsigned int ie::Terrain::getUnitSize(void) {return unitSize;}
+
+void ie::Terrain::addMaterial(Material* material)
+{
+  if (materials.size() < ie::MAX_TERRAIN_MATERIALS)
+  {
+    materials.push_back(material);
+  }
+  else
+  {
+    std::cout << "Max number of terrain materials already present."  << std::endl;
+  }
+}
+Material* ie::Terrain::getMaterial(unsigned int index) {return materials[index];}
+
+*/
+//______________________________________________________________________________
+
+//___|TERRAIN GENERATION|_______________________________________________________
 
 ie::TerrainGenerator::TerrainGenerator(void)
 {
@@ -209,7 +254,7 @@ glm::uvec2 ie::TerrainGenerator::setBlendValue(glm::uvec2 blend,
 void ie::TerrainGenerator::addTexture(std::string filepath,
                                       std::string filename)
 {
-  if (textures.size() < ie::MAX_TERRAIN_TEXTURES)
+  if (textures.size() < ie::MAX_TERRAIN_MATERIALS)
   {
     TexturePackage texture;
     texture.filepath = filepath;
@@ -223,7 +268,7 @@ void ie::TerrainGenerator::addTexture(std::string filepath,
   else
   {
     std::cout << "Warning: Max terrian texture capacity (" <<
-    ie::MAX_TERRAIN_TEXTURES << ") already reached." << std::endl;
+    ie::MAX_TERRAIN_MATERIALS << ") already reached." << std::endl;
   }
 }
 
@@ -255,3 +300,5 @@ void ie::TerrainGenerator::setAmbient(glm::vec3 a) {ambient = a;}
 void ie::TerrainGenerator::setDiffuse(glm::vec3 d) {diffuse = d;}
 void ie::TerrainGenerator::setSpecular(glm::vec3 s) {specular = s;}
 void ie::TerrainGenerator::setEmission(glm::vec3 e) {emission = e;}
+
+//______________________________________________________________________________

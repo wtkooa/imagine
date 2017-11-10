@@ -1,5 +1,5 @@
-#ifndef IE_ASSETS_H
-#define IE_ASSETS_H
+#ifndef IE_ASSET_H
+#define IE_ASSET_H
 
 //___|"ie_asset.h"|_____________________________________________________________
 //
@@ -31,14 +31,17 @@ namespace ie
     std::string getFilename(void);
     std::string getFilepath(void);
 
+    virtual void reset(void);
+
     protected:
     unsigned int assetId;
     std::string name;
     std::string filename; 
     std::string filepath;
 
-    void factoryReset(void);
   };
+
+  
 
 }
 

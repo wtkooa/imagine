@@ -18,11 +18,38 @@
 #include <glm/vec3.hpp>
 #include <glm/vec3.hpp>
 
+//#include "ie_asset.h"
+//#include "ie_material.h"
+//#include "ie_mesh.h"
 #include "ie_packages.h"
+#include "ie_texture.h"
 
 namespace ie
 {
+/*
+  class Terrain : public Asset
+  {
+    public:
+    Terrain();
 
+    void setMesh(Mesh*);
+    void setDim(unsigned int);
+    void setUnitSize(unsigned int);
+    void addMaterial(Material*);
+    Mesh* getMesh(void);
+    unsigned int getDim(void);
+    unsigned int getUnitSize(void);
+    Material* getMaterial(unsigned int);
+
+    virtual void reset(void);
+
+    private:
+    Mesh* mesh;
+    short dim;
+    float unitSize;
+    std::vector<Material*> materials;
+  };
+*/
   class TerrainGenerator
   {
     public:

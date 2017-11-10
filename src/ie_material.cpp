@@ -16,6 +16,12 @@
 
 ie::Material::Material()
 {
+  reset();
+}
+
+
+void ie::Material::reset(void)
+{
   shininess = 1;
   ambient = glm::vec3(1.0f, 1.0f, 1.0f);
   diffuse = glm::vec3(0.0f, 0.0f, 0.0f);

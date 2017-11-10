@@ -20,7 +20,6 @@
 #include "ie_physics_engine.h"
 #include "ie_render_engine.h"
 #include "ie_scenegraph.h"
-#include "ie_shader.h"
 #include "ie_time.h"
 #include "ie_vram_manager.h"
 

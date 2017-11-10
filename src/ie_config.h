@@ -42,7 +42,7 @@ namespace ie
   extern float DEFAULT_PLAYER_MOVESPEED;
   extern float DEFAULT_PLAYER_TURNSPEED;
   extern float DEFAULT_CAMERA_LOOKSPEED; 
-  extern const short MAX_TERRAIN_TEXTURES;
+  extern const short MAX_TERRAIN_MATERIALS;
   
 
   class OpenGlContextDependentConfigs

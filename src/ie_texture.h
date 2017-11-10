@@ -15,10 +15,12 @@
 #include <GL/gl.h>
 #include <GL/glu.h>
 
+#include "ie_asset.h"
+
 namespace ie
 {
 
-  class Texture
+  class Texture : public Asset
   {
     public:
     Texture();
@@ -30,6 +32,8 @@ namespace ie
     bool getMipmapped(void);
     bool getAnisotropy(void);
     bool getRepeating(void);
+
+    virtual void reset(void);
 
     private:
     GLuint glId;

@@ -50,7 +50,7 @@ namespace ie
     void removeMeshDuplicates(float);
     void removeRenderUnitDuplicates(unsigned int, float);
 
-    virtual void factoryReset(void);
+    virtual void reset(void);
 
     private:
     std::vector<RenderUnit*> renderUnits;

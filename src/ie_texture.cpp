@@ -16,15 +16,20 @@
 
 ie::Texture::Texture()
 {
-  glGenTextures(1, &glId);
-  mipmapped = true;
-  anisotropy = true;
-  repeating = true;
+  reset();
 }
 
 ie::Texture::~Texture()
 {
   glDeleteTextures(1, &glId);
+}
+
+void ie::Texture::reset(void)
+{
+  glGenTextures(1, &glId);
+  mipmapped = true;
+  anisotropy = true;
+  repeating = true;
 }
 
 
