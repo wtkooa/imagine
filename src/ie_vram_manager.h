@@ -23,7 +23,6 @@
 #include <glm/vec4.hpp>
 #include <SDL2/SDL.h>
 
-#include "ie_assets.h"
 #include "ie_config.h"
 #include "ie_vram.h"
 #include "ie_messages.h"

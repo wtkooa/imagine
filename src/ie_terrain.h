@@ -18,15 +18,15 @@
 #include <glm/vec3.hpp>
 #include <glm/vec3.hpp>
 
-//#include "ie_asset.h"
-//#include "ie_material.h"
-//#include "ie_mesh.h"
+#include "ie_asset.h"
+#include "ie_material.h"
+#include "ie_mesh.h"
 #include "ie_packages.h"
 #include "ie_texture.h"
 
 namespace ie
 {
-/*
+
   class Terrain : public Asset
   {
     public:
@@ -49,7 +49,7 @@ namespace ie
     float unitSize;
     std::vector<Material*> materials;
   };
-*/
+
   class TerrainGenerator
   {
     public:

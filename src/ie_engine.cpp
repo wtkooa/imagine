@@ -23,23 +23,20 @@
 #include <glm/vec3.hpp>
 #include <SDL2/SDL.h>
 
-#include "ie_assets.h"
 #include "ie_asset_manager.h"
 #include "ie_compiler.h"
 #include "ie_config.h"
 #include "ie_const.h"
 #include "ie_controller.h"
-#include "ie_lighting.h"
 #include "ie_messages.h"
-#include "ie_nodes.h"
-#include "ie_packages.h"
-#include "ie_physics_engine.h"
-#include "ie_render_engine.h"
-#include "ie_scenegraph.h"
+//#include "ie_nodes.h"
+//#include "ie_physics_engine.h"
+//#include "ie_render_engine.h"
+//#include "ie_scenegraph.h"
 #include "ie_terrain.h"
 #include "ie_time.h"
 #include "ie_utils.h"
-#include "ie_vram.h"
+//#include "ie_vram.h"
 #include "ie_wavefront.h"
 
 
@@ -55,12 +52,12 @@ bool ie::Engine::init(void)
 {
   initSdl();
   initOpenGl();
-  initShaders();
+  //initShaders();
   initAssets();
-  initVram();
-  initRenderers();
-  initSceneGraph();
-  initPhysics();
+  //initVram();
+  //initRenderers();
+  //initSceneGraph();
+  //initPhysics();
   initController();
   return true;
 }
@@ -108,7 +105,7 @@ bool ie::Engine::initOpenGl(void)
   glClear(ie::ACTIVEBUFFERS);
 }
 
-
+/*
 bool ie::Engine::initShaders(void)
 {
 
@@ -124,70 +121,15 @@ bool ie::Engine::initShaders(void)
   am.unwrapPackage(terrainPack);
   return true;
 }
-
+*/
 
 bool ie::Engine::initAssets(void)
 {
-  
-  LightGenerator light;
-  light.setName("light0");
-  light.setPosVector(glm::vec3(0.0f, 40.0f, 0.0f));
-  light.setGlobalAmbient(glm::vec3(0.1f, 0.1f, 0.1f));
-  light.setLightAmbient(glm::vec3(0.1f, 0.1f, 0.1f));
-  light.setLightSpecular(glm::vec3(0.5f, 0.5f, 0.5f));
-  light.setLightDiffuse(glm::vec3(0.8f, 0.8f, 0.8f));
-  light.setConstantFalloff(0.1f);
-  light.setLinearFalloff(0.02f);
-  light.setQuadraticFalloff(0.0f);
-  ie::LightPackage lightPack = light.wrapLightPackage();
-  am.unwrapPackage(lightPack);
-
-  ie::WavefrontObjectFileReader objReader;  
-  ie::WavefrontObjectFilePackage cursorPack = objReader.read("data/wavefront/",
-                                                          "Cursor.obj");
-  am.unwrapPackage(cursorPack);
-
-  ie::WavefrontObjectFilePackage treePack = objReader.read("data/wavefront/",
-                                                           "AcaciaTree.obj");
-  am.unwrapPackage(treePack);
-
-  ie::WavefrontObjectFilePackage signPack = objReader.read("data/wavefront/",
-                                                           "Face.obj");
-  am.unwrapPackage(signPack);
-
-  ie::WavefrontObjectFilePackage chestPack = objReader.read("data/wavefront/",
-                                                           "TreasureChest.obj");
-  am.unwrapPackage(chestPack);
-
-  ie::WavefrontObjectFilePackage pinePack = objReader.read("data/wavefront/",
-                                                           "PineTree.obj");
-  am.unwrapPackage(pinePack);
-
-  ie::handle cursorBG = am.getHandle("material/CursorBG");
-  (*cursorBG.material).usesLightFalloff = false;
-  (*cursorBG.material).usesLightDiffuse = false;
-  (*cursorBG.material).usesLightSpecular = false;
-  (*cursorBG.material).usesLightAmbient = false;
-  (*cursorBG.material).usesGlobalAmbient = false;
-
-  ie::TerrainGenerator terrain(120, 2.0f);
-  terrain.applyPerlin(42.0f, 32.0f, 40.0f);
-  terrain.applyDemoBlends();
-  terrain.addTexture("data/textures/", "001_grass.png");
-  terrain.addTexture("data/textures/", "cobble.jpg");
-  terrain.addTexture("data/textures/", "topsoil.jpg");
-  terrain.addTexture("data/textures/", "sand.jpg");
-  terrain.addTexture("data/textures/", "dirtrocks.jpg");
-  terrain.addTexture("data/textures/", "cementDark.png");
-  terrain.addTexture("data/textures/", "snow.jpg");
-  terrain.addTexture("data/textures/", "lava.jpg");
-  ie::TerrainPackage terPack = terrain.wrapTerrainPackage();
-  am.unwrapPackage(terPack);
 
   return true;
 }
 
-
+/*
 bool ie::Engine::initVram(void)
 {
   ie::AssetStatusMessage assetStatusMsg = am.sendAssetStatusMessage();
@@ -195,6 +137,7 @@ bool ie::Engine::initVram(void)
   vram.setGlConfig(&openGlConfigs);
   vram.createVao();
   vram.createAndLoadVbos();
+  
   return true;
 }
 
@@ -256,6 +199,7 @@ bool ie::Engine::initPhysics(void)
   fizx.setController(&ctrl);
 }
 
+*/
 bool ie::Engine::initController(void)
 {
   ctrl.setWindow(mainWindow);
@@ -267,14 +211,14 @@ bool ie::Engine::run(void)
   engineOn = true;
   while (engineOn) {
     handleEvents();
-    handleUpdates();
-    handleLogic();
+    //handleUpdates();
+    //handleLogic();
     render();
   } 
   return true;
 }
 
-
+/*
 void ie::Engine::handleUpdates(void)
 {
   frameClock.measure();
@@ -303,13 +247,13 @@ void ie::Engine::handleUpdates(void)
 void ie::Engine::handleLogic(void)
 {
 }
-
+*/
 
 void ie::Engine::render(void)
 {
   glClear(ACTIVEBUFFERS);
 
-  re.render();
+  //re.render();
 
   SDL_GL_SwapWindow(mainWindow);
 }
@@ -439,14 +383,14 @@ void ie::Engine::handleResize(int width, int height)
   float aspectRatio = float(width) / float(height);
   SDL_SetWindowSize(mainWindow, width, height);
   glViewport(0, 0, width, height);
-  sg.updateAspectRatio(aspectRatio);
+  //sg.updateAspectRatio(aspectRatio);
 }
 
 
 bool ie::Engine::cleanup(void)
 {
-  vram.quit();
-  am.quit();
+  //vram.quit();
+  //am.quit();
   SDL_Quit();
   return true;
 }

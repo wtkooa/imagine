@@ -19,12 +19,12 @@
 #include <glm/gtx/vector_angle.hpp>
 
 #include "ie_config.h"
-//#include "ie_material.h"
-//#include "ie_mesh.h"
+#include "ie_material.h"
+#include "ie_mesh.h"
 #include "ie_packages.h"
 
 //___|TERRAIN|__________________________________________________________________
-/*
+
 ie::Terrain::Terrain()
 {
   reset();
@@ -40,7 +40,7 @@ void ie::Terrain::reset(void)
 
 
 void ie::Terrain::setMesh(Mesh* m) {mesh = m;}
-Mesh* ie::Terrain::getMesh(void) {return mesh;}
+ie::Mesh* ie::Terrain::getMesh(void) {return mesh;}
 
 void ie::Terrain::setDim(unsigned int d) {dim = d;}
 unsigned int ie::Terrain::getDim(void) {return dim;}
@@ -59,9 +59,9 @@ void ie::Terrain::addMaterial(Material* material)
     std::cout << "Max number of terrain materials already present."  << std::endl;
   }
 }
-Material* ie::Terrain::getMaterial(unsigned int index) {return materials[index];}
+ie::Material* ie::Terrain::getMaterial(unsigned int index) {return materials[index];}
 
-*/
+
 //______________________________________________________________________________
 
 //___|TERRAIN GENERATION|_______________________________________________________

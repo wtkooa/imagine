@@ -16,12 +16,11 @@
 #include "ie_asset_manager.h"
 #include "ie_config.h"
 #include "ie_controller.h"
-#include "ie_lighting.h"
-#include "ie_physics_engine.h"
-#include "ie_render_engine.h"
-#include "ie_scenegraph.h"
+//#include "ie_physics_engine.h"
+//#include "ie_render_engine.h"
+//#include "ie_scenegraph.h"
 #include "ie_time.h"
-#include "ie_vram_manager.h"
+//#include "ie_vram_manager.h"
 
 namespace ie
 {
@@ -57,12 +56,12 @@ namespace ie
     bool engineOn;
 
     ie::AssetManager am;
-    ie::VramManager vram;
+    //ie::VramManager vram;
     ie::FrameClock frameClock;
     ie::Controller ctrl;
-    ie::RenderEngine re;
-    ie::PhysicsEngine fizx;
-    ie::SceneGraph sg;
+    //ie::RenderEngine re;
+    //ie::PhysicsEngine fizx;
+    //ie::SceneGraph sg;
 
     ie::OpenGlContextDependentConfigs openGlConfigs;
   };

@@ -24,9 +24,12 @@
 #include <glm/vec3.hpp>
 #include <glm/vec4.hpp>
 
-#include "ie_assets.h"
+#include "ie_material.h"
+#include "ie_mesh.h"
 #include "ie_messages.h"
-#include "ie_packages.h"
+#include "ie_shader.h"
+#include "ie_terrain.h"
+#include "ie_texture.h"
 
 namespace ie
 {
@@ -34,85 +37,35 @@ namespace ie
   class AssetManager 
   {
     public:
-
     AssetManager();
 
-    //FRAME UPDATE AND INSTRUCTIONS
-    void update(void);
-
-    //UNWRAPPING PACKAGES
-    void unwrapPackage(ie::WavefrontObjectFilePackage);
-    void unwrapPackage(ie::WavefrontMaterialFilePackage);
-    GLuint unwrapPackage(ie::WavefrontMaterialPackage);
-    GLuint unwrapPackage(ie::TexturePackage);
-    void unwrapPackage(ie::ShaderProgramPackage);
-    void unwrapPackage(ie::LightPackage);
-    void unwrapPackage(ie::TerrainPackage);
-
-    //SENDING MESSAGES
-    AssetStatusMessage sendAssetStatusMessage(void); 
-
-    //RECEIVING MESSAGES
-    void receiveMessage(ie::AssetManagerInstructions);
-    void receiveMessage(ie::AssetManagerInstruction);
-    
-    //ACCESSING MANANGED ASSETS
-    handle getHandle(std::string);
-
     //RELEASING ASSETS
-    bool releaseAllTextures(void);
-    bool releaseTexture(std::string);
-    bool releaseTexture(GLuint);
-    bool releaseAllShaders(void);
-    bool releaseShader(std::string);
-    bool quit(void);
 
     private:
-
     //ASSIGNING AND MANAGING ASSET IDS
     unsigned int newAssetId;
     std::list<unsigned int> usedAssetIds; 
     unsigned int assignAssetId(void);
     
-    //MODELS
-    std::map<unsigned int, ModelAsset> modelAssets;
-    std::map<std::string, unsigned int> modelNameIdMap;
-
-    //RENDER UNITS
-    std::map<unsigned int, RenderUnit> renderUnits;
+    //MESHES
+    std::map<unsigned int, Mesh*> meshAssets;
+    std::map<std::string, unsigned int> meshNameIdMap;
 
     //MATERIALS
-    std::map<unsigned int, MaterialAsset> materialAssets;
+    std::map<unsigned int, Material*> materialAssets;
     std::map<std::string, unsigned int> materialNameIdMap;
 
     //TEXTURES
-    std::map<unsigned int, TextureAsset> textureAssets;
+    std::map<unsigned int, Texture*> textureAssets;
     std::map<std::string, unsigned int> textureNameIdMap;
 
     //SHADERS
-    std::map<GLuint, ShaderAsset> shaderAssets;
+    std::map<GLuint, Shader*> shaderAssets;
     std::map<std::string, unsigned int> shaderNameIdMap;
 
-    //LIGHTS
-    std::map<unsigned int, LightAsset> lightAssets;
-    std::map<std::string, unsigned int> lightNameIdMap;
-
     //TERRAIN
-    std::map<unsigned int, TerrainAsset> terrainAssets;
+    std::map<unsigned int, Terrain*> terrainAssets;
     std::map<std::string, unsigned int> terrainNameIdMap;
-
-    //VERTEX DATA HEAP
-    std::vector<glm::vec4> vertexHeap;
-    std::vector<glm::vec3> textureCoordinateHeap;
-    std::vector<glm::vec3> normalVectorHeap;
-    std::vector<glm::vec3> colorHeap;
-    std::vector<glm::uvec2> blendHeap;
-    std::vector<glm::ivec4> indexHeap;
-    template <class T, class S>
-    unsigned int pushToHeap(T*, S*);
-
-    //INSTRUCTION LIST
-    std::vector<AssetManagerInstruction> instructions;
   };
 
 }

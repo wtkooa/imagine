@@ -18,7 +18,6 @@
 #include <glm/mat4x4.hpp>
 #include <glm/vec3.hpp>
 
-#include "ie_assets.h"
 #include "ie_messages.h"
 #include "ie_nodes.h"
 #include "ie_scenegraph.h"

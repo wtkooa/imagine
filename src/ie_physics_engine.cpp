@@ -20,7 +20,6 @@
 #include <glm/vec3.hpp>
 #include <glm/vec4.hpp>
 
-#include "ie_assets.h"
 #include "ie_config.h"
 #include "ie_const.h"
 #include "ie_controller.h"
