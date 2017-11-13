@@ -20,7 +20,8 @@ namespace ie
   extern int DEFAULT_GL_MAJOR_VERSION;
   extern int DEFAULT_GL_MINOR_VERSION;
   extern std::string HOME_PATH;
-  extern std::string WAVEFRONT_PATH;
+  extern std::string DEFAULT_WAVEFRONT_PATH;
+  extern std::string DEFAULT_GLSL_PATH;
   extern std::string WINDOW_TITLE;
   extern glm::vec4 DEFAULT_CLEAR_COLOR;
   extern unsigned short WINDOW_WIDTH;

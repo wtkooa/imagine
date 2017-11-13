@@ -24,7 +24,7 @@
 #include <SDL2/SDL.h>
 
 #include "ie_asset_manager.h"
-#include "ie_compiler.h"
+#include "ie_glsl.h"
 #include "ie_config.h"
 #include "ie_const.h"
 #include "ie_controller.h"
@@ -53,8 +53,8 @@ bool ie::Engine::init(void)
 {
   initSdl();
   initOpenGl();
-  //initShaders();
   initAssets();
+  initShaders();
   //initVram();
   //initRenderers();
   //initSceneGraph();
@@ -106,23 +106,12 @@ bool ie::Engine::initOpenGl(void)
   glClear(ie::ACTIVEBUFFERS);
 }
 
-/*
 bool ie::Engine::initShaders(void)
 {
-
-  GlslCompiler compiler;
-
-  ie::ShaderProgramPackage statPack = compiler.compile("static",
-                           "src/glsl/", "ie_staticVShader330c.glsl",
-                           "src/glsl/", "ie_staticFShader330c.glsl");
-  am.unwrapPackage(statPack);
-  ie::ShaderProgramPackage terrainPack = compiler.compile("terrain",
-                           "src/glsl/", "ie_terrainVShader330c.glsl",
-                           "src/glsl/", "ie_terrainFShader330c.glsl");
-  am.unwrapPackage(terrainPack);
+  local.load("Static", "ie_staticVShader330c.glsl",
+             "ie_staticFShader330c.glsl");
   return true;
 }
-*/
 
 bool ie::Engine::initAssets(void)
 {

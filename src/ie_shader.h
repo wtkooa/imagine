@@ -29,10 +29,7 @@ namespace ie
   {
     public:
     Shader();
-
-    GLint getUniformLocation(std::string);
-    GLint getUniformArrayLocation(std::string, unsigned int);
-    GLint getUniformArrayStructLocation(std::string, unsigned int, std::string);
+    ~Shader();
 
     void setUniform(GLint, glm::mat4);
     void setUniform(GLint, glm::vec3);
@@ -53,6 +50,11 @@ namespace ie
     void setUniform(std::string, unsigned int, std::string, glm::vec3);
     void setUniform(std::string, unsigned int, std::string, float);
     void setUniform(std::string, unsigned int, std::string, bool);
+
+    GLuint getProgramId(void);
+    GLint getUniformLocation(std::string);
+    GLint getUniformArrayLocation(std::string, unsigned int);
+    GLint getUniformArrayStructLocation(std::string, unsigned int, std::string);
 
     private:
     GLuint programId;

@@ -25,6 +25,16 @@ ie::Shader::Shader()
 }
 
 
+ie::Shader::~Shader()
+{
+  glUseProgram(0);
+  glDeleteProgram(programId);
+}
+
+
+GLuint ie::Shader::getProgramId(void) {return programId;}
+
+
 GLint ie::Shader::getUniformLocation(std::string uniform)
 {
   GLint location = glGetUniformLocation(programId, uniform.c_str());

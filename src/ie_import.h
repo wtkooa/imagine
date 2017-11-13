@@ -14,6 +14,7 @@
 #include <string>
 
 #include "ie_asset_manager.h"
+#include "ie_glsl.h"
 #include "ie_wavefront.h"
 
 namespace ie
@@ -27,11 +28,15 @@ namespace ie
 
     void load(std::string);
     void load(std::string, std::string);
+    void load(std::string, std::string, std::string);
+    void load(std::string, std::string, std::string,
+              std::string, std::string);
 
     private:
     AssetManager* manager;
 
-    ie::WavefrontObjectLoader obj; 
+    WavefrontLoader obj; 
+    GlslLoader glsl; 
   };
 }
 

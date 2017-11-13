@@ -42,6 +42,7 @@ namespace ie
     void load(Mesh*);
     void load(Material*);
     void load(Texture*);
+    void load(Shader*);
 
     Material* getMaterial(std::string);
     Material* getMaterial(unsigned int);

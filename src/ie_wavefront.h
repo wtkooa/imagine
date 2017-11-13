@@ -22,23 +22,23 @@
 namespace ie
 {
 
-  class WavefrontObjectLoader
+  class WavefrontLoader
   {
     public:
-    WavefrontObjectLoader();
+    WavefrontLoader();
 
     void reset(void);
     void quit(void);
 
     void setLoadDestination(AssetManager*);
 
-    void read(std::string);
-    void read(std::string, std::string);
+    void load(std::string);
+    void load(std::string, std::string);
     
     private:
     AssetManager* manager;
-    void readObj(std::string, std::string);
-    void readMtl(std::string, std::string);
+    void loadObj(std::string, std::string);
+    void loadMtl(std::string, std::string);
 
     void mtllib(std::string, std::vector<std::string>);
     void loadObject(void);
@@ -52,7 +52,7 @@ namespace ie
     void face(std::vector<std::string>);
 
     void loadMaterial(void);
-    void newmtl(std::vector<std::string>);
+    void newmtl(std::vector<std::string>, std::string, std::string);
     void shininess(std::vector<std::string>);
     void ambient(std::vector<std::string>);
     void diffuse(std::vector<std::string>);
@@ -67,7 +67,6 @@ namespace ie
     RenderUnit* bufferRenderUnit;
     Material* workingMaterial;
     Texture* workingTexture;
-
   };
 
 }

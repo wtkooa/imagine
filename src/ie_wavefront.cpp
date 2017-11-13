@@ -28,15 +28,13 @@
 #include "ie_texture.h"
 #include "ie_utils.h"
 
-//___|WAVEFRONT OBJ FILE READER|________________________________________________
-
-ie::WavefrontObjectLoader::WavefrontObjectLoader()
+ie::WavefrontLoader::WavefrontLoader()
 {
   reset();
 }
 
 
-void ie::WavefrontObjectLoader::reset(void)
+void ie::WavefrontLoader::reset(void)
 {
   manager = NULL;
   workingMesh = NULL;
@@ -46,24 +44,24 @@ void ie::WavefrontObjectLoader::reset(void)
   workingTexture = NULL;
 }
 
-void ie::WavefrontObjectLoader::setLoadDestination(AssetManager* m)
+void ie::WavefrontLoader::setLoadDestination(AssetManager* m)
 {
   manager = m;
 }
 
 
-void ie::WavefrontObjectLoader::read(std::string filename)
+void ie::WavefrontLoader::load(std::string filename)
 {
-  read(ie::WAVEFRONT_PATH, filename);  
+  load(ie::DEFAULT_WAVEFRONT_PATH, filename);  
 }
 
-void ie::WavefrontObjectLoader::read(std::string filepath, std::string filename)
+void ie::WavefrontLoader::load(std::string filepath, std::string filename)
 {
   std::vector<std::string> tokens = split(filename, ".");  
   std::string extention = tokens.back();
 
-  if (extention == "mtl") {readMtl(filepath, filename);}
-  else if (extention == "obj") {readObj(filepath, filename);}
+  if (extention == "mtl") {loadMtl(filepath, filename);}
+  else if (extention == "obj") {loadObj(filepath, filename);}
   else
   {
     std::cout << "Warning: Unrecognized wavefront file extention (" <<
@@ -71,7 +69,7 @@ void ie::WavefrontObjectLoader::read(std::string filepath, std::string filename)
   }
 }
 
-void ie::WavefrontObjectLoader::readObj(std::string filepath, std::string filename)
+void ie::WavefrontLoader::loadObj(std::string filepath, std::string filename)
 {
   std::ifstream objFile;
   objFile.open((filepath + filename).c_str());
@@ -116,17 +114,17 @@ void ie::WavefrontObjectLoader::readObj(std::string filepath, std::string filena
 }
 
 
-void ie::WavefrontObjectLoader::mtllib(std::string filepath, 
+void ie::WavefrontLoader::mtllib(std::string filepath, 
                                        std::vector<std::string> tokens)
 {
   for (auto file = tokens.begin(); file != tokens.end(); file++)
   {
-    readMtl(filepath, *file);
+    loadMtl(filepath, *file);
   }
 }
 
 
-void ie::WavefrontObjectLoader::loadObject(void)
+void ie::WavefrontLoader::loadObject(void)
 {
   if (workingMesh != NULL)
   {
@@ -144,7 +142,7 @@ void ie::WavefrontObjectLoader::loadObject(void)
 }
 
 
-void ie::WavefrontObjectLoader::loadRenderUnit(void)
+void ie::WavefrontLoader::loadRenderUnit(void)
 {
   if (workingRenderUnit != NULL)
   {
@@ -154,7 +152,7 @@ void ie::WavefrontObjectLoader::loadRenderUnit(void)
 }
 
 
-void ie::WavefrontObjectLoader::procRenderUnitBuffer(void)
+void ie::WavefrontLoader::procRenderUnitBuffer(void)
 {
   unsigned int indexAmount = bufferRenderUnit->getElementArrayAmount();
   for (unsigned int n = 0; n < indexAmount;)
@@ -196,7 +194,7 @@ void ie::WavefrontObjectLoader::procRenderUnitBuffer(void)
 }
 
 
-void ie::WavefrontObjectLoader::object(std::vector<std::string> tokens,
+void ie::WavefrontLoader::object(std::vector<std::string> tokens,
                                        std::string filepath,
                                        std::string filename)
 {
@@ -209,7 +207,7 @@ void ie::WavefrontObjectLoader::object(std::vector<std::string> tokens,
 }
 
 
-void ie::WavefrontObjectLoader::position(std::vector<std::string> tokens)
+void ie::WavefrontLoader::position(std::vector<std::string> tokens)
 {
   bufferRenderUnit->addPositionAttrib(glm::vec3(stof(tokens[0]),
                                                 stof(tokens[1]),
@@ -217,14 +215,14 @@ void ie::WavefrontObjectLoader::position(std::vector<std::string> tokens)
 }
 
 
-void ie::WavefrontObjectLoader::mapping(std::vector<std::string> tokens)
+void ie::WavefrontLoader::mapping(std::vector<std::string> tokens)
 {
   bufferRenderUnit->addMapAttrib(glm::vec2(stof(tokens[0]),
                                            stof(tokens[1])));
 }
 
 
-void ie::WavefrontObjectLoader::normal(std::vector<std::string> tokens)
+void ie::WavefrontLoader::normal(std::vector<std::string> tokens)
 {
   bufferRenderUnit->addUnpackedNormalAttrib(glm::vec3(stof(tokens[0]),
                                               stof(tokens[1]),
@@ -232,7 +230,7 @@ void ie::WavefrontObjectLoader::normal(std::vector<std::string> tokens)
 }
 
 
-void ie::WavefrontObjectLoader::usemtl(std::vector<std::string> tokens)
+void ie::WavefrontLoader::usemtl(std::vector<std::string> tokens)
 {
   loadRenderUnit();
   workingRenderUnit = new RenderUnit(); 
@@ -240,7 +238,7 @@ void ie::WavefrontObjectLoader::usemtl(std::vector<std::string> tokens)
 }
 
 
-void ie::WavefrontObjectLoader::face(std::vector<std::string> tokens)
+void ie::WavefrontLoader::face(std::vector<std::string> tokens)
 {
   unsigned int tokenAmount = tokens.size();
   if (tokenAmount == 4)
@@ -296,7 +294,7 @@ void ie::WavefrontObjectLoader::face(std::vector<std::string> tokens)
 }
 
 
-void ie::WavefrontObjectLoader::readMtl(std::string filepath, std::string filename)
+void ie::WavefrontLoader::loadMtl(std::string filepath, std::string filename)
 {
   std::ifstream mtlFile;
   mtlFile.open((filepath + filename).c_str());
@@ -324,7 +322,7 @@ void ie::WavefrontObjectLoader::readMtl(std::string filepath, std::string filena
       if (isUnusedCommand) {continue;}
       else if (command == "") {continue;} //Blank Line
       else if (command == "#") {continue;} //Comment
-      else if (command == "newmtl") {newmtl(tokens);}
+      else if (command == "newmtl") {newmtl(tokens, filepath, filename);}
       else if (command == "Ns") {shininess(tokens);}
       else if (command == "Ka") {ambient(tokens);}
       else if (command == "Kd") {diffuse(tokens);}
@@ -343,7 +341,7 @@ void ie::WavefrontObjectLoader::readMtl(std::string filepath, std::string filena
 }
 
 
-void ie::WavefrontObjectLoader::loadMaterial(void)
+void ie::WavefrontLoader::loadMaterial(void)
 {
   if (workingMaterial != NULL)
   {
@@ -353,21 +351,25 @@ void ie::WavefrontObjectLoader::loadMaterial(void)
 }
 
 
-void ie::WavefrontObjectLoader::newmtl(std::vector<std::string> tokens)
+void ie::WavefrontLoader::newmtl(std::vector<std::string> tokens,
+                                       std::string filepath,
+                                       std::string filename)
 {
   loadMaterial();
   workingMaterial = new Material();   
   workingMaterial->setName(tokens[0]);
+  workingMaterial->setFilepath(filepath);
+  workingMaterial->setFilename(filename);
 }
 
 
-void ie::WavefrontObjectLoader::shininess(std::vector<std::string> tokens)
+void ie::WavefrontLoader::shininess(std::vector<std::string> tokens)
 {
   workingMaterial->setShininess(stof(tokens[0]));
 }
 
 
-void ie::WavefrontObjectLoader::ambient(std::vector<std::string> tokens)
+void ie::WavefrontLoader::ambient(std::vector<std::string> tokens)
 {
   workingMaterial->setAmbient(glm::vec3(stof(tokens[0]),
                                         stof(tokens[1]),
@@ -375,7 +377,7 @@ void ie::WavefrontObjectLoader::ambient(std::vector<std::string> tokens)
 }
 
 
-void ie::WavefrontObjectLoader::diffuse(std::vector<std::string> tokens)
+void ie::WavefrontLoader::diffuse(std::vector<std::string> tokens)
 {
   workingMaterial->setDiffuse(glm::vec3(stof(tokens[0]),
                                         stof(tokens[1]),
@@ -383,7 +385,7 @@ void ie::WavefrontObjectLoader::diffuse(std::vector<std::string> tokens)
 }
 
 
-void ie::WavefrontObjectLoader::specular(std::vector<std::string> tokens)
+void ie::WavefrontLoader::specular(std::vector<std::string> tokens)
 {
   workingMaterial->setSpecular(glm::vec3(stof(tokens[0]),
                                          stof(tokens[1]),
@@ -391,7 +393,7 @@ void ie::WavefrontObjectLoader::specular(std::vector<std::string> tokens)
 }
 
 
-void ie::WavefrontObjectLoader::emission(std::vector<std::string> tokens)
+void ie::WavefrontLoader::emission(std::vector<std::string> tokens)
 {
   workingMaterial->setEmission(glm::vec3(stof(tokens[0]),
                                          stof(tokens[1]),
@@ -399,7 +401,7 @@ void ie::WavefrontObjectLoader::emission(std::vector<std::string> tokens)
 }
 
 
-ie::Texture* ie::WavefrontObjectLoader::loadTexture(std::vector<std::string> tokens)
+ie::Texture* ie::WavefrontLoader::loadTexture(std::vector<std::string> tokens)
 {
   tokens = split(tokens[0], "/");
   std::string filename = tokens.back();
@@ -424,21 +426,21 @@ ie::Texture* ie::WavefrontObjectLoader::loadTexture(std::vector<std::string> tok
 }
 
 
-void ie::WavefrontObjectLoader::map_Kd(std::vector<std::string> tokens)
+void ie::WavefrontLoader::map_Kd(std::vector<std::string> tokens)
 {
   Texture* texture = loadTexture(tokens);
   workingMaterial->setDiffuseTexture(texture);
 }
 
 
-void ie::WavefrontObjectLoader::map_bump(std::vector<std::string> tokens)
+void ie::WavefrontLoader::map_bump(std::vector<std::string> tokens)
 {
   Texture* texture = loadTexture(tokens);
   workingMaterial->setNormalTexture(texture);
 }
 
 
-void ie::WavefrontObjectLoader::quit(void)
+void ie::WavefrontLoader::quit(void)
 {
   if (workingMesh != NULL) {delete workingMesh;}
   if (workingRenderUnit != NULL) {delete workingRenderUnit;}
@@ -447,305 +449,3 @@ void ie::WavefrontObjectLoader::quit(void)
   if (workingTexture != NULL) {delete workingTexture;}
   reset();
 }
-
-/*
-void ie::WavefrontObjectLoader::read(std::string filepath, std::string filename)
-{
-  bool hasQuads = false;
-  std::vector<std::string> mtllib;
-  std::ifstream objFile;
-  objFile.open((filepath + filename).c_str());
-  if (objFile.is_open())
-  {
-    size_t indexOffset = 0;
-    int noData = -1;
-    std::string line;
-    while (getline(objFile, line))
-    {
-      std::string command = split(line, ' ', 0);
-      int tokenAmount = std::count(line.begin(), line.end(), ' ');
-
-      if (command == "#") {continue;} //Comment
-      else if (command == "") {continue;} //Blank Line
-  
-      else if (command == "mtllib")
-      {
-        for (int n = 1; n <= tokenAmount; n++)  
-        {
-          std::string mtlFilename = split(line, ' ', n);
-          mtllib.push_back(mtlFilename);
-        }
-      }
-
-      else if (command == "usemtl")
-      {
-        std::string mtl = split(line, ' ', 1);
-      }
-
-      else if (command == "s")
-      {
-          std::string smooth = split(line, ' ', 1);
-          if (smooth == "off")
-          {
-          }
-          else
-          {
-          }
-      }
-
-      else if (command == "o")
-      {
-      }
-
-      else if (command == "g")
-      {
-      }
-
-      else if (command == "v")
-      {
-        float x = std::stof(split(line, ' ', 1));
-        float y = std::stof(split(line, ' ', 2));
-        float z = std::stof(split(line, ' ', 3));  
-        float w = 1.0f;
-        if (tokenAmount == 4) {w = std::stof(split(line, ' ', 4));}
-      }
-
-      else if (command == "vt")
-      {
-        float u = std::stof(split(line, ' ', 1));
-        float v = std::stof(split(line, ' ', 2));
-        float w = 0.0f;
-        if (tokenAmount == 3) {w = std::stof(split(line, ' ', 3));}
-      }
-
-      else if (command == "vn")
-      {
-        float x = std::stof(split(line, ' ', 1));
-        float y = std::stof(split(line, ' ', 2));
-        float z = std::stof(split(line, ' ', 3));
-      }
-
-      else if (command == "p")
-      {
-        int verticesInPoint = 1;
-        std::string token = split(line, ' ', 1);
-        int subTokenAmount = std::count(token.begin(), token.end(), '/') + 1;
-        int v = std::stoi(split(token, '/', 0));
-        int t = noData; 
-        int n = noData;
-        int w = verticesInPoint;
-        if (subTokenAmount == 2)
-        {
-          n = std::stoi(split(token, ' ', 1));
-        }
-        else if (subTokenAmount == 3)
-        {
-          std::string tex = split(token, '/', 1);
-          if (tex != "") {t = std::stoi(tex);}
-          n = std::stoi(split(token, '/', 2));
-        }
-        indexOffset++;
-      }
-
-      else if (command == "l")
-      {
-        int verticesInLine = 2;
-        for (int vert = 1; vert <= verticesInLine; vert++)
-        {
-          std::string token = split(line, ' ', vert);  
-          int subTokenAmount = std::count(token.begin(), token.end(), '/') + 1;
-          int v = std::stoi(split(token, '/', 0));
-          int t = noData;
-          int n = noData;
-          int w = verticesInLine;
-          if (subTokenAmount == 2)
-          {
-            n = std::stoi(split(token, ' ', 1));
-          }
-          else if (subTokenAmount == 3)
-          {
-            std::string tex = split(token, '/', 1);
-            if (tex != "") {t = std::stoi(tex);}
-            n = std::stoi(split(token, '/', 2));
-          }
-          indexOffset++;
-        }
-      }
-
-      else if (command == "f")
-      {
-        int verticesInFace = tokenAmount;
-        if (verticesInFace == 4) {hasQuads = true;}
-        for (int vertex = 1; vertex <= verticesInFace; vertex++)
-        {
-          std::string token = split(line, ' ', vertex);
-          int subTokenAmount = std::count(token.begin(), token.end(), '/') + 1;
-          int v = std::stoi(split(token, '/', 0));
-          int t = noData;
-          int n = noData;
-          int w = verticesInFace;
-          if (subTokenAmount == 2)
-          {
-            n = std::stoi(split(token, ' ', 1));
-          }
-          else if (subTokenAmount == 3)
-          {
-            std::string tex = split(token, '/', 1);
-            if (tex != "") {t = std::stoi(tex);}
-            n = std::stoi(split(token, '/', 2));
-          }
-          indexOffset++;
-        } 
-      }
-
-      else
-      {
-        std::cout << "Warning: Unrecognized command '" << command <<
-               "' in OBJ file '" << filename << "'." << std::endl;
-      }
-    }
-  }
-  else
-  {
-    std::cout << "File " << filename <<
-    " failed to open for reading..." << std::endl;
-  } 
-  objFile.close();
-
-  size_t materialAmount = mtllib.size();
-  for (int n = 0; n < materialAmount; n++)
-  {
-    std::string materialFilename = mtllib[n];
-    materialReader.read(filepath, materialFilename);
-  } 
-  if (hasQuads)
-  {
-    std::cout << "Warning: This OBJ file contains QUAD faces." <<
-    " These will not be rendered." << std::endl;
-  }
-}
-
-
-//______________________________________________________________________________
-
-//___|WAVEFRONT MTL FILE READER|________________________________________________
-
-ie::WavefrontMaterialFileReader::WavefrontMaterialFileReader(void) {}
-ie::WavefrontMaterialFileReader::WavefrontMaterialFileReader(std::string filepath,
-                                                             std::string filename)
-{
-  read(filepath, filename);
-}
-
-bool ie::WavefrontMaterialFileReader::clear(void)
-{
-}
-
-void ie::WavefrontMaterialFileReader::read(std::string filepath, std::string filename)
-{
-  std::ifstream mtlFile;
-  mtlFile.open((filepath + filename).c_str());
-  if (mtlFile.is_open())
-  {
-    clear();
-    int materialOffset = -1;
-    std::string line;
-    while (getline(mtlFile, line))
-    {
-      std::string command = split(line, ' ', 0);
-      if (command == "#") {continue;} //Comment
-      else if (command == "") {continue;} //Blank
-
-      else if (command == "newmtl")
-      {
-        materialOffset++;
-        std::string name = split(line, ' ', 1);
-      }
-
-      else if (command == "Ns")
-      {
-      }
-
-      else if (command == "Ka")
-      {
-        float r = std::stof(split(line, ' ', 1));
-        float g = std::stof(split(line, ' ', 2));
-        float b = std::stof(split(line, ' ', 3));
-      }
-
-      else if (command == "Kd")
-      {
-        float r = std::stof(split(line, ' ', 1));
-        float g = std::stof(split(line, ' ', 2));
-        float b = std::stof(split(line, ' ', 3));
-      }
-
-      else if (command == "Ks")
-      {
-        float r = std::stof(split(line, ' ', 1));
-        float g = std::stof(split(line, ' ', 2));
-        float b = std::stof(split(line, ' ', 3));
-      }
-
-      else if (command == "Ke")
-      {
-        float r = std::stof(split(line, ' ', 1));
-        float g = std::stof(split(line, ' ', 2));
-        float b = std::stof(split(line, ' ', 3));
-      }     
-
-      else if (command == "Ni")
-      {
-      }
-
-      else if (command == "d")
-      {
-      }
-
-      else if (command == "Tr")
-      {
-        float Tr = std::stof(split(line, ' ', 1));
-        float d = (Tr - 1) * -1;
-      }
-
-      else if (command == "illum")
-      {
-      }
-      else if (command == "map_Kd")
-      {
-        ie::TexturePackage tex;
-        size_t start = line.find(" ") + 1;
-        tex.filename = line.substr(start);
-        tex.type = ie::TextureType::DIFFUSE_MAP;
-        tex.mipmapped = true;
-        tex.anisotropy = true;
-        tex.repeating = true;
-      }
-
-      else if (command == "map_bump")
-      {
-        ie::TexturePackage tex;
-        size_t start = line.find(" ") + 1;
-        tex.filename = line.substr(start);
-        tex.type = ie::TextureType::BUMP_MAP;
-        tex.mipmapped = true;
-        tex.anisotropy = true;
-        tex.repeating = true;
-      }
-      else
-      {
-        std::cout << "Warning: Unrecognized command '" << command <<
-               "' in MTL file '" << filename << "'." << std::endl;
-      }
-    }
-  }
-  else
-  {
-    std::cout << "File " << filename <<
-    " failed to open for reading..." << std::endl;
-  }
-  mtlFile.close();
-  return filePackage;
-}
-*/
-//______________________________________________________________________________

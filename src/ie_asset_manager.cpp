@@ -27,6 +27,7 @@
 
 #include "ie_material.h"
 #include "ie_mesh.h"
+#include "ie_shader.h"
 #include "ie_texture.h"
 
 ie::AssetManager::AssetManager()
@@ -155,6 +156,27 @@ void ie::AssetManager::load(Texture* texture)
   }
 }
 
+
+//Shaders
+void ie::AssetManager::load(Shader* shader)
+{
+  auto result = shaderNameIdMap.find(shader->getName());
+
+  bool isAvailable = result == shaderNameIdMap.end();
+  
+  if (isAvailable)
+  {
+    shader->setAssetId(assignAssetId()); 
+    shaderAssets[shader->getAssetId()] = shader;
+    shaderNameIdMap[shader->getName()] = shader->getAssetId();
+  }
+  else
+  {
+    std::cout << "Warning: Shader name (" << shader->getName() <<
+    ") already exists." << std::endl; 
+    delete shader;
+  }
+}
 //___|CLEANING UP|______________________________________________________________
 
 void ie::AssetManager::quit(void)
