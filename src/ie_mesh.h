@@ -76,11 +76,14 @@ namespace ie
     unsigned int getElementArrayAmount(void);
     unsigned int getVertexArrayLocation(void);
     unsigned int getVertexArrayAmount(void);
+    unsigned int getAttribAmount(VertexAttribute);
     VboDataFormat getVertexFormat(void);
     void addPositionAttrib(glm::vec3);
-    void addNormalAttrib(glm::vec3);
+    void addUnpackedNormalAttrib(glm::vec3);
+    void addPackedNormalAttrib(unsigned int);
     void addMapAttrib(glm::vec2);
-    void addColorAttrib(glm::vec3);
+    void addUnpackedColorAttrib(glm::vec3);
+    void addPackedColorAttrib(glm::u8vec4);
     void addData1Attrib(glm::u8vec4);
     void addData2Attrib(glm::u8vec4);
     void addIndexAttrib(unsigned int);

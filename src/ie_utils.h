@@ -12,14 +12,19 @@
 //______________________________________________________________________________
 
 #include <string>
+#include <vector>
 
 #include <glm/gtc/type_precision.hpp>
 #include <glm/vec3.hpp>
 
 namespace ie
 {
+  std::vector<std::string> split(std::string, std::string);
+  std::string split(std::string, std::string, unsigned int);
 
-  std::string split(std::string, char, size_t);
+  std::string concatenateTokens(std::vector<std::string>);
+
+  std::vector<std::string> eraseTokens(std::vector<std::string>, std::string);
 
   std::string removeChar(std::string, char);
 

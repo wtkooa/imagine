@@ -39,7 +39,14 @@ namespace ie
     public:
     AssetManager();
 
-    //RELEASING ASSETS
+    void load(Mesh*);
+    void load(Material*);
+    void load(Texture*);
+
+    Material* getMaterial(std::string);
+    Material* getMaterial(unsigned int);
+
+    void quit(void);
 
     private:
     //ASSIGNING AND MANAGING ASSET IDS
@@ -60,7 +67,7 @@ namespace ie
     std::map<std::string, unsigned int> textureNameIdMap;
 
     //SHADERS
-    std::map<GLuint, Shader*> shaderAssets;
+    std::map<unsigned int, Shader*> shaderAssets;
     std::map<std::string, unsigned int> shaderNameIdMap;
 
     //TERRAIN

@@ -29,6 +29,7 @@ int ie::DEFAULT_GL_MAJOR_VERSION = 4;
 int ie::DEFAULT_GL_MINOR_VERSION = 5;
 char* homePath = SDL_GetBasePath();
 std::string ie::HOME_PATH = std::string(homePath); 
+std::string ie::WAVEFRONT_PATH = ie::HOME_PATH + "data/wavefront/";
 std::string ie::WINDOW_TITLE = "Imagine Engine";
 unsigned short ie::WINDOW_WIDTH = 800;
 unsigned short ie::WINDOW_HEIGHT = 600;
@@ -52,6 +53,7 @@ const short ie::MAX_TERRAIN_MATERIALS = 8;
 const float ie::TEXTURE_MIPMAP_LOD_BIAS = -1.0f;
 const float ie::TEXTURE_ANISO_LOD_BIAS = 0.0f;
 const float ie::TEXTURE_ANISOTROPY_LEVEL = 4.0f;
+const float ie::DEFAULT_OBJ_SENSITIVITY = 0.0001f;
 
 
 bool checkForExtension(std::string extension)

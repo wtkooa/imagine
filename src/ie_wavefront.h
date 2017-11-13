@@ -14,35 +14,60 @@
 #include <string>
 #include <vector>
 
-#include "ie_packages.h"
+#include "ie_asset_manager.h"
+#include "ie_material.h"
+#include "ie_mesh.h"
+#include "ie_texture.h"
 
 namespace ie
 {
 
-  class WavefrontMaterialFileReader
+  class WavefrontObjectLoader
   {
     public:
-    WavefrontMaterialFileReader();
-    WavefrontMaterialFileReader(std::string, std::string);
-    WavefrontMaterialFilePackage read(std::string, std::string);
-    WavefrontMaterialFilePackage wrapFilePackage(void);
-    private:
-    bool clear(void);
-    WavefrontMaterialFilePackage filePackage;
-  };
+    WavefrontObjectLoader();
 
-  class WavefrontObjectFileReader
-  {
-    public:
-    WavefrontObjectFileReader();
-    WavefrontObjectFileReader(std::string, std::string);
-    WavefrontObjectFilePackage read(std::string, std::string);
-    WavefrontObjectFilePackage wrapFilePackage(void);
+    void reset(void);
+    void quit(void);
+
+    void setLoadDestination(AssetManager*);
+
+    void read(std::string);
+    void read(std::string, std::string);
+    
     private:
-    bool hasQuads;
-    bool clear(void);
-    WavefrontObjectFilePackage filePackage;
-    WavefrontMaterialFileReader materialReader;
+    AssetManager* manager;
+    void readObj(std::string, std::string);
+    void readMtl(std::string, std::string);
+
+    void mtllib(std::string, std::vector<std::string>);
+    void loadObject(void);
+    void loadRenderUnit(void);
+    void procRenderUnitBuffer(void);
+    void object(std::vector<std::string>, std::string, std::string);
+    void position(std::vector<std::string>);
+    void mapping(std::vector<std::string>);
+    void normal(std::vector<std::string>);
+    void usemtl(std::vector<std::string>);
+    void face(std::vector<std::string>);
+
+    void loadMaterial(void);
+    void newmtl(std::vector<std::string>);
+    void shininess(std::vector<std::string>);
+    void ambient(std::vector<std::string>);
+    void diffuse(std::vector<std::string>);
+    void specular(std::vector<std::string>);
+    void emission(std::vector<std::string>);
+    Texture* loadTexture(std::vector<std::string>);
+    void map_Kd(std::vector<std::string>);
+    void map_bump(std::vector<std::string>);
+
+    Mesh* workingMesh;
+    RenderUnit* workingRenderUnit;
+    RenderUnit* bufferRenderUnit;
+    Material* workingMaterial;
+    Texture* workingTexture;
+
   };
 
 }

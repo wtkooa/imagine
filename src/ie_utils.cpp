@@ -13,25 +13,48 @@
 #include <algorithm>
 #include <bitset>
 #include <string>
+#include <vector>
 
 #include <glm/glm.hpp>
 
 
-std::string ie::split(std::string str, char delim, size_t tokenNum)
+std::vector<std::string> ie::split(std::string str, std::string delim)
 {
-  std::string subStr; 
-  size_t foundToken = -1;
-  size_t findLen = 0;
-  size_t findStart = 0; 
-  do
+  size_t position = 0;
+  std::vector<std::string> tokens;
+  while(position != std::string::npos)
   {
-    findLen = str.find(delim, findStart) - findStart;
-    subStr = str.substr(findStart, findLen);
-    findStart = str.find(delim, findStart) + 1; 
-    foundToken++;
+    position = str.find(delim);
+    tokens.push_back(str.substr(0, position));
+    str.erase(0, position + delim.length());
   }
-  while (foundToken < tokenNum);
-  return subStr;
+  return tokens;
+}
+std::string ie::split(std::string str, std::string delim, unsigned int index)
+{
+  std::vector<std::string> tokens = split(str, delim);
+  return tokens[index];
+}
+
+
+std::string ie::concatenateTokens(std::vector<std::string> tokens)
+{
+  std::string newString;
+  for (auto it = tokens.begin(); it != tokens.end(); it++)
+  {
+    newString += *it;
+  }
+  return newString;
+}
+
+std::vector<std::string> ie::eraseTokens(std::vector<std::string> tokens,
+                                         std::string delim)
+{
+  for (auto it = tokens.begin(); it != tokens.end(); it++)
+  {
+    if (*it == delim) {tokens.erase(it);}
+  }
+  return tokens;
 }
 
 

@@ -43,3 +43,5 @@ bool ie::Texture::getAnisotropy(void) {return anisotropy;}
 
 void ie::Texture::setRepeating(bool r) {repeating = r;}
 bool ie::Texture::getRepeating(void) {return repeating;}
+
+unsigned int ie::Texture::getGlId(void) {return glId;}

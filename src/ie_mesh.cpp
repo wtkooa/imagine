@@ -10,6 +10,7 @@
 
 #include "ie_mesh.h"
 
+#include <iostream>
 #include <map>
 #include <set>
 
@@ -137,9 +138,12 @@ unsigned int ie::RenderUnit::getElementArrayAmount(void)
 }
 unsigned int ie::RenderUnit::getVertexArrayAmount(void)
 {
-  bool usesPosition = vertexFormat == P_FORMAT || vertexFormat == PN_FORMAT ||
-                      vertexFormat == PMN_FORMAT || vertexFormat == PMNCD_FORMAT ||
-                      vertexFormat == PMNCDD_FORMAT;
+  detectVertexFormat();
+  bool usesPosition = (vertexFormat == P_FORMAT) ||
+                      (vertexFormat == PN_FORMAT) ||
+                      (vertexFormat == PMN_FORMAT) ||
+                      (vertexFormat == PMNCD_FORMAT) ||
+                      (vertexFormat == PMNCDD_FORMAT);
   if (usesPosition)
   {
     return positions.size();
@@ -187,9 +191,13 @@ glm::vec3 ie::RenderUnit::getPositionAttrib(unsigned int vertex)
 }
 
 
-void ie::RenderUnit::addNormalAttrib(glm::vec3 n)
+void ie::RenderUnit::addUnpackedNormalAttrib(glm::vec3 n)
 {
   unsigned int normal = packNormalAttrib(n);
+  normals.push_back(normal);
+}
+void ie::RenderUnit::addPackedNormalAttrib(unsigned int normal)
+{
   normals.push_back(normal);
 }
 unsigned int ie::RenderUnit::getPackedNormalAttrib(unsigned int vertex)
@@ -212,9 +220,13 @@ glm::vec2 ie::RenderUnit::getMapAttrib(unsigned int vertex)
 }
 
 
-void ie::RenderUnit::addColorAttrib(glm::vec3 color)
+void ie::RenderUnit::addUnpackedColorAttrib(glm::vec3 color)
 {
   colors.push_back(packColorAttrib(color));
+}
+void ie::RenderUnit::addPackedColorAttrib(glm::u8vec4 color)
+{
+  colors.push_back(color);
 }
 glm::u8vec4 ie::RenderUnit::getPackedColorAttrib(unsigned int vertex)
 {
@@ -289,6 +301,39 @@ void ie::RenderUnit::clearAttrib(VertexAttribute attrib)
 }
 
 
+unsigned int ie::RenderUnit::getAttribAmount(VertexAttribute attrib)
+{
+  if (attrib == E_ATTRIB)
+  {
+    return indices.size();
+  }
+  else if (attrib == P_ATTRIB)
+  {
+    return positions.size();
+  }
+  else if (attrib == N_ATTRIB)
+  {
+    return normals.size();
+  }
+  else if (attrib == M_ATTRIB)
+  {
+    return maps.size();
+  }
+  else if (attrib == C_ATTRIB)
+  {
+    return colors.size();
+  }
+  else if (attrib == D1_ATTRIB)
+  {
+    return data1.size();
+  }
+  else if (attrib == D2_ATTRIB)
+  {
+    return data2.size();
+  }
+}
+
+
 void ie::RenderUnit::clearAllAttribs(void)
 {
     indices.clear();
@@ -347,11 +392,37 @@ void ie::RenderUnit::removeDuplicates(float sensitivity)
       bool noDuplicateFound = true; 
       for (auto i = (result.first->second).begin(); i != (result.first->second).end(); i++)
       {
-        bool isVertexDuplicate = getPackedNormalAttrib((*i)) == getPackedNormalAttrib(vertexArrayIndex) &&
-                                 getMapAttrib((*i)) == getMapAttrib(vertexArrayIndex) &&
-                                 getPackedColorAttrib((*i)) == getPackedColorAttrib(vertexArrayIndex) &&
-                                 getData1Attrib((*i)) == getData1Attrib(vertexArrayIndex) &&
-                                 getData2Attrib((*i)) == getData2Attrib(vertexArrayIndex);
+
+        bool isNormalDuplicate;
+        bool isMapDuplicate; 
+        bool isColorDuplicate;
+        bool isData1Duplicate;
+        bool isData2Duplicate; 
+        if (normals.size() > 0)
+        {
+          isNormalDuplicate = getPackedNormalAttrib((*i)) == getPackedNormalAttrib(vertexArrayIndex);
+        } else {isNormalDuplicate = true;}
+        if (maps.size() > 0)
+        {
+          isMapDuplicate = getMapAttrib((*i)) == getMapAttrib(vertexArrayIndex);
+        } else {isMapDuplicate = true;}
+        if (colors.size() > 0)
+        {
+          isColorDuplicate = getPackedColorAttrib((*i)) == getPackedColorAttrib(vertexArrayIndex);
+        } else {isColorDuplicate = true;}
+        if (data1.size() > 0)
+        {
+          isData1Duplicate = getData1Attrib((*i)) == getData1Attrib(vertexArrayIndex);
+        } else {isData1Duplicate = true;}
+        if (data2.size() > 0)
+        {
+          isData2Duplicate = getData2Attrib((*i)) == getData2Attrib(vertexArrayIndex);
+        } else {isData2Duplicate = true;}
+
+        bool isVertexDuplicate = isNormalDuplicate && isMapDuplicate &&
+                                 isColorDuplicate && isData1Duplicate &&
+                                 isData2Duplicate;
+
         if (isVertexDuplicate)
         {
           unsigned int newTarget = (*i);  

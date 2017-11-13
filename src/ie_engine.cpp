@@ -28,6 +28,7 @@
 #include "ie_config.h"
 #include "ie_const.h"
 #include "ie_controller.h"
+#include "ie_import.h"
 #include "ie_messages.h"
 //#include "ie_nodes.h"
 //#include "ie_physics_engine.h"
@@ -125,6 +126,11 @@ bool ie::Engine::initShaders(void)
 
 bool ie::Engine::initAssets(void)
 {
+  local.setLoadDestination(&am);
+
+  local.load("TreasureChest.obj");
+  local.load("Cursor.obj");
+  local.load("Face.obj");
 
   return true;
 }
@@ -390,7 +396,8 @@ void ie::Engine::handleResize(int width, int height)
 bool ie::Engine::cleanup(void)
 {
   //vram.quit();
-  //am.quit();
+  local.quit();
+  am.quit();
   SDL_Quit();
   return true;
 }

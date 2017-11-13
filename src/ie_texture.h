@@ -32,6 +32,7 @@ namespace ie
     bool getMipmapped(void);
     bool getAnisotropy(void);
     bool getRepeating(void);
+    unsigned int getGlId(void);
 
     virtual void reset(void);
 
