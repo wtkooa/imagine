@@ -19,10 +19,10 @@
 #include <glm/vec2.hpp>
 #include <glm/vec3.hpp>
 
+#include "ie_enum.h"
 #include "ie_config.h"
 #include "ie_const.h"
 #include "ie_messages.h"
-#include "ie_vram.h"
 
 //___|SCENEGRAPH BASE NODE|_____________________________________________________
 
@@ -42,7 +42,7 @@ float ie::GraphNode::aspectRatio = ie::ASPECT_RATIO;
 ie::GraphNode::GraphNode()
 {
   parentNode = NULL;
-  type = NONE_NODE;
+  type = IE_NONE_NODE;
   mtwMatrix = glm::mat4();
 }
 
@@ -154,7 +154,7 @@ void ie::EntityNode::update(void)
 
 ie::TerrainNode::TerrainNode(std::string asset, std::string n)
 {
-  type = TERRAIN_NODE;
+  type = IE_TERRAIN_NODE;
   name = n;
   assetId = (*terrainNameIdMap)[asset];
   usesGlobalAmbient = true;
@@ -207,7 +207,7 @@ void ie::TerrainNode::render(void)
 
 ie::StaticNode::StaticNode(std::string asset, std::string n)
 {
-  type = STATIC_NODE;
+  type = IE_STATIC_NODE;
   name = n;
   assetId = (*modelNameIdMap)[asset];
   usesGlobalAmbient = true;
@@ -242,7 +242,7 @@ void ie::StaticNode::render(void)
 
 ie::PlayerNode::PlayerNode()
 {
-  type = PLAYER_NODE;
+  type = IE_PLAYER_NODE;
   upVector = ie::UP_VECTOR;
   moveSpeed = ie::DEFAULT_PLAYER_MOVESPEED;
   turnSpeed = ie::DEFAULT_PLAYER_TURNSPEED;
@@ -295,7 +295,7 @@ void ie::PlayerNode::render(void)
 
 ie::CameraNode::CameraNode()
 {
-  type = CAMERA_NODE;
+  type = IE_CAMERA_NODE;
   upVector = ie::UP_VECTOR;
   lookSpeed = ie::DEFAULT_CAMERA_LOOKSPEED;
   firstPersonOffset = glm::vec3(0.0f, 2.0f, 0.0f);
@@ -382,20 +382,20 @@ void ie::RenderTreeNode::receiveMessage(ie::AssetStatusMessage msg)
 
 void ie::SortTypeNode::sort(NodePacket packet)
 {
-  if (packet.type == TERRAIN_NODE)
+  if (packet.type == IE_TERRAIN_NODE)
   {
     packet.asset.ta = &(*terrains)[packet.node.terrain->assetId];
     toTerrain->sort(packet);
   }
-  else if (packet.type == STATIC_NODE)
+  else if (packet.type == IE_STATIC_NODE)
   {
     toStatic->sort(packet);
   }
-  else if (packet.type == PLAYER_NODE)
+  else if (packet.type == IE_PLAYER_NODE)
   {
     toPlayer->sort(packet);
   }
-  else if (packet.type == CAMERA_NODE)
+  else if (packet.type == IE_CAMERA_NODE)
   {
     toCamera->sort(packet);
   }
@@ -411,11 +411,11 @@ void ie::SortStaticTypeNode::sort(NodePacket packet)
     NodePacket np;
     np.node.stat = packet.node.stat;
     np.asset.ru = ru;
-    if (ru->dataFormat == PN_FORMAT)
+    if (ru->dataFormat == IE_PN_FORMAT)
     {
       toMaterialed->sort(np);
     }
-    else if (ru->dataFormat == PMN_FORMAT)
+    else if (ru->dataFormat == IE_PMN_FORMAT)
     {
       toTextured->sort(np);
     }
@@ -439,7 +439,7 @@ void ie::SortCullFaceNode::sort(NodePacket packet)
 ie::RenderBucket::RenderBucket()
 {
   nextBucket = NULL;
-  type = NONE_RENDER;
+  type = IE_NONE_RENDER;
 }
 
 
@@ -479,15 +479,15 @@ std::vector<ie::NodePacket>* ie::RenderBucket::getPackets(void)
 
 void ie::PhysicsTreeNode::sort(ie::NodePacket packet)
 {
-  if (packet.type == TERRAIN_NODE)
+  if (packet.type == IE_TERRAIN_NODE)
   {
     toTerrain->sort(packet);
   }
-  else if (packet.type == PLAYER_NODE)
+  else if (packet.type == IE_PLAYER_NODE)
   {
     toPlayer->sort(packet);
   }
-  else if (packet.type == STATIC_NODE)
+  else if (packet.type == IE_STATIC_NODE)
   {
     toStatic->sort(packet);
   }

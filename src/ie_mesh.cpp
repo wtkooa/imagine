@@ -19,7 +19,7 @@
 #include <glm/vec2.hpp>
 #include <glm/vec3.hpp>
 
-#include "ie_vram.h"
+#include "ie_enum.h"
 #include "ie_utils.h"
 
 //___|MESH|_____________________________________________________________________
@@ -99,7 +99,7 @@ void ie::RenderUnit::factoryReset(void)
   material = NULL;
   elementArrayLocation = 0;
   vertexArrayLocation = 0;
-  vertexFormat = NULL_FORMAT;
+  vertexFormat = IE_NULL_FORMAT;
   clearAllAttribs();
 }
 
@@ -139,11 +139,11 @@ unsigned int ie::RenderUnit::getElementArrayAmount(void)
 unsigned int ie::RenderUnit::getVertexArrayAmount(void)
 {
   detectVertexFormat();
-  bool usesPosition = (vertexFormat == P_FORMAT) ||
-                      (vertexFormat == PN_FORMAT) ||
-                      (vertexFormat == PMN_FORMAT) ||
-                      (vertexFormat == PMNCD_FORMAT) ||
-                      (vertexFormat == PMNCDD_FORMAT);
+  bool usesPosition = (vertexFormat == IE_P_FORMAT) ||
+                      (vertexFormat == IE_PN_FORMAT) ||
+                      (vertexFormat == IE_PMN_FORMAT) ||
+                      (vertexFormat == IE_PMNCD_FORMAT) ||
+                      (vertexFormat == IE_PMNCDD_FORMAT);
   if (usesPosition)
   {
     return positions.size();
@@ -151,7 +151,7 @@ unsigned int ie::RenderUnit::getVertexArrayAmount(void)
 }
 
 
-void ie::RenderUnit::setVertexFormat(VboDataFormat format)
+void ie::RenderUnit::setVertexFormat(IEenum format)
 {
   vertexFormat = format;
 }
@@ -169,13 +169,13 @@ void ie::RenderUnit::detectVertexFormat(void)
   bool PMN = (p && m && n) && !(c || d1 || d2);
   bool PMNCD = (p && m && n && c && d1) && !d2; 
   bool PMNCDD = p && m && n && c && d1 && d2;
-  if (P) {vertexFormat = P_FORMAT;}
-  else if (PN) {vertexFormat = PN_FORMAT;} 
-  else if (PMN) {vertexFormat = PMN_FORMAT;} 
-  else if (PMNCD) {vertexFormat = PMNCD_FORMAT;} 
-  else if (PMNCDD) {vertexFormat = PMNCDD_FORMAT;} 
+  if (P) {vertexFormat = IE_P_FORMAT;}
+  else if (PN) {vertexFormat = IE_PN_FORMAT;} 
+  else if (PMN) {vertexFormat = IE_PMN_FORMAT;} 
+  else if (PMNCD) {vertexFormat = IE_PMNCD_FORMAT;} 
+  else if (PMNCDD) {vertexFormat = IE_PMNCDD_FORMAT;} 
 }
-ie::VboDataFormat ie::RenderUnit::getVertexFormat(void)
+ie::IEenum ie::RenderUnit::getVertexFormat(void)
 {
   return vertexFormat;
 }
@@ -268,66 +268,66 @@ unsigned int ie::RenderUnit::getIndexAttrib(unsigned int index)
 }
 
 
-void ie::RenderUnit::clearAttrib(VertexAttribute attrib)
+void ie::RenderUnit::clearAttrib(IEenum attrib)
 {
-  if (attrib == E_ATTRIB)
+  if (attrib == IE_ELEMENT_ATTRIB)
   {
     indices.clear();
   }
-  else if (attrib == P_ATTRIB)
+  else if (attrib == IE_POSITION_ATTRIB)
   {
     positions.clear();
   }
-  else if (attrib == N_ATTRIB)
+  else if (attrib == IE_NORMAL_ATTRIB)
   {
     normals.clear();
   }
-  else if (attrib == M_ATTRIB)
+  else if (attrib == IE_MATERIAL_ATTRIB)
   {
     maps.clear();
   }
-  else if (attrib == C_ATTRIB)
+  else if (attrib == IE_COLOR_ATTRIB)
   {
     colors.clear();
   }
-  else if (attrib == D1_ATTRIB)
+  else if (attrib == IE_DATA1_ATTRIB)
   {
     data1.clear();
   }
-  else if (attrib == D2_ATTRIB)
+  else if (attrib == IE_DATA2_ATTRIB)
   {
     data2.clear();
   }
 }
 
 
-unsigned int ie::RenderUnit::getAttribAmount(VertexAttribute attrib)
+unsigned int ie::RenderUnit::getAttribAmount(IEenum attrib)
 {
-  if (attrib == E_ATTRIB)
+  if (attrib == IE_ELEMENT_ATTRIB)
   {
     return indices.size();
   }
-  else if (attrib == P_ATTRIB)
+  else if (attrib == IE_POSITION_ATTRIB)
   {
     return positions.size();
   }
-  else if (attrib == N_ATTRIB)
+  else if (attrib == IE_NORMAL_ATTRIB)
   {
     return normals.size();
   }
-  else if (attrib == M_ATTRIB)
+  else if (attrib == IE_MATERIAL_ATTRIB)
   {
     return maps.size();
   }
-  else if (attrib == C_ATTRIB)
+  else if (attrib == IE_COLOR_ATTRIB)
   {
     return colors.size();
   }
-  else if (attrib == D1_ATTRIB)
+  else if (attrib == IE_DATA1_ATTRIB)
   {
     return data1.size();
   }
-  else if (attrib == D2_ATTRIB)
+  else if (attrib == IE_DATA2_ATTRIB)
   {
     return data2.size();
   }

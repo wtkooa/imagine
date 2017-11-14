@@ -28,7 +28,7 @@
 #include "ie_mesh.h"
 #include "ie_messages.h"
 #include "ie_shader.h"
-#include "ie_terrain.h"
+//#include "ie_terrain.h"
 #include "ie_texture.h"
 
 namespace ie
@@ -72,8 +72,8 @@ namespace ie
     std::map<std::string, unsigned int> shaderNameIdMap;
 
     //TERRAIN
-    std::map<unsigned int, Terrain*> terrainAssets;
-    std::map<std::string, unsigned int> terrainNameIdMap;
+    //std::map<unsigned int, Terrain*> terrainAssets;
+    //std::map<std::string, unsigned int> terrainNameIdMap;
   };
 
 }

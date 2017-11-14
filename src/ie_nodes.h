@@ -18,6 +18,7 @@
 #include <glm/vec2.hpp>
 #include <glm/vec3.hpp>
 
+#include "ie_enum.h"
 #include "ie_messages.h"
 
 namespace ie
@@ -32,10 +33,6 @@ namespace ie
   class PlayerNode;
   class CameraNode;
 
-
-  enum NodeType{NONE_NODE, PLAYER_NODE, CAMERA_NODE, STATIC_NODE,
-                TERRAIN_NODE, WATER_NODE};
-  
 
   union NodePointer
   {
@@ -56,7 +53,7 @@ namespace ie
   class NodePacket
   {
     public:
-    NodeType type;
+    IEenum type;
     NodePointer node;
     AssetPointer asset;
   };
@@ -81,7 +78,7 @@ namespace ie
 
     void receiveMessage(ie::AssetStatusMessage);
 
-    NodeType type;
+    IEenum type;
     std::vector<GraphNode*> children;
     GraphNode* parentNode;
     glm::mat4 mtwMatrix;
@@ -261,15 +258,11 @@ namespace ie
 
 
   //RENDER TREE BUCKETS
-  enum RenderBucketType{NONE_RENDER, PLAYER_RENDER, CAMERA_RENDER,
-                        MATERIAL_RENDER, TEXTURE_RENDER, TERRAIN_RENDER};
-  enum ShaderType{NONE_SHADER, STATIC_SHADER, TERRAIN_SHADER};
-
   class RenderState
   {
     public:
     RenderState();
-    ShaderType shader;
+    IEenum shader;
     bool cullFace;
   };
 
@@ -282,14 +275,14 @@ namespace ie
     virtual void sort(NodePacket);
     void clear();
 
-    RenderBucketType type;
+    IEenum type;
 
     RenderBucket* getNextBucket(void);
     void setRenderState(RenderState);
     RenderState* getRenderState(void);
     std::vector<NodePacket>* getPackets(void);
 
-    RenderState state;
+    IEenum state;
     std::vector<NodePacket> packets;
     RenderBucket* nextBucket;
   };
@@ -305,7 +298,7 @@ namespace ie
     PhysicsBucket* getNextBucket(void);
     void clear(void);
 
-    NodeType type;
+    IEenum type;
     std::vector<NodePacket> packets;
     PhysicsBucket* nextBucket;
   };

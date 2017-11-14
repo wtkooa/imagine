@@ -18,6 +18,7 @@
 #include <glm/mat4x4.hpp>
 #include <glm/vec3.hpp>
 
+#include "ie_enum.h"
 #include "ie_messages.h"
 #include "ie_nodes.h"
 #include "ie_scenegraph.h"
@@ -43,7 +44,7 @@ namespace ie
     void receiveMessage(GraphStatusMessage);
 
     //SETTERS AND GETTERS
-    void setShader(std::string, ShaderType);
+    void setShader(std::string, IEenum);
 
     private:
     //DATA FROM ASSET MANAGER

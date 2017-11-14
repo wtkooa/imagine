@@ -17,6 +17,8 @@
 #include <glm/vec2.hpp>
 #include <glm/vec3.hpp>
 
+#include "ie_enum.h"
+
 namespace ie
 {
 
@@ -43,6 +45,7 @@ namespace ie
     glm::vec3 normal;
   };
 
+
   class PMNCBFormat
   {
     public:
@@ -64,21 +67,16 @@ namespace ie
     void release(void);
   };
 
-  enum VertexAttribute {NULL_ATTRIB, E_ATTRIB, P_ATTRIB, N_ATTRIB,
-                        M_ATTRIB, C_ATTRIB, D1_ATTRIB, D2_ATTRIB};
-
-  enum VboDataFormat {NULL_FORMAT, P_FORMAT, PN_FORMAT,
-                      PMN_FORMAT, PMNCD_FORMAT, PMNCDD_FORMAT};
-
 
   class StaticRenderUnitLocation 
   {
     public:
     short renderUnit;
-    VboDataFormat format;
+    IEenum format;
     unsigned int location;
     unsigned int indexAmount;
   };
+
 
   class TerrainRenderUnitLocation
   {

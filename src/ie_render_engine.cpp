@@ -19,6 +19,7 @@
 #include <glm/vec2.hpp>
 #include <glm/vec3.hpp>
 
+#include "ie_enum.h"
 #include "ie_const.h"
 #include "ie_nodes.h"
 #include "ie_scenegraph.h"
@@ -68,11 +69,11 @@ void ie::RenderEngine::render(void)
   {
     std::vector<NodePacket>* packets = currentBucket->getPackets();
 
-    if (currentBucket->type == PLAYER_RENDER)
+    if (currentBucket->type == IE_PLAYER_RENDER)
     {
       //Placeholder
     }
-    else if (currentBucket->type == CAMERA_RENDER)
+    else if (currentBucket->type == IE_CAMERA_RENDER)
     {
       for (auto it = packets->begin(); it != packets->end(); it++)
       {
@@ -86,15 +87,15 @@ void ie::RenderEngine::render(void)
       setState(state);
     }
 
-    if (currentBucket->type == MATERIAL_RENDER)
+    if (currentBucket->type == IE_MATERIAL_RENDER)
     {
       renderMaterialedEntities(packets);
     }
-    else if (currentBucket->type == TEXTURE_RENDER)
+    else if (currentBucket->type == IE_TEXTURE_RENDER)
     {
       renderTexturedEntities(packets);
     }
-    else if (currentBucket->type == TERRAIN_RENDER)
+    else if (currentBucket->type == IE_TERRAIN_RENDER)
     {
       renderTerrainEntities(packets);
     }
@@ -105,11 +106,11 @@ void ie::RenderEngine::render(void)
 
 void ie::RenderEngine::setState(RenderState* state)
 {
-  if (state->shader == STATIC_SHADER)
+  if (state->shader == IE_STATIC_SHADER)
   {
     currentShader = staticShader;
   }
-  else if (state->shader == TERRAIN_SHADER)
+  else if (state->shader == IE_TERRAIN_SHADER)
   {
     currentShader = terrainShader;
   }

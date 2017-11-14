@@ -23,6 +23,7 @@
 
 #include "ie_asset_manager.h"
 #include "ie_config.h"
+#include "ie_enum.h"
 #include "ie_material.h"
 #include "ie_mesh.h"
 #include "ie_texture.h"
@@ -190,7 +191,7 @@ void ie::WavefrontLoader::procRenderUnitBuffer(void)
       workingRenderUnit->addIndexAttrib(workingRenderUnit->getVertexArrayAmount() - 1);
     }
   }
-  bufferRenderUnit->clearAttrib(E_ATTRIB);
+  bufferRenderUnit->clearAttrib(IE_ELEMENT_ATTRIB);
 }
 
 

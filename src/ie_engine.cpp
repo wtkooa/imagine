@@ -34,7 +34,7 @@
 //#include "ie_physics_engine.h"
 //#include "ie_render_engine.h"
 //#include "ie_scenegraph.h"
-#include "ie_terrain.h"
+//#include "ie_terrain.h"
 #include "ie_time.h"
 #include "ie_utils.h"
 //#include "ie_vram.h"

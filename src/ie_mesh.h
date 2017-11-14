@@ -24,7 +24,7 @@
 
 #include "ie_asset.h"
 #include "ie_material.h"
-#include "ie_vram.h"
+#include "ie_enum.h"
 
 namespace ie
 {
@@ -68,7 +68,7 @@ namespace ie
     void setMaterial(Material*);
     void setElementArrayLocation(unsigned int);
     void setVertexArrayLocation(unsigned int);
-    void setVertexFormat(VboDataFormat);
+    void setVertexFormat(IEenum);
     void detectVertexFormat(void);
     Mesh* getParentMesh(void);
     Material* getMaterial(void);
@@ -76,8 +76,8 @@ namespace ie
     unsigned int getElementArrayAmount(void);
     unsigned int getVertexArrayLocation(void);
     unsigned int getVertexArrayAmount(void);
-    unsigned int getAttribAmount(VertexAttribute);
-    VboDataFormat getVertexFormat(void);
+    unsigned int getAttribAmount(IEenum);
+    IEenum getVertexFormat(void);
     void addPositionAttrib(glm::vec3);
     void addUnpackedNormalAttrib(glm::vec3);
     void addPackedNormalAttrib(unsigned int);
@@ -97,7 +97,7 @@ namespace ie
     glm::u8vec4 getData2Attrib(unsigned int);
     unsigned int getIndexAttrib(unsigned int);
 
-    void clearAttrib(VertexAttribute);
+    void clearAttrib(IEenum);
     void clearAllAttribs(void);
 
     void removeDuplicates(float);
@@ -107,7 +107,7 @@ namespace ie
     Material* material;
     unsigned int elementArrayLocation;
     unsigned int vertexArrayLocation;
-    VboDataFormat vertexFormat;
+    IEenum vertexFormat;
 
     std::vector<glm::vec3> positions;
     std::vector<unsigned int> normals;

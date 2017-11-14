@@ -59,15 +59,15 @@ void ie::PhysicsEngine::update(void)
   PhysicsBucket* currentBucket = firstBucket;
   while (currentBucket != NULL)
   {
-    if (currentBucket->type == TERRAIN_NODE)
+    if (currentBucket->type == IE_TERRAIN_NODE)
     {
       updateTerrains(currentBucket);
     }
-    else if (currentBucket->type == PLAYER_NODE)
+    else if (currentBucket->type == IE_PLAYER_NODE)
     {
       updatePlayers(currentBucket);
     }
-    else if (currentBucket->type == STATIC_NODE)
+    else if (currentBucket->type == IE_STATIC_NODE)
     {
       //std::cout << "static"  << std::endl;
     }
