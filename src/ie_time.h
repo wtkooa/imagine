@@ -11,8 +11,6 @@
 // Copyright (c) 2017 David E Lipps
 //______________________________________________________________________________
 
-#include "ie_messages.h"
-
 namespace ie
 {
 
@@ -20,10 +18,12 @@ namespace ie
   {
     public:
     FrameClock();
-    void measure(void);
+
+    void update(void);
+
     float getFrameDelta(void);
     float getFps(void);
-    ie::TimeStatusMessage sendTimeStatusMessage(void);
+    
     private:
     unsigned long frameStart;
     unsigned long frameEnd;

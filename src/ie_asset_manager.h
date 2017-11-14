@@ -26,7 +26,6 @@
 
 #include "ie_material.h"
 #include "ie_mesh.h"
-#include "ie_messages.h"
 #include "ie_shader.h"
 //#include "ie_terrain.h"
 #include "ie_texture.h"

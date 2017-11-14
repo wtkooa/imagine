@@ -11,36 +11,51 @@
 // Copyright (c) 2017 David E Lipps
 //______________________________________________________________________________
 
-#include <glm/vec3.hpp>
 #include <glm/vec2.hpp>
+#include <glm/vec3.hpp>
 #include <SDL2/SDL.h>
+
+#include "ie_enum.h"
 
 namespace ie
 {
 
-  enum ControlMode {FIRST_PERSON, THIRD_PERSON, THIRD_PERSON_RPG, FLYAROUND,
-                    EDITING};
 
   class Controller
   {
     public:
     Controller();
+
+    void update(void);
+
+    void setEngineOnOffSwitch(bool*);
+    void setWindow(SDL_Window*);
+    void setMode(IEenum);
+
+    IEenum getMode(void);
+    glm::vec3 getTranslEvent(void);
+    glm::vec2 getRotateEvent(void);
+
     void toggleGrabMode(void);
     void togglePlayerMode(void);
-    void setWindow(SDL_Window*);
+
     void clearRotateEventVec(void);
-    bool getGrabMode(void);
-
-    ControlMode mode;
-
-    //EVENT VECTORS
-    glm::vec3 translEventVec;
-    glm::vec2 rotateEventVec;    
-    int scrollEvent;
+    void clearScrollEvent(void);
 
     private:
+    void handleEvents(void);
+    void handleResize(int width, int height);
+
     void setGrabMode(SDL_bool);
+    bool getGrabMode(void);
+
+    bool* engineRun;
     SDL_Window * window;
+    IEenum mode;
+
+    glm::vec3 translEvent;
+    glm::vec2 rotateEvent;    
+    int scrollEvent;
   };
 
 }

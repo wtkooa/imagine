@@ -19,7 +19,6 @@
 #include <glm/vec3.hpp>
 
 #include "ie_enum.h"
-#include "ie_messages.h"
 
 namespace ie
 {

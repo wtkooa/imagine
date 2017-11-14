@@ -23,7 +23,6 @@
 #include "ie_config.h"
 #include "ie_const.h"
 #include "ie_controller.h"
-#include "ie_messages.h"
 #include "ie_nodes.h"
 
 void ie::PhysicsEngine::receiveMessage(ie::TimeStatusMessage msg)
@@ -107,11 +106,11 @@ void ie::PhysicsEngine::updatePlayers(PhysicsBucket* players)
     NodePacket packet = (*it);  
     PlayerNode* player = packet.node.player;
 
-    if (ctrl->mode == FIRST_PERSON)
+    if (ctrl->mode == IE_FIRST_PERSON_MODE)
     {
       updatePlayerFirstPerson(player);
     }
-    else if (ctrl->mode == THIRD_PERSON)
+    else if (ctrl->mode == IE_THIRD_PERSON_MODE)
     {
       updatePlayerThirdPerson(player);
     }

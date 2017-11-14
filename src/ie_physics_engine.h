@@ -17,7 +17,6 @@
 #include <glm/vec4.hpp>
 
 #include "ie_controller.h"
-#include "ie_messages.h"
 #include "ie_nodes.h"
 
 namespace ie

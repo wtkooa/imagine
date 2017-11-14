@@ -44,22 +44,19 @@ namespace ie
     bool initController(void);
 
     bool run(void);
+    void update(void);
     void render(void);
-    void handleEvents(void);
-    void handleUpdates(void);
-    void handleLogic(void);
-    void handleResize(int,int);
 
     bool cleanup(void);
 
     SDL_Window * mainWindow;
     SDL_GLContext mainGlContext;
-    bool engineOn;
+    bool engineRun;
 
     ie::LoadManager local; 
     ie::AssetManager am;
     //ie::VramManager vram;
-    ie::FrameClock frameClock;
+    ie::FrameClock clock;
     ie::Controller ctrl;
     //ie::RenderEngine re;
     //ie::PhysicsEngine fizx;

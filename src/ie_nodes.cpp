@@ -22,7 +22,6 @@
 #include "ie_enum.h"
 #include "ie_config.h"
 #include "ie_const.h"
-#include "ie_messages.h"
 
 //___|SCENEGRAPH BASE NODE|_____________________________________________________
 

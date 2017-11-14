@@ -19,7 +19,6 @@
 #include <glm/vec3.hpp>
 
 #include "ie_enum.h"
-#include "ie_messages.h"
 #include "ie_nodes.h"
 #include "ie_scenegraph.h"
 #include "ie_vram.h"

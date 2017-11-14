@@ -29,7 +29,6 @@
 #include "ie_const.h"
 #include "ie_controller.h"
 #include "ie_import.h"
-#include "ie_messages.h"
 //#include "ie_nodes.h"
 //#include "ie_physics_engine.h"
 //#include "ie_render_engine.h"
@@ -198,51 +197,34 @@ bool ie::Engine::initPhysics(void)
 bool ie::Engine::initController(void)
 {
   ctrl.setWindow(mainWindow);
+  ctrl.setEngineOnOffSwitch(&engineRun);
 }
+
 
 
 bool ie::Engine::run(void)
 {
-  engineOn = true;
-  while (engineOn) {
-    handleEvents();
-    //handleUpdates();
-    //handleLogic();
+  engineRun = true;
+  while (engineRun) {
+    update();
     render();
   } 
   return true;
 }
 
-/*
-void ie::Engine::handleUpdates(void)
+
+
+void ie::Engine::update(void)
 {
-  frameClock.measure();
+  clock.update();
+  ctrl.update();
 
-  ie::TimeStatusMessage timeStatusMsg = frameClock.sendTimeStatusMessage();
-  fizx.receiveMessage(timeStatusMsg);
-
-  ie::AssetStatusMessage assetStatusMsg = am.sendAssetStatusMessage();
-  vram.receiveMessage(assetStatusMsg);
-
-  ie::VramStatusToRenderMessage vramToRenderMsg  = vram.sendVramStatusToRenderMessage();
-  re.receiveMessage(vramToRenderMsg);
-
-  re.receiveMessage(assetStatusMsg);
-
-  sg.physics();
-  fizx.update();
-  sg.update();
-  sg.render();
-
-  ie::GraphStatusMessage graphStatusMsg = sg.sendGraphStatusMessage();
-  re.receiveMessage(graphStatusMsg);
+  //sg.physics();
+  //fizx.update();
+  //sg.update();
+  //sg.render();
 }
 
-
-void ie::Engine::handleLogic(void)
-{
-}
-*/
 
 void ie::Engine::render(void)
 {
@@ -252,135 +234,6 @@ void ie::Engine::render(void)
 
   SDL_GL_SwapWindow(mainWindow);
 }
-
-
-void ie::Engine::handleEvents(void)
-{
-  SDL_Event evnt;
-  while (SDL_PollEvent(&evnt))
-  {
-    switch (evnt.type)
-    {
-      case SDL_QUIT:
-        engineOn = false;
-        break;
-      case SDL_WINDOWEVENT:
-        switch (evnt.window.event)
-        {
-          case SDL_WINDOWEVENT_RESIZED:
-            handleResize(evnt.window.data1, evnt.window.data2);
-            break;
-        }
-        break;
-      case SDL_MOUSEMOTION:
-        if (SDL_GetRelativeMouseMode() == SDL_TRUE)
-        {
-          ctrl.rotateEventVec.x += evnt.motion.xrel;  
-          ctrl.rotateEventVec.y += evnt.motion.yrel;  
-        }
-        break;
-      case SDL_MOUSEWHEEL:
-        if (evnt.wheel.y == 1)
-        {
-          ctrl.scrollEvent += evnt.wheel.y;
-        }
-        else if (evnt.wheel.y == -1)
-        {
-          ctrl.scrollEvent += evnt.wheel.y;
-        }
-        break;
-      case SDL_KEYDOWN:
-        switch (evnt.key.keysym.sym)
-        {
-          case SDLK_ESCAPE:
-            engineOn = false;
-            break;
-          case SDLK_e:
-            if (!evnt.key.repeat)
-            {
-              ctrl.toggleGrabMode();
-            }
-            break;
-          case SDLK_c:
-            if (!evnt.key.repeat)
-            {
-              ctrl.togglePlayerMode();
-            }
-            break;
-          case SDLK_w:
-            if (!evnt.key.repeat)
-            { 
-              ctrl.translEventVec.z += 1.0;
-            }
-            break;
-          case SDLK_s:
-            if (!evnt.key.repeat)
-            {
-              ctrl.translEventVec.z -= 1.0;
-            }
-            break;
-          case SDLK_d:
-            if (!evnt.key.repeat)
-            {
-              ctrl.translEventVec.x += 1.0;
-            }
-            break;
-          case SDLK_a:
-            if (!evnt.key.repeat)
-            {
-              ctrl.translEventVec.x -= 1.0;
-            }
-            break;
-          case SDLK_SPACE:
-            if (!evnt.key.repeat)
-            {
-              ctrl.translEventVec.y += 1.0;
-            }
-            break;
-          case SDLK_LSHIFT:
-            if (!evnt.key.repeat)
-            {
-              ctrl.translEventVec.y -= 1.0;
-            }
-            break;
-        }
-        break;        
-      case SDL_KEYUP:
-        switch(evnt.key.keysym.sym)
-        {
-          case SDLK_w:
-              ctrl.translEventVec.z -= 1.0;
-            break;
-          case SDLK_s:
-              ctrl.translEventVec.z += 1.0;
-            break;
-          case SDLK_d:
-              ctrl.translEventVec.x -= 1.0;
-            break;
-          case SDLK_a:
-              ctrl.translEventVec.x += 1.0;
-            break;
-          case SDLK_SPACE:
-              ctrl.translEventVec.y -= 1.0;
-            break;
-          case SDLK_LSHIFT:
-              ctrl.translEventVec.y += 1.0;
-            break;
-        }
-        break;
-    }
-  }
-}
-
-
-void ie::Engine::handleResize(int width, int height)
-{
-  float aspectRatio = float(width) / float(height);
-  SDL_SetWindowSize(mainWindow, width, height);
-  glViewport(0, 0, width, height);
-  //sg.updateAspectRatio(aspectRatio);
-}
-
 
 bool ie::Engine::cleanup(void)
 {

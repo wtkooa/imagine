@@ -15,7 +15,6 @@
 #include <SDL2/SDL.h>
 
 #include "ie_const.h"
-#include "ie_messages.h"
 
 //FRAMECLOCK
 ie::FrameClock::FrameClock(void)
@@ -27,21 +26,13 @@ ie::FrameClock::FrameClock(void)
 }
 
 
-void ie::FrameClock::measure(void)
+void ie::FrameClock::update(void)
 {
   frameEnd = SDL_GetPerformanceCounter();
   frameDelta = ((frameEnd - frameStart) * ie::MSECS_PER_SEC) /
                                SDL_GetPerformanceFrequency();
   frameStart = SDL_GetPerformanceCounter();
   fps = ie::MSECS_PER_SEC / frameDelta;
-}
-
-
-ie::TimeStatusMessage ie::FrameClock::sendTimeStatusMessage(void)
-{
-  TimeStatusMessage msg;
-  msg.frameDelta = frameDelta;
-  return msg;
 }
 
 float ie::FrameClock::getFrameDelta(void) {return frameDelta;}
