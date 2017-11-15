@@ -55,6 +55,8 @@ const float ie::TEXTURE_MIPMAP_LOD_BIAS = -1.0f;
 const float ie::TEXTURE_ANISO_LOD_BIAS = 0.0f;
 const float ie::TEXTURE_ANISOTROPY_LEVEL = 4.0f;
 const float ie::DEFAULT_OBJ_SENSITIVITY = 0.0001f;
+const short ie::DEFAULT_TERRAIN_DIM = 100;
+const short ie::DEFAULT_TERRAIN_UNITS = 1;
 
 
 bool checkForExtension(std::string extension)

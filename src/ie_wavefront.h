@@ -62,6 +62,7 @@ namespace ie
     void map_Kd(std::vector<std::string>);
     void map_bump(std::vector<std::string>);
 
+    bool containsQuads;
     Mesh* workingMesh;
     RenderUnit* workingRenderUnit;
     RenderUnit* bufferRenderUnit;

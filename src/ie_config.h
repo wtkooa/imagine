@@ -46,6 +46,8 @@ namespace ie
   extern float DEFAULT_CAMERA_LOOKSPEED; 
   extern const short MAX_TERRAIN_MATERIALS;
   extern const float DEFAULT_OBJ_SENSITIVITY;
+  extern const short DEFAULT_TERRAIN_DIM;
+  extern const short DEFAULT_TERRAIN_UNITS;
   
 
   class OpenGlContextDependentConfigs

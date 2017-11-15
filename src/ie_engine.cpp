@@ -28,7 +28,9 @@
 #include "ie_config.h"
 #include "ie_const.h"
 #include "ie_controller.h"
+#include "ie_creation.h"
 #include "ie_import.h"
+#include "ie_material.h"
 //#include "ie_nodes.h"
 //#include "ie_physics_engine.h"
 //#include "ie_render_engine.h"
@@ -115,6 +117,17 @@ bool ie::Engine::initShaders(void)
 bool ie::Engine::initAssets(void)
 {
   local.setLoadDestination(&am);
+  editor.setLoadDestination(&am);
+
+  Material* mat = new Material();
+  mat->setName("terrain_grass");
+
+  editor.terrainEditor.generateTerrain();
+  editor.terrainEditor.setName("Terra");
+  editor.terrainEditor.applyPerlin(42.0f, 32.0f, 40.0f);
+  editor.terrainEditor.smoothNormals();
+  editor.terrainEditor.addMaterial(mat);
+  editor.terrainEditor.loadTerrain();
 
   local.load("TreasureChest.obj");
   local.load("Cursor.obj");
@@ -239,6 +252,7 @@ bool ie::Engine::cleanup(void)
 {
   //vram.quit();
   local.quit();
+  editor.quit();
   am.quit();
   SDL_Quit();
   return true;

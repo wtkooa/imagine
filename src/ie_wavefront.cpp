@@ -38,6 +38,7 @@ ie::WavefrontLoader::WavefrontLoader()
 void ie::WavefrontLoader::reset(void)
 {
   manager = NULL;
+  containsQuads = false;
   workingMesh = NULL;
   workingRenderUnit = NULL;
   bufferRenderUnit = NULL;
@@ -129,6 +130,11 @@ void ie::WavefrontLoader::loadObject(void)
 {
   if (workingMesh != NULL)
   {
+    if (containsQuads)
+    {
+      std::cout << "Warning: Object (" << workingMesh->getName() <<
+      ") contains quad faces" << std::endl; 
+    }
     loadRenderUnit();
     workingMesh->removeMeshDuplicates(ie::DEFAULT_OBJ_SENSITIVITY);
     manager->load(workingMesh);
@@ -139,6 +145,7 @@ void ie::WavefrontLoader::loadObject(void)
       delete bufferRenderUnit;
       bufferRenderUnit = NULL;
     }
+    containsQuads = false;
   }
 }
 
@@ -244,7 +251,7 @@ void ie::WavefrontLoader::face(std::vector<std::string> tokens)
   unsigned int tokenAmount = tokens.size();
   if (tokenAmount == 4)
   {
-    std::cout << "Warning: Quad face detected" << std::endl;
+    containsQuads = true;
     return;
   }
   bufferRenderUnit->addIndexAttrib(tokenAmount);

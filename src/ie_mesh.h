@@ -83,21 +83,23 @@ namespace ie
     void addPackedNormalAttrib(unsigned int);
     void addMapAttrib(glm::vec2);
     void addUnpackedColorAttrib(glm::vec3);
-    void addPackedColorAttrib(glm::u8vec4);
-    void addData1Attrib(glm::u8vec4);
-    void addData2Attrib(glm::u8vec4);
+    void addPackedColorAttrib(unsigned int);
+    void addUnpackedDataAttrib(short, glm::u8vec4);
+    void addPackedDataAttrib(short, unsigned int);
     void addIndexAttrib(unsigned int);
     glm::vec3 getPositionAttrib(unsigned int);
     unsigned int getPackedNormalAttrib(unsigned int);
     glm::vec3 getUnpackedNormalAttrib(unsigned int);
     glm::vec2 getMapAttrib(unsigned int);
-    glm::u8vec4 getPackedColorAttrib(unsigned int);
+    unsigned int getPackedColorAttrib(unsigned int);
     glm::vec3 getUnpackedColorAttrib(unsigned it);
-    glm::u8vec4 getData1Attrib(unsigned int);
-    glm::u8vec4 getData2Attrib(unsigned int);
+    glm::u8vec4 getUnpackedDataAttrib(short, unsigned int);
+    unsigned int getPackedDataAttrib(short, unsigned int);
+    glm::uvec4 getDataAttrib(unsigned int);
     unsigned int getIndexAttrib(unsigned int);
 
     void clearAttrib(IEenum);
+    void clearDataChannel(short);
     void clearAllAttribs(void);
 
     void removeDuplicates(float);
@@ -112,12 +114,12 @@ namespace ie
     std::vector<glm::vec3> positions;
     std::vector<unsigned int> normals;
     std::vector<glm::vec2> maps;
-    std::vector<glm::u8vec4> colors;
-    std::vector<glm::u8vec4> data1;
-    std::vector<glm::u8vec4> data2;
+    std::vector<unsigned int> colors;
+    glm::uvec4 dataChannelAmount;
+    std::vector<glm::uvec4> data;
     std::vector<unsigned int> indices;
 
-
+    void dynamicDataIncrease(unsigned int);
     void deleteVertex(unsigned int);
   };
 

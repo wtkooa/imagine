@@ -16,6 +16,7 @@
 #include "ie_asset_manager.h"
 #include "ie_config.h"
 #include "ie_controller.h"
+#include "ie_creation.h"
 #include "ie_import.h"
 //#include "ie_physics_engine.h"
 //#include "ie_render_engine.h"
@@ -53,8 +54,9 @@ namespace ie
     SDL_GLContext mainGlContext;
     bool engineRun;
 
-    ie::LoadManager local; 
     ie::AssetManager am;
+    ie::LoadManager local; 
+    ie::CreationManager editor;
     //ie::VramManager vram;
     ie::FrameClock clock;
     ie::Controller ctrl;

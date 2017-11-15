@@ -27,7 +27,7 @@
 #include "ie_material.h"
 #include "ie_mesh.h"
 #include "ie_shader.h"
-//#include "ie_terrain.h"
+#include "ie_terrain.h"
 #include "ie_texture.h"
 
 namespace ie
@@ -38,13 +38,20 @@ namespace ie
     public:
     AssetManager();
 
-    void load(Mesh*);
-    void load(Material*);
-    void load(Texture*);
-    void load(Shader*);
+    bool load(Material*);
+    bool load(Mesh*);
+    bool load(Terrain*);
+    bool load(Texture*);
+    bool load(Shader*);
 
     Material* getMaterial(std::string);
     Material* getMaterial(unsigned int);
+
+    bool deleteMaterial(std::string);
+    bool deleteMaterial(unsigned int);
+
+    bool deleteMesh(std::string);
+    bool deleteMesh(unsigned int);
 
     void quit(void);
 
@@ -71,8 +78,8 @@ namespace ie
     std::map<std::string, unsigned int> shaderNameIdMap;
 
     //TERRAIN
-    //std::map<unsigned int, Terrain*> terrainAssets;
-    //std::map<std::string, unsigned int> terrainNameIdMap;
+    std::map<unsigned int, Terrain*> terrainAssets;
+    std::map<std::string, unsigned int> terrainNameIdMap;
   };
 
 }

@@ -14,6 +14,7 @@
 #include <map>
 #include <set>
 
+#include <glm/gtc/packing.hpp>
 #include <glm/gtc/type_precision.hpp>
 #include <glm/gtx/hash.hpp>
 #include <glm/vec2.hpp>
@@ -162,8 +163,8 @@ void ie::RenderUnit::detectVertexFormat(void)
   if (normals.size() == 0) {n = false;} else {n = true;}
   if (maps.size() == 0) {m = false;} else {m = true;}
   if (colors.size() == 0) {c = false;} else {c = true;}
-  if (data1.size() == 0) {d1 = false;} else {d1 = true;}
-  if (data2.size() == 0) {d2 = false;} else {d2 = true;}
+  if (dataChannelAmount.x == 0) {d1 = false;} else {d1 = true;}
+  if (dataChannelAmount.y == 0) {d2 = false;} else {d2 = true;}
   bool P = p && !(n || m || c || d1 || d2);
   bool PN = (p && n) && !(m || c || d1 || d2);
   bool PMN = (p && m && n) && !(c || d1 || d2);
@@ -193,8 +194,8 @@ glm::vec3 ie::RenderUnit::getPositionAttrib(unsigned int vertex)
 
 void ie::RenderUnit::addUnpackedNormalAttrib(glm::vec3 n)
 {
-  unsigned int normal = packNormalAttrib(n);
-  normals.push_back(normal);
+  glm::vec4 w(n.x, n.y, n.z, 1.0f);
+  normals.push_back(glm::packSnorm3x10_1x2(w));
 }
 void ie::RenderUnit::addPackedNormalAttrib(unsigned int normal)
 {
@@ -206,7 +207,8 @@ unsigned int ie::RenderUnit::getPackedNormalAttrib(unsigned int vertex)
 }
 glm::vec3 ie::RenderUnit::getUnpackedNormalAttrib(unsigned int vertex)
 {
-  return unpackNormalAttrib(normals[vertex]);
+  glm::vec4 n = glm::unpackSnorm3x10_1x2(normals[vertex]);
+  return glm::vec3(n.x, n.y, n.z);
 }
 
 
@@ -220,41 +222,169 @@ glm::vec2 ie::RenderUnit::getMapAttrib(unsigned int vertex)
 }
 
 
-void ie::RenderUnit::addUnpackedColorAttrib(glm::vec3 color)
+void ie::RenderUnit::addUnpackedColorAttrib(glm::vec3 c)
 {
-  colors.push_back(packColorAttrib(color));
+  glm::vec4 w(c.x, c.y, c.z, 0.0f);
+  colors.push_back(glm::packUnorm4x8(w));
 }
-void ie::RenderUnit::addPackedColorAttrib(glm::u8vec4 color)
+void ie::RenderUnit::addPackedColorAttrib(unsigned int color)
 {
   colors.push_back(color);
 }
-glm::u8vec4 ie::RenderUnit::getPackedColorAttrib(unsigned int vertex)
+unsigned int ie::RenderUnit::getPackedColorAttrib(unsigned int vertex)
 {
   return colors[vertex];
 }
 glm::vec3 ie::RenderUnit::getUnpackedColorAttrib(unsigned int vertex)
 {
-  return unpackColorAttrib(colors[vertex]);
+  glm::vec4 w = glm::unpackUnorm4x8(colors[vertex]);
+  return glm::vec3(w.x, w.y, w.z);
 }
 
 
-void ie::RenderUnit::addData1Attrib(glm::u8vec4 data)
+void ie::RenderUnit::dynamicDataIncrease(unsigned int vertex)
 {
-  data1.push_back(data);
+  if (vertex > data.size())
+  {
+    data.push_back(glm::uvec4(0, 0, 0, 0));
+  }
 }
-glm::u8vec4 ie::RenderUnit::getData1Attrib(unsigned int vertex)
+void ie::RenderUnit::addUnpackedDataAttrib(short channel, glm::u8vec4 input)
 {
-  return data1[vertex];
-}
+  if (channel == 1)
+  {
+    unsigned int vertex = dataChannelAmount.x + 1;
+    dynamicDataIncrease(vertex);
+    data[vertex].x = glm::packUnorm4x8(glm::vec4(float(input.x),
+                                                 float(input.y),
+                                                 float(input.z), 0.0f));
+    dataChannelAmount.x += 1;
+  }
+  else if (channel == 2)
+  {
+    unsigned int vertex = dataChannelAmount.y + 1;
+    dynamicDataIncrease(vertex);
+    data[vertex].y = glm::packUnorm4x8(glm::vec4(float(input.x),
+                                                 float(input.y),
+                                                 float(input.z), 0.0f));
+    dataChannelAmount.y += 1;
+  }
+  else if (channel == 3)
+  {
+    unsigned int vertex = dataChannelAmount.z + 1;
+    dynamicDataIncrease(vertex);
+    data[vertex].z = glm::packUnorm4x8(glm::vec4(float(input.x),
+                                                 float(input.y),
+                                                 float(input.z), 0.0f));
+    dataChannelAmount.z += 1;
+  }
+  else if (channel == 4)
+  {
+    unsigned int vertex = dataChannelAmount.w + 1;
+    dynamicDataIncrease(vertex);
+    data[vertex].w = glm::packUnorm4x8(glm::vec4(float(input.x),
+                                                 float(input.y),
+                                                 float(input.z), 0.0f));
+    dataChannelAmount.w += 1;
+  }
 
-
-void ie::RenderUnit::addData2Attrib(glm::u8vec4 data)
-{
-  data2.push_back(data);
 }
-glm::u8vec4 ie::RenderUnit::getData2Attrib(unsigned int vertex)
+void ie::RenderUnit::addPackedDataAttrib(short channel, unsigned int input)
 {
-  return data2[vertex];
+  if (channel == 1)
+  {
+    unsigned int vertex = dataChannelAmount.x + 1;
+    dynamicDataIncrease(vertex);
+    (data[vertex]).x = input; 
+    dataChannelAmount.x += 1;
+  }
+  else if (channel == 2)
+  {
+    unsigned int vertex = dataChannelAmount.y + 1;
+    dynamicDataIncrease(vertex);
+    data[vertex].y = input; 
+    dataChannelAmount.y += 1;
+  }
+  else if (channel == 3)
+  {
+    unsigned int vertex = dataChannelAmount.z + 1;
+    dynamicDataIncrease(vertex);
+    data[vertex].z = input; 
+    dataChannelAmount.z += 1;
+  }
+  else if (channel == 4)
+  {
+    unsigned int vertex = dataChannelAmount.w + 1;
+    dynamicDataIncrease(vertex);
+    data[vertex].w = input; 
+    dataChannelAmount.w += 1;
+  }
+}
+glm::u8vec4 ie::RenderUnit::getUnpackedDataAttrib(short channel, unsigned int vertex)
+{
+  if (channel == 1)
+  {
+    glm::vec4 w = glm::unpackUnorm4x8(data[vertex].x);
+    glm::u8vec4 data;
+    data.x = (unsigned int)w.x;
+    data.y = (unsigned int)w.y;
+    data.z = (unsigned int)w.z;
+    data.w = (unsigned int)w.w;
+    return data; 
+  }
+  else if (channel == 2)
+  {
+    glm::vec4 w = glm::unpackUnorm4x8(data[vertex].y);
+    glm::u8vec4 data;
+    data.x = (unsigned int)w.x;
+    data.y = (unsigned int)w.y;
+    data.z = (unsigned int)w.z;
+    data.w = (unsigned int)w.w;
+    return data; 
+  }
+  else if (channel == 3)
+  {
+    glm::vec4 w = glm::unpackUnorm4x8(data[vertex].z);
+    glm::u8vec4 data;
+    data.x = (unsigned int)w.x;
+    data.y = (unsigned int)w.y;
+    data.z = (unsigned int)w.z;
+    data.w = (unsigned int)w.w;
+    return data; 
+  }
+  else if (channel == 4)
+  {
+    glm::vec4 w = glm::unpackUnorm4x8(data[vertex].w);
+    glm::u8vec4 data;
+    data.x = (unsigned int)w.x;
+    data.y = (unsigned int)w.y;
+    data.z = (unsigned int)w.z;
+    data.w = (unsigned int)w.w;
+    return data; 
+  }
+}
+unsigned int ie::RenderUnit::getPackedDataAttrib(short channel, unsigned int vertex)
+{
+  if (channel == 1)
+  {
+    return data[vertex].x; 
+  }
+  else if (channel == 2)
+  {
+    return data[vertex].y; 
+  }
+  else if (channel == 3)
+  {
+    return data[vertex].z; 
+  }
+  else if (channel == 4)
+  {
+    return data[vertex].w; 
+  }
+}
+glm::uvec4 ie::RenderUnit::getDataAttrib(unsigned int vertex)
+{
+  return data[vertex];
 }
 
 
@@ -267,70 +397,47 @@ unsigned int ie::RenderUnit::getIndexAttrib(unsigned int index)
   return indices[index];
 }
 
-
+void ie::RenderUnit::clearDataChannel(short channel)
+{
+    if (channel == 1) {dataChannelAmount.x = 0;}
+    else if (channel == 2) {dataChannelAmount.y = 0;}
+    else if (channel == 3) {dataChannelAmount.z = 0;}
+    else if (channel == 4) {dataChannelAmount.w = 0;}
+  for (auto it = data.begin(); it != data.end(); it++)
+  {
+    if (channel == 1) {(*it).x = 0;}
+    else if (channel == 2) {(*it).y = 0;}
+    else if (channel == 3) {(*it).z = 0;}
+    else if (channel == 4) {(*it).w = 0;}
+  }
+}
 void ie::RenderUnit::clearAttrib(IEenum attrib)
 {
-  if (attrib == IE_ELEMENT_ATTRIB)
-  {
-    indices.clear();
-  }
-  else if (attrib == IE_POSITION_ATTRIB)
-  {
-    positions.clear();
-  }
-  else if (attrib == IE_NORMAL_ATTRIB)
-  {
-    normals.clear();
-  }
-  else if (attrib == IE_MATERIAL_ATTRIB)
-  {
-    maps.clear();
-  }
-  else if (attrib == IE_COLOR_ATTRIB)
-  {
-    colors.clear();
-  }
-  else if (attrib == IE_DATA1_ATTRIB)
-  {
-    data1.clear();
-  }
-  else if (attrib == IE_DATA2_ATTRIB)
-  {
-    data2.clear();
-  }
+  if (attrib == IE_ELEMENT_ATTRIB) {indices.clear();}
+  else if (attrib == IE_POSITION_ATTRIB) {positions.clear();}
+  else if (attrib == IE_NORMAL_ATTRIB) {normals.clear();}
+  else if (attrib == IE_MATERIAL_ATTRIB) {maps.clear();}
+  else if (attrib == IE_COLOR_ATTRIB) {colors.clear();}
+  else if (attrib == IE_DATA_ATTRIB) {data.clear();}
+  else if (attrib == IE_DATA1_ATTRIB) {clearDataChannel(1);}
+  else if (attrib == IE_DATA2_ATTRIB) {clearDataChannel(2);}
+  else if (attrib == IE_DATA3_ATTRIB) {clearDataChannel(3);}
+  else if (attrib == IE_DATA4_ATTRIB) {clearDataChannel(4);}
 }
 
 
 unsigned int ie::RenderUnit::getAttribAmount(IEenum attrib)
 {
-  if (attrib == IE_ELEMENT_ATTRIB)
-  {
-    return indices.size();
-  }
-  else if (attrib == IE_POSITION_ATTRIB)
-  {
-    return positions.size();
-  }
-  else if (attrib == IE_NORMAL_ATTRIB)
-  {
-    return normals.size();
-  }
-  else if (attrib == IE_MATERIAL_ATTRIB)
-  {
-    return maps.size();
-  }
-  else if (attrib == IE_COLOR_ATTRIB)
-  {
-    return colors.size();
-  }
-  else if (attrib == IE_DATA1_ATTRIB)
-  {
-    return data1.size();
-  }
-  else if (attrib == IE_DATA2_ATTRIB)
-  {
-    return data2.size();
-  }
+  if (attrib == IE_ELEMENT_ATTRIB) {return indices.size();}
+  else if (attrib == IE_POSITION_ATTRIB) {return positions.size();}
+  else if (attrib == IE_NORMAL_ATTRIB) {return normals.size();}
+  else if (attrib == IE_MATERIAL_ATTRIB) {return maps.size();}
+  else if (attrib == IE_COLOR_ATTRIB) {return colors.size();}
+  else if (attrib == IE_DATA_ATTRIB) {return data.size();}
+  else if (attrib == IE_DATA1_ATTRIB) {return dataChannelAmount.x;}
+  else if (attrib == IE_DATA2_ATTRIB) {return dataChannelAmount.y;}
+  else if (attrib == IE_DATA3_ATTRIB) {return dataChannelAmount.z;}
+  else if (attrib == IE_DATA4_ATTRIB) {return dataChannelAmount.w;}
 }
 
 
@@ -341,8 +448,8 @@ void ie::RenderUnit::clearAllAttribs(void)
     normals.clear();
     maps.clear();
     colors.clear();
-    data1.clear();
-    data2.clear();
+    dataChannelAmount = glm::uvec4(0, 0, 0, 0);
+    data.clear();
 }
 
 
@@ -364,13 +471,9 @@ void ie::RenderUnit::deleteVertex(unsigned int vertex)
   {
     colors.erase(colors.begin() + vertex);
   }
-  if (data1.size() > vertex)
+  if (data.size() > vertex)
   {
-    data1.erase(data1.begin() + vertex);
-  }
-  if (data2.size() > vertex)
-  {
-    data2.erase(data2.begin() + vertex);
+    data.erase(data.begin() + vertex);
   }
 }
 
@@ -396,8 +499,7 @@ void ie::RenderUnit::removeDuplicates(float sensitivity)
         bool isNormalDuplicate;
         bool isMapDuplicate; 
         bool isColorDuplicate;
-        bool isData1Duplicate;
-        bool isData2Duplicate; 
+        bool isDataDuplicate;
         if (normals.size() > 0)
         {
           isNormalDuplicate = getPackedNormalAttrib((*i)) == getPackedNormalAttrib(vertexArrayIndex);
@@ -410,18 +512,13 @@ void ie::RenderUnit::removeDuplicates(float sensitivity)
         {
           isColorDuplicate = getPackedColorAttrib((*i)) == getPackedColorAttrib(vertexArrayIndex);
         } else {isColorDuplicate = true;}
-        if (data1.size() > 0)
+        if (data.size() > 0)
         {
-          isData1Duplicate = getData1Attrib((*i)) == getData1Attrib(vertexArrayIndex);
-        } else {isData1Duplicate = true;}
-        if (data2.size() > 0)
-        {
-          isData2Duplicate = getData2Attrib((*i)) == getData2Attrib(vertexArrayIndex);
-        } else {isData2Duplicate = true;}
+          isDataDuplicate = getDataAttrib((*i)) == getDataAttrib(vertexArrayIndex);
+        } else {isDataDuplicate = true;}
 
         bool isVertexDuplicate = isNormalDuplicate && isMapDuplicate &&
-                                 isColorDuplicate && isData1Duplicate &&
-                                 isData2Duplicate;
+                                 isColorDuplicate && isDataDuplicate;
 
         if (isVertexDuplicate)
         {
