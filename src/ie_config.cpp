@@ -18,15 +18,22 @@
 #define GL_GLEXT_PROTOTYPES //Needs to be define for some GL func to work.
 #include <GL/gl.h>
 #include <GL/glu.h>
-#include <SDL2/SDL.h>
 #include <glm/trigonometric.hpp>
 #include <glm/vec4.hpp>
+#include <SDL2/SDL.h>
 
+#include "ie_const.h"
 #include "ie_utils.h"
+
+int ie::IE_MAJOR_VERSION = 0;
+int ie::IE_MINOR_VERSION = 1;
+int ie::IE_PATCH_VERSION = 0;
 
 
 int ie::DEFAULT_GL_MAJOR_VERSION = 4;
 int ie::DEFAULT_GL_MINOR_VERSION = 5;
+unsigned int ie::DEFAULT_IE_LOGGING = ie::IE_LOG_ALL;
+std::string ie::DEFAULT_IE_LOGFILE = "ie_engine.log";
 char* homePath = SDL_GetBasePath();
 std::string ie::HOME_PATH = std::string(homePath); 
 std::string ie::DEFAULT_WAVEFRONT_PATH = ie::HOME_PATH + "data/wavefront/";
@@ -58,6 +65,29 @@ const float ie::DEFAULT_OBJ_SENSITIVITY = 0.0001f;
 const short ie::DEFAULT_TERRAIN_DIM = 100;
 const short ie::DEFAULT_TERRAIN_UNITS = 1;
 
+void ie::SDLContextDependentConfigs::fetchSDLGLConfigs(void)
+{
+  SDL_GL_GetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION,
+                      &SDL_GL_MAJOR_VERSION);
+  SDL_GL_GetAttribute(SDL_GL_CONTEXT_MINOR_VERSION,
+                      &SDL_GL_MINOR_VERSION);
+}
+
+void ie::SDLContextDependentConfigs::fetchSDLConfigs(void)
+{
+
+  SDL_version compiled;
+  SDL_version linked;
+  SDL_VERSION(&compiled);
+  SDL_GetVersion(&linked);
+  SDL_MAJOR_VERSION_COMPILED = compiled.major;
+  SDL_MINOR_VERSION_COMPILED = compiled.minor;
+  SDL_PATCH_VERSION_COMPILED = compiled.patch;
+  SDL_MAJOR_VERSION_LINKED = linked.major;
+  SDL_MINOR_VERSION_LINKED = linked.minor;
+  SDL_PATCH_VERSION_LINKED = linked.patch;
+}
+
 
 bool checkForExtension(std::string extension)
 {
@@ -80,6 +110,7 @@ bool checkForExtension(std::string extension)
   return false;
 }
 
+
 //FETCHING LOCAL OPENGL VERSIONING INFO FROM VIDEO HARDWARE
 void ie::OpenGlContextDependentConfigs::fetchOpenGlConfigs(void)
 {
@@ -88,42 +119,28 @@ void ie::OpenGlContextDependentConfigs::fetchOpenGlConfigs(void)
   std::stringstream ss;
   ss << local_gl_vendor;
   LOCAL_GL_VENDOR = ss.str(); 
-  std::cout << "Local Vendor: " << LOCAL_GL_VENDOR  << std::endl;
 
   ss.str("");
   ss.clear();
   const unsigned char* local_gl_renderer = glGetString(GL_RENDERER);
   ss << local_gl_renderer;
   LOCAL_GL_RENDERER = ss.str();
-  std::cout << "Local Renderer: " << LOCAL_GL_RENDERER  << std::endl;
 
   ss.str("");
   ss.clear();
   const unsigned char* local_gl_version = glGetString(GL_VERSION);
   ss << local_gl_version;
   LOCAL_GL_VERSION = ss.str();
-  std::cout << "Local Version: " << LOCAL_GL_VERSION  << std::endl;
 
   ss.str("");
   ss.clear();
   const unsigned char* local_shading_version = glGetString(GL_SHADING_LANGUAGE_VERSION);
   ss << local_shading_version;
   LOCAL_SHADING_LANGUAGE_VERSION = ss.str();
-std::cout << LOCAL_SHADING_LANGUAGE_VERSION  << std::endl;
 
   glGetIntegerv(GL_MAJOR_VERSION, &LOCAL_GL_MAJOR_VERSION);
   glGetIntegerv(GL_MINOR_VERSION, &LOCAL_GL_MINOR_VERSION);
-  std::cout << "Local GL Context Version: " <<
-  LOCAL_GL_MAJOR_VERSION << " " << LOCAL_GL_MINOR_VERSION << std::endl;
-
 
   ANISOTROPIC_AVAILABLE = checkForExtension("GL_EXT_texture_filter_anisotropic");
-  if (ANISOTROPIC_AVAILABLE)
-  {
-    std::cout << "Anisotropic Filtering: Available"  << std::endl;
-  }
-  else
-  {
-    std::cout << "Anisotropic Filtering: Unavailable"  << std::endl;
-  }
+
 }

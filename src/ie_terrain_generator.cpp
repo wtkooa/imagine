@@ -18,6 +18,7 @@
 #include <glm/gtx/vector_angle.hpp>
 
 #include "ie_config.h"
+#include "ie_log.h"
 
 ie::TerrainGenerator::TerrainGenerator()
 {
@@ -32,6 +33,9 @@ void ie::TerrainGenerator::reset(void)
   workingMesh = NULL;
   workingRenderUnit = NULL;
 }
+
+
+void ie::TerrainGenerator::setLog(Log* l) {log = l;}
 
 
 void ie::TerrainGenerator::setLoadDestination(AssetManager* am)
@@ -123,6 +127,7 @@ void ie::TerrainGenerator::applyPerlin(float seed, float res, float range)
                                         (workingRenderUnit->getPositionAttrib(n)).z);
       bufferRenderUnit->addPositionAttrib(newPosition);
     }
+
   }
 
   workingRenderUnit->clearAttrib(IE_POSITION_ATTRIB);
@@ -135,6 +140,10 @@ void ie::TerrainGenerator::applyPerlin(float seed, float res, float range)
 
   delete bufferRenderUnit;
   calcFaceNormals();
+  
+  log->info("Added Perlin Noise to Terrain '%s' using seed: %.2f "
+            "resolution: %.2f range: %.2f",workingTerrain->getName().c_str(),
+            seed, res, range);
 }
 
 
@@ -163,6 +172,9 @@ void ie::TerrainGenerator::calcFaceNormals(void)
       workingRenderUnit->addUnpackedNormalAttrib(n1);
     }
   }
+
+  log->info("Calculated face normals for Terrain '%s'",
+            workingTerrain->getName().c_str());
 }
 
 
@@ -192,6 +204,9 @@ void ie::TerrainGenerator::smoothNormals(void)
   {
     workingRenderUnit->addUnpackedNormalAttrib(glm::normalize(normals[n]));
   }
+
+  log->info("Smoothed Normals for Terrain '%s'",
+            workingTerrain->getName().c_str());
 }
 
 

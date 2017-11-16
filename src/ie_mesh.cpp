@@ -72,12 +72,18 @@ void ie::Mesh::deleteAllRenderUnits(void)
 }
 
 
-void ie::Mesh::removeMeshDuplicates(float sensitivity)
+unsigned int ie::Mesh::removeMeshDuplicates(float sensitivity)
 {
+  unsigned int duplicateAmount = 0;
   for (auto ru = renderUnits.begin(); ru != renderUnits.end(); ru++)
   {
-    (*ru)->removeDuplicates(sensitivity);
+    duplicateAmount += (*ru)->removeDuplicates(sensitivity);
   }
+
+  log->info("%s removed %i vertex duplicates using %f sensitivity",
+            getName().c_str(), duplicateAmount, sensitivity);
+  
+  return duplicateAmount;
 }
 void ie::Mesh::removeRenderUnitDuplicates(unsigned int ru, float sensitivity)
 {
@@ -478,8 +484,9 @@ void ie::RenderUnit::deleteVertex(unsigned int vertex)
 }
 
 
-void ie::RenderUnit::removeDuplicates(float sensitivity)
+unsigned int ie::RenderUnit::removeDuplicates(float sensitivity)
 {
+  unsigned int duplicateAmount = 0;
   std::map<unsigned int, std::set<unsigned int>> vertices; 
   for (auto index = indices.begin(); index != indices.end(); index++)
   {
@@ -522,6 +529,7 @@ void ie::RenderUnit::removeDuplicates(float sensitivity)
 
         if (isVertexDuplicate)
         {
+          duplicateAmount++;
           unsigned int newTarget = (*i);  
           for (auto n = index; n != indices.end(); n++)
           {
@@ -545,6 +553,7 @@ void ie::RenderUnit::removeDuplicates(float sensitivity)
       }
     }
   }
+  return duplicateAmount;
 }
 
 //______________________________________________________________________________

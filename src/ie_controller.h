@@ -16,6 +16,7 @@
 #include <SDL2/SDL.h>
 
 #include "ie_enum.h"
+#include "ie_log.h"
 
 namespace ie
 {
@@ -26,8 +27,11 @@ namespace ie
     public:
     Controller();
 
+    void reset(void);
+
     void update(void);
 
+    void setLog(Log*);
     void setEngineOnOffSwitch(bool*);
     void setWindow(SDL_Window*);
     void setMode(IEenum);
@@ -43,6 +47,8 @@ namespace ie
     void clearScrollEvent(void);
 
     private:
+    Log* log;
+
     void handleEvents(void);
     void handleResize(int width, int height);
 

@@ -15,10 +15,32 @@
 #include <vector>
 
 #include "ie_asset_manager.h"
+#include "ie_log.h"
 #include "ie_config.h"
 #include "ie_glsl.h"
 #include "ie_utils.h"
 #include "ie_wavefront.h"
+
+ie::LoadManager::LoadManager()
+{
+  reset();
+}
+
+
+void ie::LoadManager::reset()
+{
+  log = NULL;
+  manager = NULL;
+}
+
+
+void ie::LoadManager::setLog(Log* l)
+{
+  log = l;
+  obj.setLog(log);
+  glsl.setLog(log);
+}
+
 
 void ie::LoadManager::setLoadDestination(AssetManager* am)
 {
@@ -48,8 +70,8 @@ void ie::LoadManager::load(std::string filepath, std::string filename)
   }
   else
   {
-    std::cout << "Warning: Unrecognized file format (" <<
-    filename << ")." << std::endl;
+    log->warning("Unrecognized file extention '%s' in file '%s'",
+                 extention.c_str(), filename.c_str());
   }
 }
 
@@ -73,4 +95,6 @@ void ie::LoadManager::load(std::string name, std::string vertexPath,
 void ie::LoadManager::quit(void)
 {
   obj.quit();
+
+  log->info("Import Manager Shutdown");
 }

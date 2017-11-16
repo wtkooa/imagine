@@ -22,7 +22,25 @@
 
 #include "ie_asset_manager.h"
 #include "ie_config.h"
+#include "ie_log.h"
 #include "ie_shader.h"
+#include "ie_utils.h"
+
+ie::GlslLoader::GlslLoader()
+{
+  reset();
+}
+
+
+void ie::GlslLoader::reset(void)
+{
+  log = NULL;
+  manager = NULL;
+}
+
+
+void ie::GlslLoader::setLog(Log* l) {log = l;}
+
 
 void ie::GlslLoader::setLoadDestination(AssetManager* m) {manager = m;}
 
@@ -47,26 +65,48 @@ void ie::GlslLoader::load(std::string name, std::string vertexPath,
 
 void ie::GlslLoader::createProgram(std::string name, std::vector<std::string> files)
 {
+  bool abort = false;
   Shader* shader = new Shader(); 
   shader->setName(name);
   unsigned int fileAmount = files.size();
+  std::vector<std::string> sources = files;
 
-  for (auto it = files.begin(); it != files.end(); it++)
+  for (auto it = sources.begin(); it != sources.end(); it++)
   {
     *it = read(*it);
+    if (*it == "")
+    {
+      abort = true;
+    }
   }
 
   std::vector<GLuint> shaderIds;
 
-  if (fileAmount == 2)
+  if (abort == false)
   {
-    shaderIds.push_back(compileShader(GL_VERTEX_SHADER, files[0]));
-    shaderIds.push_back(compileShader(GL_FRAGMENT_SHADER, files[1]));
+    if (fileAmount == 2)
+    {
+      shaderIds.push_back(compileShader(GL_VERTEX_SHADER, sources[0], files[0]));
+      shaderIds.push_back(compileShader(GL_FRAGMENT_SHADER, sources[1], files[1]));
+    }
   }
 
-  linkShaders(shader, shaderIds);
+  GLuint impossibleValue = -1;
+  for (auto it = shaderIds.begin(); it != shaderIds.end(); it++)
+  {
+    if (*it == impossibleValue) {abort = true;}
+  }
 
-  loadProgram(shader);
+  if (abort == false)
+  {
+    bool result = linkShaders(shader, shaderIds);
+    if (result == false) {abort = true;}
+  }
+
+  if (abort == false)
+  {
+    loadProgram(shader);
+  }
 }
 
 
@@ -80,17 +120,23 @@ std::string ie::GlslLoader::read(std::string file)
   {
     buffer << glslFile.rdbuf();
     glslFile.close();
+
+    log->info("GLSL file '%s' read successfully",
+              getFilenameFromPath(file).c_str());
+
+    return buffer.str();
   }
   else
   {
-    std::cout << "GLSL file (" << file <<
-    ") failed to open for reading." << std::endl;
+    log->warning("GLSL file '%s' failed to open for reading",
+                 getFilenameFromPath(file).c_str());
+    return "";
   }
-  return buffer.str();
 }
 
 
-GLuint ie::GlslLoader::compileShader(GLenum type, std::string source)
+GLuint ie::GlslLoader::compileShader(GLenum type, std::string source,
+                                     std::string filename)
 {
   GLuint shaderId = glCreateShader(type);
   const char* codeParamAdapter[1]; //glShaderSource needs char**
@@ -106,14 +152,23 @@ GLuint ie::GlslLoader::compileShader(GLenum type, std::string source)
     GLchar* buffer = new GLchar[infoLogLength];
     GLsizei bufferSize; //Not used: required as func param
     glGetShaderInfoLog(shaderId, infoLogLength, &bufferSize, buffer);
-    std::cout << "Shader Compile Error: " << buffer << std::endl;
+    log->warning("Shader Compilation Error in file '%s'",
+                 getFilenameFromPath(filename).c_str());
+    log->debug(buffer);
     delete [] buffer;
+    GLuint impossibleValue = -1;
+    return impossibleValue;
   }
-  return shaderId;
+  else
+  {
+    log->info("Shader '%s' Compiled Successfully",
+              getFilenameFromPath(filename).c_str());
+    return shaderId;
+  }
 }
 
 
-void ie::GlslLoader::linkShaders(Shader* shader, std::vector<GLuint> shaderIds)
+bool ie::GlslLoader::linkShaders(Shader* shader, std::vector<GLuint> shaderIds)
 {
   GLuint programId = shader->getProgramId();
 
@@ -132,8 +187,15 @@ void ie::GlslLoader::linkShaders(Shader* shader, std::vector<GLuint> shaderIds)
     GLchar* buffer = new GLchar[infoLogLength];
     GLsizei bufferSize; //Not used: required as func param
     glGetProgramInfoLog(programId, infoLogLength, &bufferSize, buffer);
-    std::cout << "Shader Program Link Error: " << buffer << std::endl;
+    log->warning("Shader Linking Error");
+    log->debug(buffer);
     delete [] buffer;
+    return false;
+  }
+  else
+  {
+    log->info("Shader Linking Successful");
+    return true;
   }
 
   for (auto id = shaderIds.begin(); id != shaderIds.end(); id++)

@@ -12,6 +12,9 @@ src/*.swp
 *.o
 src/*.o
 
+#LOG FILES
+*.log
+
 #PROJECT IMAGES AND VIDEO
 media
 

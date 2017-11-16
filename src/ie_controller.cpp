@@ -21,9 +21,17 @@
 #include <SDL2/SDL.h>
 
 #include "ie_enum.h"
+#include "ie_log.h"
 
 ie::Controller::Controller()
 {
+  reset();
+}
+
+
+void ie::Controller::reset(void)
+{
+  log = NULL;
   translEvent = glm::vec3(0.0f, 0.0f, 0.0f);
   rotateEvent = glm::vec2(0.0f, 0.0f);
   setGrabMode(SDL_TRUE);
@@ -35,6 +43,9 @@ void ie::Controller::update(void)
 {
   handleEvents();
 }
+
+
+void ie::Controller::setLog(Log* l) {log = l;}
 
 
 void ie::Controller::setEngineOnOffSwitch(bool* o)
@@ -65,12 +76,12 @@ void ie::Controller::toggleGrabMode(void)
 {
   if (SDL_GetWindowGrab(window) == SDL_FALSE) 
   {
-    std::cout << "GrabMode On" << std::endl;
+    log->info("Toggled Grab Mode On");
     setGrabMode(SDL_TRUE);
   }
   else
   {
-    std::cout << "GrabMode Off" << std::endl;
+    log->info("Toggled Grab Mode Off");
     setGrabMode(SDL_FALSE);
   } 
 }
@@ -81,12 +92,12 @@ void ie::Controller::togglePlayerMode(void)
   {
     if (mode == IE_FIRST_PERSON_MODE)
     {
-      std::cout << "Third Person"  << std::endl;
+      log->info("Toggled Third Person Mode");
       mode = IE_THIRD_PERSON_MODE;
     }
     else if (mode == IE_THIRD_PERSON_MODE)
     {
-      std::cout << "First Person"  << std::endl;
+      log->info("Toggled First Person Mode");
       mode = IE_FIRST_PERSON_MODE;
     }
   }
@@ -121,6 +132,7 @@ void ie::Controller::handleEvents(void)
     {
       case SDL_QUIT:
         *engineRun = false;
+        log->info("Engine Switched Off");
         break;
       case SDL_WINDOWEVENT:
         switch (evnt.window.event)
@@ -152,6 +164,7 @@ void ie::Controller::handleEvents(void)
         {
           case SDLK_ESCAPE:
             *engineRun = false;
+            log->info("Engine Switched Off");
             break;
           case SDLK_e:
             if (!evnt.key.repeat)

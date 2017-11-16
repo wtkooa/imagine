@@ -47,7 +47,7 @@ namespace ie
     void deleteRenderUnit(unsigned int);
     void deleteAllRenderUnits(void);
 
-    void removeMeshDuplicates(float);
+    unsigned int removeMeshDuplicates(float);
     void removeRenderUnitDuplicates(unsigned int, float);
 
     virtual void reset(void);
@@ -102,7 +102,7 @@ namespace ie
     void clearDataChannel(short);
     void clearAllAttribs(void);
 
-    void removeDuplicates(float);
+    unsigned int removeDuplicates(float);
 
     private:
     Mesh* parentMesh;

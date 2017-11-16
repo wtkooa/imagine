@@ -65,6 +65,13 @@ std::string ie::removeChar(std::string str, char c)
 }
 
 
+std::string ie::getFilenameFromPath(std::string path)
+{
+  std::vector<std::string> tokens = split(path, "/");
+  return tokens[tokens.size() - 1];
+}
+
+
 int ie::countTokens(std::string line, char delim)
 {
   return std::count(line.begin(), line.end(), delim) + 1;

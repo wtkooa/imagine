@@ -12,6 +12,7 @@
 //______________________________________________________________________________
 
 #include "ie_asset_manager.h"
+#include "ie_log.h"
 #include "ie_texture.h"
 
 namespace ie
@@ -25,6 +26,7 @@ namespace ie
     void reset(void);
     void quit(void);
 
+    void setLog(Log*);
     void setLoadDestination(AssetManager*);
 
     void generateTerrain(void);
@@ -39,6 +41,7 @@ namespace ie
     void smoothNormals(void);
 
     private:
+    Log* log;
     AssetManager* manager;
 
     Terrain* workingTerrain;

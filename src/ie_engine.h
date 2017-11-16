@@ -18,6 +18,7 @@
 #include "ie_controller.h"
 #include "ie_creation.h"
 #include "ie_import.h"
+#include "ie_log.h"
 //#include "ie_physics_engine.h"
 //#include "ie_render_engine.h"
 //#include "ie_scenegraph.h"
@@ -36,8 +37,8 @@ namespace ie
     bool init(void);
     bool initSdl(void);
     bool initOpenGl(void);
-    bool initShaders(void);
     bool initAssets(void);
+    bool initShaders(void);
     bool initVram(void);
     bool initRenderers(void);
     bool initSceneGraph(void);
@@ -54,6 +55,7 @@ namespace ie
     SDL_GLContext mainGlContext;
     bool engineRun;
 
+    ie::Log log;
     ie::AssetManager am;
     ie::LoadManager local; 
     ie::CreationManager editor;
@@ -64,6 +66,7 @@ namespace ie
     //ie::PhysicsEngine fizx;
     //ie::SceneGraph sg;
 
+    ie::SDLContextDependentConfigs sdlConfigs;
     ie::OpenGlContextDependentConfigs openGlConfigs;
   };
 

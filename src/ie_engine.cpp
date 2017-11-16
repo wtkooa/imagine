@@ -52,6 +52,9 @@ ie::Engine::Engine(void)
 
 bool ie::Engine::init(void)
 {
+  log.info("Initializing the Imagine Engine v%i.%i.%i",
+           IE_MAJOR_VERSION, IE_MINOR_VERSION, IE_PATCH_VERSION); 
+
   initSdl();
   initOpenGl();
   initAssets();
@@ -67,37 +70,112 @@ bool ie::Engine::init(void)
 
 bool ie::Engine::initSdl(void)
 {
-  SDL_Init(ie::REQUIRED_SDL_MODULES);
+
+  log.info("Initializing SDL");
+
+  int result = SDL_Init(ie::REQUIRED_SDL_MODULES);
+  bool sdlInitSuccess = (result == 0);
+
+  if (sdlInitSuccess)
+  {
+    log.info("SDL modules successfully initialized");
+  }
+  else
+  {
+    log.warning("SDL modeules failed to initialize");
+    log.warning("%s", SDL_GetError());
+  }
+
+  sdlConfigs.fetchSDLConfigs();
+  
+  log.info("SDL Compiled Version = %i.%i.%i",
+           sdlConfigs.SDL_MAJOR_VERSION_COMPILED,
+           sdlConfigs.SDL_MINOR_VERSION_COMPILED,
+           sdlConfigs.SDL_PATCH_VERSION_COMPILED);
+  log.info("SDL Linked Version = %i.%i.%i",
+           sdlConfigs.SDL_MAJOR_VERSION_LINKED,
+           sdlConfigs.SDL_MINOR_VERSION_LINKED,
+           sdlConfigs.SDL_PATCH_VERSION_LINKED);
+
   SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, ie::DEFAULT_GL_MAJOR_VERSION);
   SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, ie::DEFAULT_GL_MINOR_VERSION);
   SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
 
-  int major;
-  int minor;
-  SDL_GL_GetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, &major);
-  SDL_GL_GetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, &minor);
-  std::cout << "Imagine OpenGL Default Version: " << major << " " << minor << std::endl;
-
   SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
+
   if (ie::SDL_MULTISAMPLING_ON)
   {
+    log.info("SDL Multisampling: %i samples",
+    ie::SDL_MULTISAMPLING_SAMPLE_AMOUNT);
+
     SDL_GL_SetAttribute(SDL_GL_MULTISAMPLEBUFFERS, 1);
     SDL_GL_SetAttribute(SDL_GL_MULTISAMPLESAMPLES,
                         ie::SDL_MULTISAMPLING_SAMPLE_AMOUNT);
   }
+  else
+  {
+    log.info("SDL Multisampling: off");
+  }
+
   mainWindow = SDL_CreateWindow(ie::WINDOW_TITLE.c_str(),
                 SDL_WINDOWPOS_CENTERED,
                 SDL_WINDOWPOS_CENTERED,
                 ie::WINDOW_WIDTH, ie::WINDOW_HEIGHT,
                 ie::SDL_MODE);
-  mainGlContext = SDL_GL_CreateContext(mainWindow);
-  SDL_GL_SetSwapInterval(ie::LOCK_TO_LOCAL_FRAMERATE);
+  
+  if (mainWindow != NULL)
+  {
+    log.info("SDL window created successfully");
+  }
+  else
+  {
+    log.warning("SDL window creation failed");
+    log.warning("%s", SDL_GetError());
+  }
+
+  log.info("SDL Initialized");
 }
 
 
 bool ie::Engine::initOpenGl(void)
 {
+  log.info("Initializing OpenGL");
+
+  mainGlContext = SDL_GL_CreateContext(mainWindow);
+
+  if (mainGlContext != NULL)
+  {
+    log.info("OpenGL context created successfully");
+  }
+  else
+  {
+    log.warning("OpenGL context creation failed");
+    log.warning("%s", SDL_GetError());
+  }
+
+  sdlConfigs.fetchSDLGLConfigs();
+
+  SDL_GL_SetSwapInterval(ie::LOCK_TO_LOCAL_FRAMERATE);
+
   openGlConfigs.fetchOpenGlConfigs(); 
+
+  log.info("Engine Requested OpenGL Version = %i.%i", DEFAULT_GL_MAJOR_VERSION,
+                                               DEFAULT_GL_MINOR_VERSION);
+  log.info("SDL Given OpenGL Version = %i.%i", sdlConfigs.SDL_GL_MAJOR_VERSION,
+                                           sdlConfigs.SDL_GL_MINOR_VERSION);
+  log.info("Vendor = %s", openGlConfigs.LOCAL_GL_VENDOR.c_str());
+  log.info("Renderer = %s", openGlConfigs.LOCAL_GL_RENDERER.c_str());
+  log.info("Version = %s", openGlConfigs.LOCAL_GL_VERSION.c_str());
+  log.info("Shading Version = %s", openGlConfigs.LOCAL_SHADING_LANGUAGE_VERSION.c_str());
+  if (openGlConfigs.ANISOTROPIC_AVAILABLE)
+  {
+    log.info("Anisotropic Filtering: AVAILABLE");
+  }
+  else
+  {
+    log.info("Anisotropic Filtering: UNAVAILABLE");
+  }
+
   glViewport(0, 0, ie::WINDOW_WIDTH, ie::WINDOW_HEIGHT);
   if (ie::WIREFRAME_ON) {glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);}
   if (ie::DEPTHTEST_ON) {glEnable(GL_DEPTH_TEST);}
@@ -105,19 +183,31 @@ bool ie::Engine::initOpenGl(void)
   glClearColor(ie::DEFAULT_CLEAR_COLOR.r, ie::DEFAULT_CLEAR_COLOR.g,
                ie::DEFAULT_CLEAR_COLOR.b, ie::DEFAULT_CLEAR_COLOR.a);
   glClear(ie::ACTIVEBUFFERS);
+
+  log.info("OpenGL Initialized");
 }
 
-bool ie::Engine::initShaders(void)
-{
-  local.load("Static", "ie_staticVShader330c.glsl",
-             "ie_staticFShader330c.glsl");
-  return true;
-}
 
 bool ie::Engine::initAssets(void)
 {
+
+  am.setLog(&log);
+  log.info("Asset Manager Initialized");
+
+  local.setLog(&log);
   local.setLoadDestination(&am);
+  log.info("Import Manager Initialized");
+
+  editor.setLog(&log);
   editor.setLoadDestination(&am);
+  log.info("Creation Manager Initialized");
+
+
+  log.info("Initializing Assets");
+
+  local.load("TreasureChest.obj");
+  local.load("Cursor.obj");
+  local.load("Face.obj");
 
   Material* mat = new Material();
   mat->setName("terrain_grass");
@@ -129,10 +219,20 @@ bool ie::Engine::initAssets(void)
   editor.terrainEditor.addMaterial(mat);
   editor.terrainEditor.loadTerrain();
 
-  local.load("TreasureChest.obj");
-  local.load("Cursor.obj");
-  local.load("Face.obj");
+  log.info("Assets Initialized");
 
+  return true;
+}
+
+
+bool ie::Engine::initShaders(void)
+{
+  log.info("Initializing Shaders");
+
+  local.load("Static", "ie_staticVShader330c.glsl",
+             "ie_staticFShader330c.glsl");
+
+  log.info("Shaders Initialized");
   return true;
 }
 
@@ -209,8 +309,10 @@ bool ie::Engine::initPhysics(void)
 */
 bool ie::Engine::initController(void)
 {
+  ctrl.setLog(&log);
   ctrl.setWindow(mainWindow);
   ctrl.setEngineOnOffSwitch(&engineRun);
+  log.info("Controller Initialized");
 }
 
 
@@ -218,6 +320,7 @@ bool ie::Engine::initController(void)
 bool ie::Engine::run(void)
 {
   engineRun = true;
+  log.info("Engine Start");
   while (engineRun) {
     update();
     render();
@@ -255,5 +358,8 @@ bool ie::Engine::cleanup(void)
   editor.quit();
   am.quit();
   SDL_Quit();
+  log.info("SDL Shutdown");
+  log.info("End Program");
+  log.info("End Log");
   return true;
 }

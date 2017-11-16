@@ -18,6 +18,7 @@
 #include <GL/glu.h>
 
 #include "ie_asset_manager.h"
+#include "ie_log.h"
 #include "ie_shader.h"
 
 namespace ie
@@ -26,20 +27,25 @@ namespace ie
   class GlslLoader
   {
     public:
+    GlslLoader();
+
+    void reset(void);
 
     void load(std::string, std::string, std::string);
     void load(std::string, std::string, std::string,
               std::string, std::string);
 
+    void setLog(Log*);
     void setLoadDestination(AssetManager*);
 
     private:
+    Log* log;
     AssetManager* manager;
 
     void createProgram(std::string, std::vector<std::string>);
     std::string read(std::string);
-    GLuint compileShader(GLenum, std::string);
-    void linkShaders(Shader*, std::vector<GLuint>);
+    GLuint compileShader(GLenum, std::string, std::string);
+    bool linkShaders(Shader*, std::vector<GLuint>);
     void loadProgram(Shader*);
 
   };

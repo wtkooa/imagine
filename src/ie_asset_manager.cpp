@@ -25,6 +25,7 @@
 #include <glm/vec3.hpp>
 #include <glm/vec4.hpp>
 
+#include "ie_log.h"
 #include "ie_material.h"
 #include "ie_mesh.h"
 #include "ie_shader.h"
@@ -33,8 +34,18 @@
 
 ie::AssetManager::AssetManager()
 {
+  reset();
+}
+
+
+void ie::AssetManager::reset(void)
+{
+  log = NULL;
   newAssetId = 1;
 }
+
+
+void ie::AssetManager::setLog(Log* l) {log = l;}
 
 //______________________________________________________________________________
 
@@ -72,12 +83,15 @@ bool ie::AssetManager::load(Mesh* mesh)
     mesh->setAssetId(assignAssetId()); 
     meshAssets[mesh->getAssetId()] = mesh;
     meshNameIdMap[mesh->getName()] = mesh->getAssetId();
+
+    log->info("Loaded Mesh '%s'", mesh->getName().c_str());
+
     return true;
   }
   else
   {
-    std::cout << "Warning: Mesh name (" << mesh->getName() <<
-    ") already exists." << std::endl; 
+    log->warning("Failed to load Mesh '%s' due to naming conflict",
+                 mesh->getName().c_str());
     delete mesh;
     return false;
   }
@@ -95,12 +109,15 @@ bool ie::AssetManager::deleteMesh(std::string name)
     meshNameIdMap.erase(name);
     delete meshAssets[id];
     meshAssets.erase(id);
+
+    log->info("Deleted Mesh '%s'", name.c_str());
+
     return true;
   }
   else
   {
-    std::cout << "Warning: Mesh (" << name <<
-    ") could not be found in manager."  << std::endl; 
+    log->warning("Request to delete Mesh '%s' failed; "
+                 "Mesh could not be found", name.c_str());
     return false;
   }
 }
@@ -119,9 +136,8 @@ bool ie::AssetManager::deleteMesh(unsigned int id)
   }
   else
   {
-    std::cout << "Warning: Mesh with id (" << id <<
-    ") could not be found in manager."  << std::endl; 
-    return false;
+    log->warning("Request to delete Mesh with id '%i' failed; "
+                 "Mesh could not be found", id);
   }
 }
 
@@ -137,12 +153,16 @@ bool ie::AssetManager::load(Material* material)
     material->setAssetId(assignAssetId()); 
     materialAssets[material->getAssetId()] = material;
     materialNameIdMap[material->getName()] = material->getAssetId();
+
+    log->info("Loaded Material '%s'",
+              material->getName().c_str());
+
     return true;
   }
   else
   {
-    std::cout << "Warning: Material name (" << material->getName() <<
-    ") already exists." << std::endl; 
+    log->warning("Failed to load Material '%s' due to naming conflict",
+                 material->getName().c_str());
     delete material;
     return false;
   }
@@ -160,8 +180,8 @@ ie::Material* ie::AssetManager::getMaterial(std::string name)
   }
   else
   {
-    std::cout << "Warning: Material (" << name <<
-    ") could not be found in manager."  << std::endl; 
+    log->warning("Request for Material '%s' failed; "
+                 "Material not be found", name.c_str());
   }
 }
 ie::Material* ie::AssetManager::getMaterial(unsigned int id)
@@ -175,8 +195,8 @@ ie::Material* ie::AssetManager::getMaterial(unsigned int id)
   }
   else
   {
-    std::cout << "Warning: Material with id (" << id <<
-    ") could not be found in manager."  << std::endl; 
+    log->warning("Request for Material with id '%i' failed; "
+                 "Material could not be found", id);
   }
 }
 
@@ -192,12 +212,15 @@ bool ie::AssetManager::deleteMaterial(std::string name)
     materialNameIdMap.erase(name);
     delete materialAssets[id];
     materialAssets.erase(id);
+
+    log->info("Deleted Material '%s'", name.c_str());
+
     return true;
   }
   else
   {
-    std::cout << "Warning: Material (" << name <<
-    ") could not be found in manager."  << std::endl; 
+    log->warning("Request to delete Material '%s' failed; "
+                 "Material could not be found", name.c_str());
     return false;
   }
 }
@@ -216,8 +239,8 @@ bool ie::AssetManager::deleteMaterial(unsigned int id)
   }
   else
   {
-    std::cout << "Warning: Material with id (" << id <<
-    ") could not be found in manager."  << std::endl; 
+    log->warning("Request to delete Material with id '%i' failed; "
+                 "Material could not be found", id);
     return false;
   }
 }
@@ -235,12 +258,16 @@ bool ie::AssetManager::load(Texture* texture)
     texture->setAssetId(assignAssetId()); 
     textureAssets[texture->getAssetId()] = texture;
     textureNameIdMap[texture->getName()] = texture->getAssetId();
+
+    log->info("Loaded Texture '%s'",
+              texture->getName().c_str());
+
     return true;
   }
   else
   {
-    std::cout << "Warning: Texture name (" << texture->getName() <<
-    ") already exists." << std::endl; 
+    log->warning("Failed to load Texture '%s' due to naming conflict",
+                 texture->getName().c_str());
     delete texture;
     return false;
   }
@@ -258,12 +285,16 @@ bool ie::AssetManager::load(Terrain* terrain)
     terrain->setAssetId(assignAssetId()); 
     terrainAssets[terrain->getAssetId()] = terrain;
     terrainNameIdMap[terrain->getName()] = terrain->getAssetId();
+
+    log->info("Loaded Terrain '%s'",
+              terrain->getName().c_str());
+
     return true;
   }
   else
   {
-    std::cout << "Warning: Terrian name (" << terrain->getName() <<
-    ") already exists." << std::endl; 
+    log->warning("Failed to load Terrain '%s' due to naming conflict",
+                 terrain->getName().c_str());
     delete terrain;
     return false;
   }
@@ -281,12 +312,16 @@ bool ie::AssetManager::load(Shader* shader)
     shader->setAssetId(assignAssetId()); 
     shaderAssets[shader->getAssetId()] = shader;
     shaderNameIdMap[shader->getName()] = shader->getAssetId();
+
+    log->info("Loaded Shader '%s'",
+              shader->getName().c_str());
+
     return true;
   }
   else
   {
-    std::cout << "Warning: Shader name (" << shader->getName() <<
-    ") already exists." << std::endl; 
+    log->warning("Failed to load Shader '%s' due to naming conflict",
+                 shader->getName().c_str());
     delete shader;
     return false;
   }
@@ -307,6 +342,8 @@ void ie::AssetManager::quit(void)
   {
     delete it->second;
   }
+
+  log->info("Asset Manager Shutdown");
 }
 
 //______________________________________________________________________________

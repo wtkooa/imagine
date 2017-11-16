@@ -12,6 +12,7 @@
 //______________________________________________________________________________
 
 #include "ie_asset_manager.h"
+#include "ie_log.h"
 #include "ie_terrain_generator.h"
 
 namespace ie
@@ -25,11 +26,13 @@ namespace ie
     void reset(void);
     void quit(void);
 
+    void setLog(Log*);
     void setLoadDestination(AssetManager*);
 
     TerrainGenerator terrainEditor;
 
     private:
+    Log* log;
     AssetManager* manager; 
 
   };

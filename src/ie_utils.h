@@ -28,6 +28,8 @@ namespace ie
 
   std::string removeChar(std::string, char);
 
+  std::string getFilenameFromPath(std::string);
+
   int countTokens(std::string, char);
   int countChar(std::string, char);
 

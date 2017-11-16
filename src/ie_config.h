@@ -17,8 +17,13 @@
 
 namespace ie
 {
+  extern int IE_MAJOR_VERSION;
+  extern int IE_MINOR_VERSION;
+  extern int IE_PATCH_VERSION;
   extern int DEFAULT_GL_MAJOR_VERSION;
   extern int DEFAULT_GL_MINOR_VERSION;
+  extern unsigned int DEFAULT_IE_LOGGING;
+  extern std::string DEFAULT_IE_LOGFILE;
   extern std::string HOME_PATH;
   extern std::string DEFAULT_WAVEFRONT_PATH;
   extern std::string DEFAULT_GLSL_PATH;
@@ -48,6 +53,22 @@ namespace ie
   extern const float DEFAULT_OBJ_SENSITIVITY;
   extern const short DEFAULT_TERRAIN_DIM;
   extern const short DEFAULT_TERRAIN_UNITS;
+
+  class SDLContextDependentConfigs
+  {
+    public:
+    void fetchSDLConfigs(void);
+    void fetchSDLGLConfigs(void);
+
+    int SDL_GL_MAJOR_VERSION;
+    int SDL_GL_MINOR_VERSION;
+    int SDL_MAJOR_VERSION_COMPILED;
+    int SDL_MINOR_VERSION_COMPILED;
+    int SDL_PATCH_VERSION_COMPILED;
+    int SDL_MAJOR_VERSION_LINKED;
+    int SDL_MINOR_VERSION_LINKED;
+    int SDL_PATCH_VERSION_LINKED;
+  };
   
 
   class OpenGlContextDependentConfigs

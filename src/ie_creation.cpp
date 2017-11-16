@@ -10,6 +10,8 @@
 
 #include "ie_creation.h"
 
+#include "ie_log.h"
+
 ie::CreationManager::CreationManager()
 {
   reset();
@@ -19,6 +21,13 @@ ie::CreationManager::CreationManager()
 void ie::CreationManager::reset(void)
 {
   manager = NULL;
+}
+
+
+void ie::CreationManager::setLog(Log* l)
+{
+  log = l;
+  terrainEditor.setLog(log);
 }
 
 
@@ -32,4 +41,6 @@ void ie::CreationManager::setLoadDestination(AssetManager* am)
 void ie::CreationManager::quit(void)
 {
   terrainEditor.quit();
+
+  log->info("Creation Manager Shutdown");
 }

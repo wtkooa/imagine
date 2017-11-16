@@ -1,4 +1,4 @@
-//___|"staticVShader450.glsl"|__________________________________________________
+//___|"staticVShader330c.glsl"|_________________________________________________
 //
 // Project: Imagine: 3D Environment Engine
 // Version: 0.1.0

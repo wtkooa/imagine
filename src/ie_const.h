@@ -31,6 +31,25 @@ namespace ie
   extern const void* OFFSET_2VEC3_1VEC2;
   extern const void* OFFSET_3VEC3_1VEC2;
   extern const glm::vec3 UP_VECTOR;
+
+
+  //BIT FLAGS
+  extern const unsigned int IE_LOG_NONE;
+  extern const unsigned int IE_LOG_INFO_STDOUT;
+  extern const unsigned int IE_LOG_INFO_LOGFILE;
+  extern const unsigned int IE_LOG_WARNING_STDOUT;
+  extern const unsigned int IE_LOG_WARNING_LOGFILE;
+  extern const unsigned int IE_LOG_DEBUG_STDOUT;
+  extern const unsigned int IE_LOG_DEBUG_LOGFILE;
+  extern const unsigned int IE_LOG_ASSERTION_STDOUT;
+  extern const unsigned int IE_LOG_ASSERTION_LOGFILE;
+  extern const unsigned int IE_LOG_EXCEPTION_STDOUT;
+  extern const unsigned int IE_LOG_EXCEPTION_LOGFILE;
+  extern const unsigned int IE_LOG_DATE; 
+  extern const unsigned int IE_LOG_TIME;
+  extern const unsigned int IE_LOG_ALL_STDOUT;
+  extern const unsigned int IE_LOG_ALL_LOGFILE;
+  extern const unsigned int IE_LOG_ALL;
 }
 
 #endif

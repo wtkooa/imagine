@@ -24,6 +24,7 @@
 #include "ie_asset_manager.h"
 #include "ie_config.h"
 #include "ie_enum.h"
+#include "ie_log.h"
 #include "ie_material.h"
 #include "ie_mesh.h"
 #include "ie_texture.h"
@@ -46,6 +47,10 @@ void ie::WavefrontLoader::reset(void)
   workingTexture = NULL;
 }
 
+
+void ie::WavefrontLoader::setLog(Log* l) {log = l;}
+
+
 void ie::WavefrontLoader::setLoadDestination(AssetManager* m)
 {
   manager = m;
@@ -66,8 +71,7 @@ void ie::WavefrontLoader::load(std::string filepath, std::string filename)
   else if (extention == "obj") {loadObj(filepath, filename);}
   else
   {
-    std::cout << "Warning: Unrecognized wavefront file extention (" <<
-    filename << ")." << std::endl;
+    log->warning("Unrecognized Wavefront file extention '%s'", extention.c_str());
   }
 }
 
@@ -79,8 +83,8 @@ void ie::WavefrontLoader::loadObj(std::string filepath, std::string filename)
 
   if (failedToOpen)
   {
-    std::cout << "Warning: Wavefront obj file (" << filename <<
-    ") failed to open for reading." << std::endl;
+    log->warning("Wavefront obj file '%s' failed to open for reading.",
+                 filename.c_str());
   }
   else
   {
@@ -106,8 +110,8 @@ void ie::WavefrontLoader::loadObj(std::string filepath, std::string filename)
       else if (command == "f") {face(tokens);}
       else
       {
-        std::cout << "Warning: Unrecognized wavefront obj command. ("  <<
-        command << ")" << std::endl;
+        log->warning("Unrecognized wavefront obj command '%s'",
+                     command.c_str());
       }
     }
     loadObject();
@@ -132,8 +136,8 @@ void ie::WavefrontLoader::loadObject(void)
   {
     if (containsQuads)
     {
-      std::cout << "Warning: Object (" << workingMesh->getName() <<
-      ") contains quad faces" << std::endl; 
+      log->warning("Object '%s' contains quad faces",
+                   workingMesh->getName().c_str()); 
     }
     loadRenderUnit();
     workingMesh->removeMeshDuplicates(ie::DEFAULT_OBJ_SENSITIVITY);
@@ -209,6 +213,7 @@ void ie::WavefrontLoader::object(std::vector<std::string> tokens,
   loadObject();
   workingMesh = new Mesh();
   bufferRenderUnit = new RenderUnit();
+  workingMesh->setLog(log);
   workingMesh->setName(tokens[0]);
   workingMesh->setFilepath(filepath);
   workingMesh->setFilename(filename);
@@ -310,8 +315,8 @@ void ie::WavefrontLoader::loadMtl(std::string filepath, std::string filename)
 
   if (failedToOpen)
   {
-    std::cout << "Warning: Wavefront mlt file (" << filename <<
-    ") failed to open for reading." << std::endl;
+    log->warning("Wavefront mlt file '%s' failed to open for reading",
+                 filename.c_str());
   }
   else
   {
@@ -340,8 +345,8 @@ void ie::WavefrontLoader::loadMtl(std::string filepath, std::string filename)
       else if (command == "map_bump") {map_bump(tokens);}
       else
       {
-        std::cout << "Warning: Unrecognized wavefront mtl command. ("  <<
-        command << ")" << std::endl;
+        log->warning("Unrecognized wavefront mtl command '%s'",
+                     command.c_str());
       }
     }
     loadMaterial();

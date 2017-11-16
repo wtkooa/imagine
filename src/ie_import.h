@@ -14,6 +14,7 @@
 #include <string>
 
 #include "ie_asset_manager.h"
+#include "ie_log.h"
 #include "ie_glsl.h"
 #include "ie_wavefront.h"
 
@@ -22,9 +23,14 @@ namespace ie
   class LoadManager 
   {
     public:
+    LoadManager();
+
+    void reset(void);
+    void quit(void);
+
+    void setLog(Log*);
     void setLoadDestination(AssetManager*);
 
-    void quit(void);
 
     void load(std::string);
     void load(std::string, std::string);
@@ -33,6 +39,7 @@ namespace ie
               std::string, std::string);
 
     private:
+    Log* log;
     AssetManager* manager;
 
     WavefrontLoader obj; 

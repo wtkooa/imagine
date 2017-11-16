@@ -24,6 +24,7 @@
 #include <glm/vec3.hpp>
 #include <glm/vec4.hpp>
 
+#include "ie_log.h"
 #include "ie_material.h"
 #include "ie_mesh.h"
 #include "ie_shader.h"
@@ -53,9 +54,14 @@ namespace ie
     bool deleteMesh(std::string);
     bool deleteMesh(unsigned int);
 
+    void setLog(Log*);
+
+    void reset(void);
     void quit(void);
 
     private:
+    Log* log;
+
     //ASSIGNING AND MANAGING ASSET IDS
     unsigned int newAssetId;
     std::list<unsigned int> usedAssetIds; 

@@ -15,6 +15,7 @@
 #include <vector>
 
 #include "ie_asset_manager.h"
+#include "ie_log.h"
 #include "ie_material.h"
 #include "ie_mesh.h"
 #include "ie_texture.h"
@@ -30,12 +31,14 @@ namespace ie
     void reset(void);
     void quit(void);
 
+    void setLog(Log*);
     void setLoadDestination(AssetManager*);
 
     void load(std::string);
     void load(std::string, std::string);
     
     private:
+    Log* log;
     AssetManager* manager;
     void loadObj(std::string, std::string);
     void loadMtl(std::string, std::string);
