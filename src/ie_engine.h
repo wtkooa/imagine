@@ -49,7 +49,7 @@ namespace ie
     void update(void);
     void render(void);
 
-    bool cleanup(void);
+    bool quit(void);
 
     SDL_Window * mainWindow;
     SDL_GLContext mainGlContext;

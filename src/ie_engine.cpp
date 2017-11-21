@@ -46,7 +46,7 @@ ie::Engine::Engine(void)
 {
   init();
   run();
-  cleanup();
+  quit();
 }
 
 
@@ -351,7 +351,7 @@ void ie::Engine::render(void)
   SDL_GL_SwapWindow(mainWindow);
 }
 
-bool ie::Engine::cleanup(void)
+bool ie::Engine::quit(void)
 {
   //vram.quit();
   local.quit();

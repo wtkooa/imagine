@@ -7,6 +7,7 @@ cppFiles = -c main.cpp src/ie_engine.cpp src/ie_const.cpp src/ie_time.cpp \
             src/ie_material.cpp src/ie_creation.cpp src/ie_terrain.cpp\
             src/ie_controller.cpp src/ie_terrain_generator.cpp\
             src/ie_asset.cpp src/ie_texture.cpp src/ie_log.cpp\
+            src/ie_file_system.cpp
             
 
 objectFiles = main.o ie_engine.o ie_const.o ie_time.o ie_mesh.o ie_material.o\
@@ -14,6 +15,7 @@ objectFiles = main.o ie_engine.o ie_const.o ie_time.o ie_mesh.o ie_material.o\
               ie_shader.o ie_config.o ie_glsl.o ie_terrain.o\
               ie_import.o ie_creation.o ie_terrain_generator.o\
               ie_controller.o ie_asset.o ie_texture.o ie_log.o\
+              ie_file_system.o
               
 
 srcFiles = -lSDL2 -lSDL2main -lSDL2_image -lGL -lGLU

@@ -13,7 +13,6 @@
 
 #include <cstdarg>
 #include <string>
-#include <fstream>
 
 #include "ie_config.h"
 #include "ie_const.h"
@@ -39,7 +38,6 @@ namespace ie
 
     private:
     FILE* logFile;
-
     unsigned int channelOptions; 
   };
 

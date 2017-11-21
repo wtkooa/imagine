@@ -67,24 +67,6 @@ namespace ie
     void release(void);
   };
 
-
-  class StaticRenderUnitLocation 
-  {
-    public:
-    short renderUnit;
-    IEenum format;
-    unsigned int location;
-    unsigned int indexAmount;
-  };
-
-
-  class TerrainRenderUnitLocation
-  {
-    public:
-    unsigned int location;
-    unsigned int indexAmount;
-  };
-
 }
 
 #endif

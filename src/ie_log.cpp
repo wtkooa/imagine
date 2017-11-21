@@ -25,7 +25,7 @@ ie::Log::Log()
   if (failedToOpen)
   {
     channelOptions = IE_LOG_ALL_STDOUT|IE_LOG_DATE|IE_LOG_TIME;
-    warning("Log file %s failed to open for writing", DEFAULT_IE_LOGFILE);
+    warning("Log file '%s' failed to open for writing", DEFAULT_IE_LOGFILE);
   }
 }
 
