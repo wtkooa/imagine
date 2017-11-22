@@ -14,31 +14,40 @@
 #include <cstdarg>
 #include <string>
 
+#include "ie_communication.h"
 #include "ie_config.h"
 #include "ie_const.h"
+#include "ie_messages.h"
 
 namespace ie
 {
 
-  class Log
+  class Log : public Icommunication
   {
     public:
     Log();
     ~Log();
 
+    void init(void);
+
     void setChannels(unsigned int);
     unsigned int getChannels(void);
 
-    void info(const char*, ...);
-    void warning(const char*, ...);
+    void info(LogMsg*);
+    void warning(LogMsg*);
     void debug(const char*, ...);
     void assertion(std::string, bool);
     void exception(const char*, ...);
 
+    void rxMsg(Imessage*);
 
     private:
     FILE* logFile;
     unsigned int channelOptions; 
+
+    void handleLogMsg(LogMsg*);
+    void handleSystemMsg(SystemMsg*);
+
   };
 
 }

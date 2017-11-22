@@ -24,7 +24,6 @@ namespace ie
     public:
     Asset();
 
-    void setLog(Log*);
     void setAssetId(unsigned int);
     void setName(std::string);
     void setFilename(std::string);
@@ -37,7 +36,6 @@ namespace ie
     virtual void reset(void);
 
     protected:
-    Log* log;
 
     unsigned int assetId;
     std::string name;

@@ -18,28 +18,31 @@
 #include <GL/glu.h>
 
 #include "ie_asset_manager.h"
+#include "ie_communication.h"
 #include "ie_log.h"
+#include "ie_messages.h"
 #include "ie_shader.h"
 
 namespace ie
 {
 
-  class GlslLoader
+  class GlslLoader : public Icommunication
   {
     public:
     GlslLoader();
 
     void reset(void);
+    void init(void);
 
     void load(std::string, std::string, std::string);
     void load(std::string, std::string, std::string,
               std::string, std::string);
 
-    void setLog(Log*);
     void setLoadDestination(AssetManager*);
 
+    void rxMsg(Imessage*);
+
     private:
-    Log* log;
     AssetManager* manager;
 
     void createProgram(std::string, std::vector<std::string>);
@@ -47,7 +50,6 @@ namespace ie
     GLuint compileShader(GLenum, std::string, std::string);
     bool linkShaders(Shader*, std::vector<GLuint>);
     void loadProgram(Shader*);
-
   };
 
 }

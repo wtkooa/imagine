@@ -15,24 +15,26 @@
 #include <glm/vec3.hpp>
 #include <SDL2/SDL.h>
 
+#include "ie_communication.h"
 #include "ie_enum.h"
 #include "ie_log.h"
+#include "ie_messages.h"
 
 namespace ie
 {
 
-
-  class Controller
+  class Controller : public Icommunication
   {
     public:
     Controller();
 
     void reset(void);
+    void init(void);
 
     void update(void);
 
-    void setLog(Log*);
-    void setEngineOnOffSwitch(bool*);
+    void rxMsg(Imessage*);
+
     void setWindow(SDL_Window*);
     void setMode(IEenum);
 
@@ -47,15 +49,13 @@ namespace ie
     void clearScrollEvent(void);
 
     private:
-    Log* log;
-
     void handleEvents(void);
+    void handleShutdown(void);
     void handleResize(int width, int height);
 
     void setGrabMode(SDL_bool);
     bool getGrabMode(void);
 
-    bool* engineRun;
     SDL_Window * window;
     IEenum mode;
 

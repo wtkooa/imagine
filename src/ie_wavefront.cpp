@@ -22,11 +22,13 @@
 #include <glm/vec4.hpp>
 
 #include "ie_asset_manager.h"
+#include "ie_communication.h"
 #include "ie_config.h"
 #include "ie_enum.h"
 #include "ie_log.h"
 #include "ie_material.h"
 #include "ie_mesh.h"
+#include "ie_messages.h"
 #include "ie_texture.h"
 #include "ie_utils.h"
 
@@ -48,7 +50,14 @@ void ie::WavefrontLoader::reset(void)
 }
 
 
-void ie::WavefrontLoader::setLog(Log* l) {log = l;}
+void ie::WavefrontLoader::init(void)
+{
+  nexus->addConnection(IE_WAVEFRONT_ICOM_HANDLE, this);
+  NexusMsg msg(IE_LOG_ICOM_HANDLE, IE_NEXUS_OUT_CONNECTION_CMD, this);
+  nexus->rxMsg(&msg); 
+  msg.target = IE_ASSET_MANAGER_ICOM_HANDLE;
+  nexus->rxMsg(&msg); 
+}
 
 
 void ie::WavefrontLoader::setLoadDestination(AssetManager* m)
@@ -71,7 +80,7 @@ void ie::WavefrontLoader::load(std::string filepath, std::string filename)
   else if (extention == "obj") {loadObj(filepath, filename);}
   else
   {
-    log->warning("Unrecognized Wavefront file extention '%s'", extention.c_str());
+    //log->warning("Unrecognized Wavefront file extention '%s'", extention.c_str());
   }
 }
 
@@ -83,8 +92,8 @@ void ie::WavefrontLoader::loadObj(std::string filepath, std::string filename)
 
   if (failedToOpen)
   {
-    log->warning("Wavefront obj file '%s' failed to open for reading.",
-                 filename.c_str());
+    //log->warning("Wavefront obj file '%s' failed to open for reading.",
+    //             filename.c_str());
   }
   else
   {
@@ -110,8 +119,8 @@ void ie::WavefrontLoader::loadObj(std::string filepath, std::string filename)
       else if (command == "f") {face(tokens);}
       else
       {
-        log->warning("Unrecognized wavefront obj command '%s'",
-                     command.c_str());
+        //log->warning("Unrecognized wavefront obj command '%s'",
+        //             command.c_str());
       }
     }
     loadObject();
@@ -136,8 +145,8 @@ void ie::WavefrontLoader::loadObject(void)
   {
     if (containsQuads)
     {
-      log->warning("Object '%s' contains quad faces",
-                   workingMesh->getName().c_str()); 
+      //log->warning("Object '%s' contains quad faces",
+      //             workingMesh->getName().c_str()); 
     }
     loadRenderUnit();
     workingMesh->removeMeshDuplicates(ie::DEFAULT_OBJ_SENSITIVITY);
@@ -213,7 +222,6 @@ void ie::WavefrontLoader::object(std::vector<std::string> tokens,
   loadObject();
   workingMesh = new Mesh();
   bufferRenderUnit = new RenderUnit();
-  workingMesh->setLog(log);
   workingMesh->setName(tokens[0]);
   workingMesh->setFilepath(filepath);
   workingMesh->setFilename(filename);
@@ -315,8 +323,8 @@ void ie::WavefrontLoader::loadMtl(std::string filepath, std::string filename)
 
   if (failedToOpen)
   {
-    log->warning("Wavefront mlt file '%s' failed to open for reading",
-                 filename.c_str());
+    //log->warning("Wavefront mlt file '%s' failed to open for reading",
+    //             filename.c_str());
   }
   else
   {
@@ -345,8 +353,8 @@ void ie::WavefrontLoader::loadMtl(std::string filepath, std::string filename)
       else if (command == "map_bump") {map_bump(tokens);}
       else
       {
-        log->warning("Unrecognized wavefront mtl command '%s'",
-                     command.c_str());
+        //log->warning("Unrecognized wavefront mtl command '%s'",
+        //             command.c_str());
       }
     }
     loadMaterial();
@@ -452,6 +460,10 @@ void ie::WavefrontLoader::map_bump(std::vector<std::string> tokens)
   workingMaterial->setNormalTexture(texture);
 }
 
+void ie::WavefrontLoader::rxMsg(Imessage*)
+{
+  //TODO populate
+}
 
 void ie::WavefrontLoader::quit(void)
 {

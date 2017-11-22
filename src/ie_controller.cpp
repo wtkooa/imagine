@@ -20,8 +20,10 @@
 #include <glm/vec3.hpp>
 #include <SDL2/SDL.h>
 
+#include "ie_communication.h"
 #include "ie_enum.h"
 #include "ie_log.h"
+#include "ie_messages.h"
 
 ie::Controller::Controller()
 {
@@ -31,11 +33,20 @@ ie::Controller::Controller()
 
 void ie::Controller::reset(void)
 {
-  log = NULL;
   translEvent = glm::vec3(0.0f, 0.0f, 0.0f);
   rotateEvent = glm::vec2(0.0f, 0.0f);
   setGrabMode(SDL_TRUE);
   mode = IE_FIRST_PERSON_MODE;
+}
+
+
+void ie::Controller::init(void)
+{
+  nexus->addConnection(IE_CONTROLLER_ICOM_HANDLE, this);
+  NexusMsg msg(IE_LOG_ICOM_HANDLE, IE_NEXUS_OUT_CONNECTION_CMD, this);
+  nexus->rxMsg(&msg); 
+  msg.target = IE_ENGINE_ICOM_HANDLE;
+  nexus->rxMsg(&msg); 
 }
 
 
@@ -44,14 +55,6 @@ void ie::Controller::update(void)
   handleEvents();
 }
 
-
-void ie::Controller::setLog(Log* l) {log = l;}
-
-
-void ie::Controller::setEngineOnOffSwitch(bool* o)
-{
-  engineRun = o;
-}
 
 void ie::Controller::setGrabMode(SDL_bool mode)
 {
@@ -76,12 +79,12 @@ void ie::Controller::toggleGrabMode(void)
 {
   if (SDL_GetWindowGrab(window) == SDL_FALSE) 
   {
-    log->info("Toggled Grab Mode On");
+    //log->info("Toggled Grab Mode On");
     setGrabMode(SDL_TRUE);
   }
   else
   {
-    log->info("Toggled Grab Mode Off");
+    //log->info("Toggled Grab Mode Off");
     setGrabMode(SDL_FALSE);
   } 
 }
@@ -92,12 +95,12 @@ void ie::Controller::togglePlayerMode(void)
   {
     if (mode == IE_FIRST_PERSON_MODE)
     {
-      log->info("Toggled Third Person Mode");
+      //log->info("Toggled Third Person Mode");
       mode = IE_THIRD_PERSON_MODE;
     }
     else if (mode == IE_THIRD_PERSON_MODE)
     {
-      log->info("Toggled First Person Mode");
+      //log->info("Toggled First Person Mode");
       mode = IE_FIRST_PERSON_MODE;
     }
   }
@@ -130,10 +133,11 @@ void ie::Controller::handleEvents(void)
   {
     switch (evnt.type)
     {
+
       case SDL_QUIT:
-        *engineRun = false;
-        log->info("Engine Switched Off");
-        break;
+        handleShutdown();
+      break;
+
       case SDL_WINDOWEVENT:
         switch (evnt.window.event)
         {
@@ -162,10 +166,11 @@ void ie::Controller::handleEvents(void)
       case SDL_KEYDOWN:
         switch (evnt.key.keysym.sym)
         {
+
           case SDLK_ESCAPE:
-            *engineRun = false;
-            log->info("Engine Switched Off");
-            break;
+            handleShutdown();
+          break;
+
           case SDLK_e:
             if (!evnt.key.repeat)
             {
@@ -241,6 +246,19 @@ void ie::Controller::handleEvents(void)
         break;
     }
   }
+}
+
+
+void ie::Controller::handleShutdown(void)
+{
+  SystemMsg sys(IE_SYSTEM_SHUTDOWN_CMD);
+  txMsg(&sys);
+}
+
+
+void ie::Controller::rxMsg(Imessage*)
+{
+  //TODO populate
 }
 
 

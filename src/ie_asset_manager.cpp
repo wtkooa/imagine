@@ -25,9 +25,11 @@
 #include <glm/vec3.hpp>
 #include <glm/vec4.hpp>
 
+#include "ie_communication.h"
 #include "ie_log.h"
 #include "ie_material.h"
 #include "ie_mesh.h"
+#include "ie_messages.h"
 #include "ie_shader.h"
 #include "ie_terrain.h"
 #include "ie_texture.h"
@@ -40,12 +42,16 @@ ie::AssetManager::AssetManager()
 
 void ie::AssetManager::reset(void)
 {
-  log = NULL;
   newAssetId = 1;
 }
 
 
-void ie::AssetManager::setLog(Log* l) {log = l;}
+void ie::AssetManager::init(void)
+{
+  nexus->addConnection(IE_ASSET_MANAGER_ICOM_HANDLE, this);
+  NexusMsg msg(IE_LOG_ICOM_HANDLE, IE_NEXUS_OUT_CONNECTION_CMD, this);
+  nexus->rxMsg(&msg); 
+}
 
 //______________________________________________________________________________
 
@@ -84,14 +90,14 @@ bool ie::AssetManager::load(Mesh* mesh)
     meshAssets[mesh->getAssetId()] = mesh;
     meshNameIdMap[mesh->getName()] = mesh->getAssetId();
 
-    log->info("Loaded Mesh '%s'", mesh->getName().c_str());
+    //log->info("Loaded Mesh '%s'", mesh->getName().c_str());
 
     return true;
   }
   else
   {
-    log->warning("Failed to load Mesh '%s' due to naming conflict",
-                 mesh->getName().c_str());
+    //log->warning("Failed to load Mesh '%s' due to naming conflict",
+    //             mesh->getName().c_str());
     delete mesh;
     return false;
   }
@@ -110,14 +116,14 @@ bool ie::AssetManager::deleteMesh(std::string name)
     delete meshAssets[id];
     meshAssets.erase(id);
 
-    log->info("Deleted Mesh '%s'", name.c_str());
+    //log->info("Deleted Mesh '%s'", name.c_str());
 
     return true;
   }
   else
   {
-    log->warning("Request to delete Mesh '%s' failed; "
-                 "Mesh could not be found", name.c_str());
+    //log->warning("Request to delete Mesh '%s' failed; "
+    //             "Mesh could not be found", name.c_str());
     return false;
   }
 }
@@ -136,8 +142,8 @@ bool ie::AssetManager::deleteMesh(unsigned int id)
   }
   else
   {
-    log->warning("Request to delete Mesh with id '%i' failed; "
-                 "Mesh could not be found", id);
+    //log->warning("Request to delete Mesh with id '%i' failed; "
+    //             "Mesh could not be found", id);
   }
 }
 
@@ -154,15 +160,15 @@ bool ie::AssetManager::load(Material* material)
     materialAssets[material->getAssetId()] = material;
     materialNameIdMap[material->getName()] = material->getAssetId();
 
-    log->info("Loaded Material '%s'",
-              material->getName().c_str());
+    //log->info("Loaded Material '%s'",
+    //          material->getName().c_str());
 
     return true;
   }
   else
   {
-    log->warning("Failed to load Material '%s' due to naming conflict",
-                 material->getName().c_str());
+    //log->warning("Failed to load Material '%s' due to naming conflict",
+    //             material->getName().c_str());
     delete material;
     return false;
   }
@@ -180,8 +186,8 @@ ie::Material* ie::AssetManager::getMaterial(std::string name)
   }
   else
   {
-    log->warning("Request for Material '%s' failed; "
-                 "Material not be found", name.c_str());
+    //log->warning("Request for Material '%s' failed; "
+    //             "Material not be found", name.c_str());
   }
 }
 ie::Material* ie::AssetManager::getMaterial(unsigned int id)
@@ -195,8 +201,8 @@ ie::Material* ie::AssetManager::getMaterial(unsigned int id)
   }
   else
   {
-    log->warning("Request for Material with id '%i' failed; "
-                 "Material could not be found", id);
+    //log->warning("Request for Material with id '%i' failed; "
+    //             "Material could not be found", id);
   }
 }
 
@@ -213,14 +219,14 @@ bool ie::AssetManager::deleteMaterial(std::string name)
     delete materialAssets[id];
     materialAssets.erase(id);
 
-    log->info("Deleted Material '%s'", name.c_str());
+    //log->info("Deleted Material '%s'", name.c_str());
 
     return true;
   }
   else
   {
-    log->warning("Request to delete Material '%s' failed; "
-                 "Material could not be found", name.c_str());
+    //log->warning("Request to delete Material '%s' failed; "
+    //             "Material could not be found", name.c_str());
     return false;
   }
 }
@@ -239,8 +245,8 @@ bool ie::AssetManager::deleteMaterial(unsigned int id)
   }
   else
   {
-    log->warning("Request to delete Material with id '%i' failed; "
-                 "Material could not be found", id);
+    //log->warning("Request to delete Material with id '%i' failed; "
+    //             "Material could not be found", id);
     return false;
   }
 }
@@ -259,15 +265,15 @@ bool ie::AssetManager::load(Texture* texture)
     textureAssets[texture->getAssetId()] = texture;
     textureNameIdMap[texture->getName()] = texture->getAssetId();
 
-    log->info("Loaded Texture '%s'",
-              texture->getName().c_str());
+    //log->info("Loaded Texture '%s'",
+    //          texture->getName().c_str());
 
     return true;
   }
   else
   {
-    log->warning("Failed to load Texture '%s' due to naming conflict",
-                 texture->getName().c_str());
+    //log->warning("Failed to load Texture '%s' due to naming conflict",
+    //             texture->getName().c_str());
     delete texture;
     return false;
   }
@@ -286,15 +292,15 @@ bool ie::AssetManager::load(Terrain* terrain)
     terrainAssets[terrain->getAssetId()] = terrain;
     terrainNameIdMap[terrain->getName()] = terrain->getAssetId();
 
-    log->info("Loaded Terrain '%s'",
-              terrain->getName().c_str());
+    //log->info("Loaded Terrain '%s'",
+    //          terrain->getName().c_str());
 
     return true;
   }
   else
   {
-    log->warning("Failed to load Terrain '%s' due to naming conflict",
-                 terrain->getName().c_str());
+    //log->warning("Failed to load Terrain '%s' due to naming conflict",
+    //             terrain->getName().c_str());
     delete terrain;
     return false;
   }
@@ -313,19 +319,29 @@ bool ie::AssetManager::load(Shader* shader)
     shaderAssets[shader->getAssetId()] = shader;
     shaderNameIdMap[shader->getName()] = shader->getAssetId();
 
-    log->info("Loaded Shader '%s'",
-              shader->getName().c_str());
+    //log->info("Loaded Shader '%s'",
+    //          shader->getName().c_str());
 
     return true;
   }
   else
   {
-    log->warning("Failed to load Shader '%s' due to naming conflict",
-                 shader->getName().c_str());
+    //log->warning("Failed to load Shader '%s' due to naming conflict",
+    //             shader->getName().c_str());
     delete shader;
     return false;
   }
 }
+
+//___|HANDLING MESSAGES|________________________________________________________
+
+void ie::AssetManager::rxMsg(Imessage* msg)
+{
+  printf("Asset Manager received a message.");
+}
+
+//______________________________________________________________________________
+
 //___|CLEANING UP|______________________________________________________________
 
 void ie::AssetManager::quit(void)
@@ -343,7 +359,7 @@ void ie::AssetManager::quit(void)
     delete it->second;
   }
 
-  log->info("Asset Manager Shutdown");
+  //log->info("Asset Manager Shutdown");
 }
 
 //______________________________________________________________________________

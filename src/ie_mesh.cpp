@@ -79,10 +79,6 @@ unsigned int ie::Mesh::removeMeshDuplicates(float sensitivity)
   {
     duplicateAmount += (*ru)->removeDuplicates(sensitivity);
   }
-
-  log->info("%s removed %i vertex duplicates using %f sensitivity",
-            getName().c_str(), duplicateAmount, sensitivity);
-  
   return duplicateAmount;
 }
 void ie::Mesh::removeRenderUnitDuplicates(unsigned int ru, float sensitivity)

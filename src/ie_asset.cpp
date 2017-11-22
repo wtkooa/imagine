@@ -21,7 +21,6 @@ ie::Asset::Asset()
 
 void ie::Asset::reset(void)
 {
-  log = NULL;
   assetId = 0;
   name = "none";
   filename = "none";
@@ -29,8 +28,6 @@ void ie::Asset::reset(void)
 }
 
 //GETTERS AND SETTERS
-void ie::Asset::setLog(Log* l) {log = l;}
-
 void ie::Asset::setAssetId(unsigned int id) {assetId = id;}
 void ie::Asset::setName(std::string n) {name = n;}
 

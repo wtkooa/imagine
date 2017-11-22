@@ -15,30 +15,33 @@
 #include <vector>
 
 #include "ie_asset_manager.h"
+#include "ie_communication.h"
 #include "ie_log.h"
 #include "ie_material.h"
 #include "ie_mesh.h"
+#include "ie_messages.h"
 #include "ie_texture.h"
 
 namespace ie
 {
 
-  class WavefrontLoader
+  class WavefrontLoader : public Icommunication
   {
     public:
     WavefrontLoader();
 
     void reset(void);
+    void init(void);
     void quit(void);
 
-    void setLog(Log*);
     void setLoadDestination(AssetManager*);
+
+    void rxMsg(Imessage*);
 
     void load(std::string);
     void load(std::string, std::string);
     
     private:
-    Log* log;
     AssetManager* manager;
     void loadObj(std::string, std::string);
     void loadMtl(std::string, std::string);

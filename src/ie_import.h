@@ -14,23 +14,26 @@
 #include <string>
 
 #include "ie_asset_manager.h"
+#include "ie_communication.h"
 #include "ie_log.h"
 #include "ie_glsl.h"
+#include "ie_messages.h"
 #include "ie_wavefront.h"
 
 namespace ie
 {
-  class LoadManager 
+  class ImportManager : public Icommunication 
   {
     public:
-    LoadManager();
+    ImportManager();
 
     void reset(void);
+    void init(void);
     void quit(void);
 
-    void setLog(Log*);
     void setLoadDestination(AssetManager*);
 
+    void rxMsg(Imessage*);
 
     void load(std::string);
     void load(std::string, std::string);
@@ -39,7 +42,6 @@ namespace ie
               std::string, std::string);
 
     private:
-    Log* log;
     AssetManager* manager;
 
     WavefrontLoader obj; 

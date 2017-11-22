@@ -12,8 +12,11 @@
 
 #include <ctime>
 
+#include "ie_communication.h"
 #include "ie_config.h"
 #include "ie_const.h"
+#include "ie_enum.h"
+#include "ie_messages.h"
 
 ie::Log::Log()
 {
@@ -25,7 +28,9 @@ ie::Log::Log()
   if (failedToOpen)
   {
     channelOptions = IE_LOG_ALL_STDOUT|IE_LOG_DATE|IE_LOG_TIME;
-    warning("Log file '%s' failed to open for writing", DEFAULT_IE_LOGFILE);
+    LogMsg warning(IE_LOG_WARNING_CMD);
+    warning.fString("Log file '%s' failed to open for writing", DEFAULT_IE_LOGFILE);
+    handleLogMsg(&warning);
   }
 }
 
@@ -40,10 +45,16 @@ ie::Log::~Log()
 }
 
 
-void ie::Log::info(const char* fmt, ...)
+void ie::Log::init(void)
 {
-  va_list args;
+  nexus->addConnection(IE_LOG_ICOM_HANDLE, this);
+  NexusMsg msg(IE_ENGINE_ICOM_HANDLE, IE_NEXUS_IN_CONNECTION_CMD, this);
+  nexus->rxMsg(&msg);
+}
 
+
+void ie::Log::info(LogMsg* msg)
+{
   bool useDate = IE_LOG_DATE & channelOptions;
   bool useTime = IE_LOG_TIME & channelOptions;
   bool useStdOut = IE_LOG_INFO_STDOUT & channelOptions;
@@ -69,9 +80,7 @@ void ie::Log::info(const char* fmt, ...)
 
     printf("INFO: ");
 
-    va_start(args, fmt);
-    vprintf(fmt, args);
-    va_end(args);
+    printf("%s", msg->str);
 
     printf("\n");
     fflush(stdout);
@@ -97,9 +106,7 @@ void ie::Log::info(const char* fmt, ...)
 
     fprintf(logFile, "INFO: ");
 
-    va_start(args, fmt);
-    vfprintf(logFile, fmt, args);
-    va_end(args);
+    fprintf(logFile, "%s", msg->str);
 
     fprintf(logFile, "\n");
     fflush(logFile); 
@@ -107,10 +114,8 @@ void ie::Log::info(const char* fmt, ...)
 }
 
 
-void ie::Log::warning(const char* fmt, ...)
+void ie::Log::warning(LogMsg* msg)
 {
-  va_list args;
-
   bool useDate = IE_LOG_DATE & channelOptions;
   bool useTime = IE_LOG_TIME & channelOptions;
   bool useStdOut = IE_LOG_WARNING_STDOUT & channelOptions;
@@ -136,9 +141,7 @@ void ie::Log::warning(const char* fmt, ...)
 
     printf("WARNING: ");
 
-    va_start(args, fmt);
-    vprintf(fmt, args);
-    va_end(args);
+    printf("%s", msg->str);
 
     printf("\n");
     fflush(stdout);
@@ -165,9 +168,7 @@ void ie::Log::warning(const char* fmt, ...)
 
     fprintf(logFile, "WARNING: ");
 
-    va_start(args, fmt);
-    vfprintf(logFile, fmt, args);
-    va_end(args);
+    fprintf(logFile, "%s", msg->str);
 
     fprintf(logFile, "\n");
     fflush(logFile);
@@ -376,5 +377,48 @@ void ie::Log::assertion(std::string msg, bool test)
     fprintf(logFile, "\n");
     fflush(logFile);
     
+  }
+}
+
+
+void ie::Log::rxMsg(Imessage* msg)
+{
+  switch (msg->type)
+  {
+    case IE_LOG_MSG:
+      handleLogMsg(static_cast<LogMsg*>(msg));
+    break;
+    
+    case IE_SYSTEM_MSG:
+      handleSystemMsg(static_cast<SystemMsg*>(msg));
+    break;
+  }
+}
+
+
+void ie::Log::handleLogMsg(LogMsg* msg)
+{
+  switch (msg->command)
+  {
+    case IE_LOG_INFO_CMD:
+      info(msg);
+    break;
+
+    case IE_LOG_WARNING_CMD:
+      warning(msg); 
+    break;
+  }
+}
+
+
+void ie::Log::handleSystemMsg(SystemMsg* msg)
+{
+  LogMsg sysInfo(IE_LOG_INFO_CMD);
+  switch (msg->command)
+  {
+    case IE_SYSTEM_SHUTDOWN_CMD:
+     sysInfo.fString("Engine System Shutdown Triggered");
+     info(&sysInfo);
+    break;
   }
 }

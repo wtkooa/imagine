@@ -24,9 +24,11 @@
 #include <glm/vec3.hpp>
 #include <glm/vec4.hpp>
 
+#include "ie_communication.h"
 #include "ie_log.h"
 #include "ie_material.h"
 #include "ie_mesh.h"
+#include "ie_messages.h"
 #include "ie_shader.h"
 #include "ie_terrain.h"
 #include "ie_texture.h"
@@ -34,10 +36,14 @@
 namespace ie
 {
 
-  class AssetManager 
+  class AssetManager : public Icommunication 
   {
     public:
     AssetManager();
+
+    void reset(void);
+    void init(void);
+    void quit(void);
 
     bool load(Material*);
     bool load(Mesh*);
@@ -54,13 +60,9 @@ namespace ie
     bool deleteMesh(std::string);
     bool deleteMesh(unsigned int);
 
-    void setLog(Log*);
-
-    void reset(void);
-    void quit(void);
+    void rxMsg(Imessage*);
 
     private:
-    Log* log;
 
     //ASSIGNING AND MANAGING ASSET IDS
     unsigned int newAssetId;

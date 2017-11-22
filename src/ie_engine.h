@@ -14,11 +14,13 @@
 #include <SDL2/SDL.h>
 
 #include "ie_asset_manager.h"
+#include "ie_communication.h"
 #include "ie_config.h"
 #include "ie_controller.h"
-#include "ie_creation.h"
+#include "ie_editor.h"
 #include "ie_import.h"
 #include "ie_log.h"
+#include "ie_messages.h"
 //#include "ie_physics_engine.h"
 //#include "ie_render_engine.h"
 //#include "ie_scenegraph.h"
@@ -28,13 +30,15 @@
 namespace ie
 {
 
-  class Engine
+  class Engine : public Icommunication
   {
     public:
     Engine();
 
     private:
     bool init(void);
+    bool initLog(void);
+    bool initNexus(void);
     bool initSdl(void);
     bool initOpenGl(void);
     bool initAssets(void);
@@ -49,6 +53,7 @@ namespace ie
     void update(void);
     void render(void);
 
+
     bool quit(void);
 
     SDL_Window * mainWindow;
@@ -56,9 +61,10 @@ namespace ie
     bool engineRun;
 
     ie::Log log;
+    ie::Nexus nexus;
     ie::AssetManager am;
-    ie::LoadManager local; 
-    ie::CreationManager editor;
+    ie::ImportManager import; 
+    ie::Editor edit;
     //ie::VramManager vram;
     ie::FrameClock clock;
     ie::Controller ctrl;
@@ -68,6 +74,10 @@ namespace ie
 
     ie::SDLContextDependentConfigs sdlConfigs;
     ie::OpenGlContextDependentConfigs openGlConfigs;
+
+    void rxMsg(Imessage*);
+
+    void handleSystemMsg(SystemMsg*);
   };
 
 }

@@ -1,4 +1,4 @@
-//___|"ie_terrain_generator.h"|_________________________________________________
+//___|"ie_terrain_editor.h"|____________________________________________________
 //
 // Project: Imagine: 3D Environment Engine
 // Version: 0.1.0
@@ -8,7 +8,7 @@
 // Copyright (c) 2017 David E Lipps
 //______________________________________________________________________________
 
-#include "ie_terrain_generator.h"
+#include "ie_terrain_editor.h"
 
 #include <iostream>
 
@@ -18,15 +18,17 @@
 #include <glm/gtx/vector_angle.hpp>
 
 #include "ie_config.h"
+#include "ie_communication.h"
 #include "ie_log.h"
+#include "ie_messages.h"
 
-ie::TerrainGenerator::TerrainGenerator()
+ie::TerrainEditor::TerrainEditor()
 {
   reset();
 }
 
 
-void ie::TerrainGenerator::reset(void)
+void ie::TerrainEditor::reset(void)
 {
   manager = NULL;
   workingTerrain = NULL;
@@ -35,20 +37,27 @@ void ie::TerrainGenerator::reset(void)
 }
 
 
-void ie::TerrainGenerator::setLog(Log* l) {log = l;}
+void ie::TerrainEditor::init(void)
+{
+  nexus->addConnection(IE_TERRAIN_EDITOR_ICOM_HANDLE, this);
+  NexusMsg msg(IE_LOG_ICOM_HANDLE, IE_NEXUS_OUT_CONNECTION_CMD, this);
+  nexus->rxMsg(&msg); 
+  msg.target = IE_ASSET_MANAGER_ICOM_HANDLE;
+  nexus->rxMsg(&msg); 
+}
 
 
-void ie::TerrainGenerator::setLoadDestination(AssetManager* am)
+void ie::TerrainEditor::setLoadDestination(AssetManager* am)
 {
   manager = am;
 }
 
 
-void ie::TerrainGenerator::generateTerrain()
+void ie::TerrainEditor::generate()
 {
-  generateTerrain(ie::DEFAULT_TERRAIN_DIM, ie::DEFAULT_TERRAIN_UNITS); 
+  generate(ie::DEFAULT_TERRAIN_DIM, ie::DEFAULT_TERRAIN_UNITS); 
 }
-void ie::TerrainGenerator::generateTerrain(short dim, short unitSize)
+void ie::TerrainEditor::generate(short dim, short unitSize)
 {
   workingTerrain = new Terrain();
   workingTerrain->setDim(dim);
@@ -93,20 +102,20 @@ void ie::TerrainGenerator::generateTerrain(short dim, short unitSize)
 }
 
 
-void ie::TerrainGenerator::setName(std::string name)
+void ie::TerrainEditor::setName(std::string name)
 {
   workingTerrain->setName(name);
   workingMesh->setName(name);
 }
 
 
-void ie::TerrainGenerator::addMaterial(Material* material)
+void ie::TerrainEditor::addMaterial(Material* material)
 {
     workingTerrain->addMaterial(material);
 }
 
 
-void ie::TerrainGenerator::applyPerlin(float seed, float res, float range)
+void ie::TerrainEditor::applyPerlin(float seed, float res, float range)
 {
   RenderUnit* bufferRenderUnit = new RenderUnit();
   short dim = workingTerrain->getDim();
@@ -141,13 +150,13 @@ void ie::TerrainGenerator::applyPerlin(float seed, float res, float range)
   delete bufferRenderUnit;
   calcFaceNormals();
   
-  log->info("Added Perlin Noise to Terrain '%s' using seed: %.2f "
-            "resolution: %.2f range: %.2f",workingTerrain->getName().c_str(),
-            seed, res, range);
+  //log->info("Added Perlin Noise to Terrain '%s' using seed: %.2f "
+  //          "resolution: %.2f range: %.2f",workingTerrain->getName().c_str(),
+  //          seed, res, range);
 }
 
 
-void ie::TerrainGenerator::calcFaceNormals(void)
+void ie::TerrainEditor::calcFaceNormals(void)
 {
   workingRenderUnit->clearAttrib(IE_NORMAL_ATTRIB);
   short dim = workingTerrain->getDim();
@@ -173,12 +182,12 @@ void ie::TerrainGenerator::calcFaceNormals(void)
     }
   }
 
-  log->info("Calculated face normals for Terrain '%s'",
-            workingTerrain->getName().c_str());
+  //log->info("Calculated face normals for Terrain '%s'",
+  //          workingTerrain->getName().c_str());
 }
 
 
-void ie::TerrainGenerator::smoothNormals(void)
+void ie::TerrainEditor::smoothNormals(void)
 {
   short dim = workingTerrain->getDim();
   std::vector<glm::vec3> normals;
@@ -205,12 +214,12 @@ void ie::TerrainGenerator::smoothNormals(void)
     workingRenderUnit->addUnpackedNormalAttrib(glm::normalize(normals[n]));
   }
 
-  log->info("Smoothed Normals for Terrain '%s'",
-            workingTerrain->getName().c_str());
+  //log->info("Smoothed Normals for Terrain '%s'",
+  //          workingTerrain->getName().c_str());
 }
 
 
-void ie::TerrainGenerator::loadTerrain(void)
+void ie::TerrainEditor::loadTerrain(void)
 {
   workingMesh->addRenderUnit(workingRenderUnit);
   workingTerrain->setMesh(workingMesh);
@@ -233,7 +242,13 @@ void ie::TerrainGenerator::loadTerrain(void)
 }
 
 
-void ie::TerrainGenerator::quit(void)
+void ie::TerrainEditor::rxMsg(Imessage*)
+{
+  //TODO populate
+}
+
+
+void ie::TerrainEditor::quit(void)
 {
   if (workingTerrain != NULL) {delete workingTerrain;}
   if (workingMesh != NULL) {delete workingMesh;}

@@ -1,7 +1,7 @@
-#ifndef IE_TERRAIN_GENERATOR_H
-#define IE_TERRAIN_GENERATOR_H
+#ifndef IE_TERRAIN_EDITOR_H
+#define IE_TERRAIN_EDITOR_H
 
-//___|"ie_terrain_generator.h"|_________________________________________________
+//___|"ie_terrain_editor.h"|____________________________________________________
 //
 // Project: Imagine: 3D Environment Engine
 // Version: 0.1.0
@@ -12,25 +12,29 @@
 //______________________________________________________________________________
 
 #include "ie_asset_manager.h"
+#include "ie_communication.h"
 #include "ie_log.h"
+#include "ie_messages.h"
 #include "ie_texture.h"
 
 namespace ie
 {
 
-  class TerrainGenerator
+  class TerrainEditor : public Icommunication
   {
     public:
-    TerrainGenerator();
+    TerrainEditor();
 
     void reset(void);
+    void init(void);
     void quit(void);
 
-    void setLog(Log*);
     void setLoadDestination(AssetManager*);
 
-    void generateTerrain(void);
-    void generateTerrain(short, short);
+    void rxMsg(Imessage*);
+
+    void generate(void);
+    void generate(short, short);
 
     void setName(std::string);
     void addMaterial(Material*);
@@ -41,7 +45,6 @@ namespace ie
     void smoothNormals(void);
 
     private:
-    Log* log;
     AssetManager* manager;
 
     Terrain* workingTerrain;

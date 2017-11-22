@@ -15,34 +15,42 @@
 #include <vector>
 
 #include "ie_asset_manager.h"
+#include "ie_communication.h"
 #include "ie_log.h"
 #include "ie_config.h"
 #include "ie_glsl.h"
+#include "ie_messages.h"
 #include "ie_utils.h"
 #include "ie_wavefront.h"
 
-ie::LoadManager::LoadManager()
+ie::ImportManager::ImportManager()
 {
   reset();
 }
 
 
-void ie::LoadManager::reset()
+void ie::ImportManager::reset(void)
 {
-  log = NULL;
+  nexus = NULL;
   manager = NULL;
 }
 
 
-void ie::LoadManager::setLog(Log* l)
+void ie::ImportManager::init(void)
 {
-  log = l;
-  obj.setLog(log);
-  glsl.setLog(log);
+  nexus->addConnection(IE_IMPORT_ICOM_HANDLE, this);
+  NexusMsg msg(IE_LOG_ICOM_HANDLE, IE_NEXUS_OUT_CONNECTION_CMD, this);
+  nexus->rxMsg(&msg); 
+
+  obj.connectNexus(nexus);
+  obj.init();
+
+  glsl.connectNexus(nexus);
+  glsl.init();
 }
 
 
-void ie::LoadManager::setLoadDestination(AssetManager* am)
+void ie::ImportManager::setLoadDestination(AssetManager* am)
 {
   manager = am;
   obj.setLoadDestination(am);
@@ -50,12 +58,12 @@ void ie::LoadManager::setLoadDestination(AssetManager* am)
 }
 
 
-void ie::LoadManager::load(std::string filename)
+void ie::ImportManager::load(std::string filename)
 {
   load("", filename);
 }
 
-void ie::LoadManager::load(std::string filepath, std::string filename)
+void ie::ImportManager::load(std::string filepath, std::string filename)
 {
   std::vector<std::string> tokens = split(filename, ".");
   std::string extention = tokens.back();
@@ -70,19 +78,19 @@ void ie::LoadManager::load(std::string filepath, std::string filename)
   }
   else
   {
-    log->warning("Unrecognized file extention '%s' in file '%s'",
-                 extention.c_str(), filename.c_str());
+    //log->warning("Unrecognized file extention '%s' in file '%s'",
+    //             extention.c_str(), filename.c_str());
   }
 }
 
 
-void ie::LoadManager::load(std::string name, std::string vertex,
+void ie::ImportManager::load(std::string name, std::string vertex,
                            std::string fragment)
 {
   load(name, "", vertex, "", fragment);
 }
 
-void ie::LoadManager::load(std::string name, std::string vertexPath,
+void ie::ImportManager::load(std::string name, std::string vertexPath,
                            std::string vertex, std::string fragmentPath,
                            std::string fragment)
 {
@@ -92,9 +100,15 @@ void ie::LoadManager::load(std::string name, std::string vertexPath,
   else {glsl.load(name, vertexPath, vertex, fragmentPath, fragment);}
 }
 
-void ie::LoadManager::quit(void)
+void ie::ImportManager::rxMsg(Imessage*)
+{
+  //TODO populate
+}
+
+
+void ie::ImportManager::quit(void)
 {
   obj.quit();
 
-  log->info("Import Manager Shutdown");
+  //log->info("Import Manager Shutdown");
 }

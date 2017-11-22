@@ -21,8 +21,10 @@
 #include <GL/glu.h>
 
 #include "ie_asset_manager.h"
+#include "ie_communication.h"
 #include "ie_config.h"
 #include "ie_log.h"
+#include "ie_messages.h"
 #include "ie_shader.h"
 #include "ie_utils.h"
 
@@ -34,12 +36,18 @@ ie::GlslLoader::GlslLoader()
 
 void ie::GlslLoader::reset(void)
 {
-  log = NULL;
   manager = NULL;
 }
 
 
-void ie::GlslLoader::setLog(Log* l) {log = l;}
+void ie::GlslLoader::init(void)
+{
+  nexus->addConnection(IE_GLSL_ICOM_HANDLE, this);
+  NexusMsg msg(IE_LOG_ICOM_HANDLE, IE_NEXUS_OUT_CONNECTION_CMD, this);
+  nexus->rxMsg(&msg); 
+  msg.target = IE_ASSET_MANAGER_ICOM_HANDLE;
+  nexus->rxMsg(&msg); 
+}
 
 
 void ie::GlslLoader::setLoadDestination(AssetManager* m) {manager = m;}
@@ -121,15 +129,15 @@ std::string ie::GlslLoader::read(std::string file)
     buffer << glslFile.rdbuf();
     glslFile.close();
 
-    log->info("GLSL file '%s' read successfully",
-              getFilenameFromPath(file).c_str());
+    //log->info("GLSL file '%s' read successfully",
+    //          getFilenameFromPath(file).c_str());
 
     return buffer.str();
   }
   else
   {
-    log->warning("GLSL file '%s' failed to open for reading",
-                 getFilenameFromPath(file).c_str());
+    //log->warning("GLSL file '%s' failed to open for reading",
+    //             getFilenameFromPath(file).c_str());
     return "";
   }
 }
@@ -152,17 +160,17 @@ GLuint ie::GlslLoader::compileShader(GLenum type, std::string source,
     GLchar* buffer = new GLchar[infoLogLength];
     GLsizei bufferSize; //Not used: required as func param
     glGetShaderInfoLog(shaderId, infoLogLength, &bufferSize, buffer);
-    log->warning("Shader Compilation Error in file '%s'",
-                 getFilenameFromPath(filename).c_str());
-    log->debug(buffer);
+    //log->warning("Shader Compilation Error in file '%s'",
+    //             getFilenameFromPath(filename).c_str());
+    //log->debug(buffer);
     delete [] buffer;
     GLuint impossibleValue = -1;
     return impossibleValue;
   }
   else
   {
-    log->info("Shader '%s' Compiled Successfully",
-              getFilenameFromPath(filename).c_str());
+    //log->info("Shader '%s' Compiled Successfully",
+    //          getFilenameFromPath(filename).c_str());
     return shaderId;
   }
 }
@@ -187,14 +195,14 @@ bool ie::GlslLoader::linkShaders(Shader* shader, std::vector<GLuint> shaderIds)
     GLchar* buffer = new GLchar[infoLogLength];
     GLsizei bufferSize; //Not used: required as func param
     glGetProgramInfoLog(programId, infoLogLength, &bufferSize, buffer);
-    log->warning("Shader Linking Error");
-    log->debug(buffer);
+    //log->warning("Shader Linking Error");
+    //log->debug(buffer);
     delete [] buffer;
     return false;
   }
   else
   {
-    log->info("Shader Linking Successful");
+    //log->info("Shader Linking Successful");
     return true;
   }
 
@@ -209,4 +217,10 @@ bool ie::GlslLoader::linkShaders(Shader* shader, std::vector<GLuint> shaderIds)
 void ie::GlslLoader::loadProgram(Shader* shader)
 {
   manager->load(shader);
+}
+
+
+void ie::GlslLoader::rxMsg(Imessage* msg)
+{
+  //TODO populate
 }
